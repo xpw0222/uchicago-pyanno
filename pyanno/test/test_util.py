@@ -1,8 +1,17 @@
 import unittest
+import numpy as np
 from pyanno.util import *
+from pyanno.util import random_categorical
 
 
 class TestUtil(unittest.TestCase):
+    def test_random_categorical(self):
+        distr = np.array([0.0, 0.3, 0.6, 0.05, 0.05])
+        nsamples = 10000
+        samples = random_categorical(distr, nsamples)
+        freq = np.bincount(samples) / float(nsamples)
+        np.testing.assert_almost_equal(freq, distr, 2)
+
     def test_vec_copy(self):
         c = []
         d = []
