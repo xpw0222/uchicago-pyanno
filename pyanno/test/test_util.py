@@ -1,8 +1,5 @@
-from pyanno.kappa import *
-from pyanno.multinom import *
-from pyanno.util import *
-
 import unittest
+from pyanno.util import *
 
 
 class TestUtil(unittest.TestCase):
