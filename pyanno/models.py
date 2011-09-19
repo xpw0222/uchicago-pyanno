@@ -30,8 +30,12 @@ class ModelB(object):
 
         if alpha is None:
             alpha = np.empty((nclasses, nclasses))
-            for k in xrange(nclasses):
-                alpha[k,:] = np.ones((nclasses,))
+            for k1 in xrange(nclasses):
+                for k2 in xrange(nclasses):
+                    # using Bob Carpenter's choice as a prior
+                    # TODO more meaningful choice
+                    alpha[k1,k2] = max(1, (nclasses + (0.5 if k1 == k2 else 0)
+                                           - abs(k1 - k2)) ** 4)
 
         if beta is None:
             beta = np.ones(shape=(nclasses,))
