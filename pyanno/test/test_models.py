@@ -22,6 +22,7 @@ def assert_is_dirichlet(samples, alpha):
 
 
 class TestModelB(unittest.TestCase):
+
     def test_random_model(self):
         nclasses = 4
         nannotators = 6
@@ -51,7 +52,6 @@ class TestModelB(unittest.TestCase):
             for k in xrange(nclasses):
                 assert_is_dirichlet(thetas[:,j,k,:], alpha[k,:])
 
-
     def test_generate_samples(self):
         nclasses = 4
         nannotators = 6
@@ -65,11 +65,31 @@ class TestModelB(unittest.TestCase):
 
         # NOTE here we make use of the fact that the prior is the same for all
         # items
-        freq = np.bincount(labels.flat) / float(np.prod(labels.shape))
+        freq = (np.bincount(labels.flat, minlength=nclasses)
+                / float(np.prod(labels.shape)))
         np.testing.assert_almost_equal(freq, model.pi, 2)
 
     def test_generate_annotations(self):
-        pass
+        nclasses = 4
+        nannotators = 6
+        nitems = 4
+        model = ModelB.random_model(nclasses, nannotators, nitems)
+
+        nsamples = 3000
+        labels = np.arange(nclasses)
+
+        annotations = np.empty((nsamples, nannotators, nitems), dtype=int)
+        for i in xrange(nsamples):
+            annotations[i,:,:] = model.generate_annotations(labels)
+
+        for j in xrange(nannotators):
+            for i in xrange(nitems):
+                # NOTE here we use the fact the the prior is the same for all
+                # annotators
+                tmp = annotations[:,j,i]
+                freq = np.bincount(tmp, minlength=nclasses) / float(nsamples)
+                np.testing.assert_almost_equal(freq,
+                                               model.theta[j,labels[i],:], 1)
 
 if __name__ == '__main__':
     unittest.main()

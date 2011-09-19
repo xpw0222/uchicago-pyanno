@@ -1,5 +1,6 @@
 """This file contains the classes defining the models."""
 import numpy as np
+from pyanno.util import random_categorical
 
 # TODO generalize beta prior: different items could have different priors
 # TODO arguments checking
@@ -16,7 +17,6 @@ class ModelB(object):
     @staticmethod
     def random_model(nclasses, nannotators, nitems, alpha=None, beta=None):
         """Factory method that returns a random model.
-
 
         Input:
         nclasses -- number of categories
@@ -52,3 +52,12 @@ class ModelB(object):
     def generate_labels(self):
         """Generate random labels from the model."""
         return random_categorical(self.pi, self.nitems)
+
+    def generate_annotations(self, labels):
+        """Generate random annotations given labels."""
+        annotations = np.empty((self.nannotators, self.nitems))
+        for j in xrange(self.nannotators):
+            for i in xrange(self.nitems):
+                annotations[j,i]  = random_categorical(self.theta[j,labels[i],:],
+                                                       1)
+        return annotations
