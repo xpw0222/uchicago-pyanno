@@ -53,8 +53,23 @@ class TestModelB(unittest.TestCase):
 
 
     def test_generate_samples(self):
-        pass
+        nclasses = 4
+        nannotators = 6
+        nitems = 8
+        model = ModelB.random_model(nclasses, nannotators, nitems)
 
+        nsamples = 1000
+        labels = np.empty((nsamples, nitems), dtype=int)
+        for i in xrange(nsamples):
+            labels[i] = model.generate_labels()
+
+        # NOTE here we make use of the fact that the prior is the same for all
+        # items
+        freq = np.bincount(labels.flat) / float(np.prod(labels.shape))
+        np.testing.assert_almost_equal(freq, model.pi, 2)
+
+    def test_generate_annotations(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()

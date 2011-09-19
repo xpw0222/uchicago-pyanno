@@ -49,6 +49,6 @@ class ModelB(object):
 
         return ModelB(nclasses, nannotators, nitems, pi, theta)
 
-    def generate_samples(self):
-        # generate samples from model
-        pass
+    def generate_labels(self):
+        """Generate random labels from the model."""
+        return random_categorical(self.pi, self.nitems)
