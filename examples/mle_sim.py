@@ -25,7 +25,7 @@ print "K=",K
 print "N=",N
 
 print "SIMULATING ORDINAL CODING DATA SET"
-(prev,cat,accuracy,item,anno,label) = pyanno.multinom.sim_ordinal(I,J,K)
+(prev,cat,accuracy,item,anno,label) = pyanno.multinom.generate_model_B(I,J,K)
 
 print "CALCULATING SAMPLE PARAMETERS"
 prev_sample = pyanno.multinom.alloc_vec(K)

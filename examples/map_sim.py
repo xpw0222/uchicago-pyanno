@@ -7,12 +7,12 @@ except ImportError, e:
     print "Need to install pyanno package and dependencies."
     print "See instructions in Install.txt from pyanno distribution"
     raise SystemExit(1)
-    
+
 # Simulated Sizes
 I = 200
 J = 5
 K = 4
-N = I*J 
+N = I*J
 
 Is = range(I)
 Js = range(J)
@@ -26,7 +26,7 @@ print "K=",K
 print "N=",N
 
 print "SIMULATING ORDINAL CODING DATA SET"
-(prev,cat,accuracy,item,anno,label) = pyanno.multinom.sim_ordinal(I,J,K)
+(prev,cat,accuracy,item,anno,label) = pyanno.multinom.generate_model_B(I,J,K)
 
 print "CALCULATING SAMPLE PARAMETERS"
 prev_sample = pyanno.multinom.alloc_vec(K)

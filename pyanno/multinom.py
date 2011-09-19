@@ -1,6 +1,6 @@
 # Library Module
 import math
-import numpy
+import numpy as np
 import pymc
 from .util import *
 
@@ -283,10 +283,10 @@ def map_em(item, anno, label, alpha=None, beta=None, init_accuracy=0.6):
     for k in Ks:
         beta_prior_count[k] = beta[k] - 1.0
 
-    beta_array = numpy.array(beta)
+    beta_array = np.array(beta)
     alpha_array = []
     for k in Ks:
-        alpha_array.append(numpy.array(alpha[k]))
+        alpha_array.append(np.array(alpha[k]))
 
     if len(anno) != N:
         raise ValueError("len(item) != len(anno)")
@@ -349,11 +349,11 @@ def map_em(item, anno, label, alpha=None, beta=None, init_accuracy=0.6):
             log_likelihood += log_likelihood_i
 
         log_prior = 0.0
-        prevalence_a = numpy.array(prevalence[0:(K - 1)])
+        prevalence_a = np.array(prevalence[0:(K - 1)])
         log_prior += dir_ll(prevalence_a, beta_array)
         for j in Js:
             for k in Ks:
-                acc_j_k_a = numpy.array(accuracy[j][k][0:(K - 1)])
+                acc_j_k_a = np.array(accuracy[j][k][0:(K - 1)])
                 log_prior += dir_ll(acc_j_k_a, alpha_array[k])
         if math.isnan(log_prior) or math.isinf(log_prior):
             log_prior = 0.0
@@ -383,8 +383,8 @@ def map_em(item, anno, label, alpha=None, beta=None, init_accuracy=0.6):
 
 
 # defined to prevent underflows resulting from theta[k] = 0.0, causing nans:
-# >>> theta = numpy.array([ 0.75300156,  0.24474181,  0.00225663])
-# >>> alpha = numpy.array([4.0,2.0,1.0,1.0])
+# >>> theta = np.array([ 0.75300156,  0.24474181,  0.00225663])
+# >>> alpha = np.array([4.0,2.0,1.0,1.0])
 # >>> pymc.dirichlet_like(theta,alpha)
 # nan
 def dir_ll(theta, alpha):
@@ -398,14 +398,34 @@ def dir_ll(theta, alpha):
             return ll
 
 
-def sim_ordinal(I, J, K, alpha=None, beta=None):
-    # test input params here
+# TODO: refactor this is a) sample_from_model_B and b) random_parameters
+# TODO: better default prior over alpha (more meaningful)
+def generate_model_B(I, J, K, alpha=None, beta=None):
+    """Generate random parameters and data from model B.
+
+    Input:
+    I -- number of items being annotated
+    J -- number of annotators
+    K -- number of categories
+    alpha -- Parameters of Dirichlet prior over annotator choices
+             Default: peaks at correct annotation, decays to 1
+    beta -- Parameters of Dirichlet prior over model categories
+            Default: beta[i] = 2.0
+
+    Output:
+    prevalence -- pi: probability of annotation belonging to category
+                  sampled from Dirichlet(beta)
+    category -- sample of ground-truth annotations
+    accuracy -- theta: probability of annotator being correct
+                sampled from Dirichlet(alpha)
+    item -- index of annotation
+    anno -- index of annotator
+    label -- label[k] is label returned by annotator anno[k] for item[k]
+    """
 
     Is = range(I)
     Js = range(J)
     Ks = range(K)
-    N = I * J
-    Ns = range(N)
 
     if alpha == None:
         alpha = alloc_mat(K, K)
@@ -416,9 +436,6 @@ def sim_ordinal(I, J, K, alpha=None, beta=None):
 
     if beta == None:
         beta = alloc_vec(K, 2.0)
-
-    # simulated params
-    beta = alloc_vec(K, 2.0)
 
     prevalence = pymc.rdirichlet(beta).tolist()
     prevalence.append(1.0 - sum(prevalence))  # complete
