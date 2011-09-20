@@ -4,15 +4,21 @@ from pyanno.util import random_categorical
 
 # TODO generalize beta prior: different items could have different priors
 # TODO arguments checking
+# TODO default for alpha, beta
 
 class ModelB(object):
 
-    def __init__(self, nclasses, nannotators, nitems, pi, theta):
+    def __init__(self, nclasses, nannotators, nitems, pi, theta,
+                 alpha=None, beta=None):
         self.nclasses = nclasses
         self.nannotators = nannotators
         self.nitems = nitems
         self.pi = pi
+        # theta[j,k,:] is P(annotator j chooses : | real label = k)
         self.theta = theta
+        # initialize prior parameters if not specified
+        self.alpha = alpha
+        self.beta = beta
 
     @staticmethod
     def random_model(nclasses, nannotators, nitems, alpha=None, beta=None):
@@ -47,7 +53,7 @@ class ModelB(object):
             for k in xrange(nclasses):
                 theta[j,k,:] = np.random.dirichlet(alpha[k,:])
 
-        return ModelB(nclasses, nannotators, nitems, pi, theta)
+        return ModelB(nclasses, nannotators, nitems, pi, theta, alpha, beta)
 
     def generate_labels(self):
         """Generate random labels from the model."""
@@ -55,9 +61,9 @@ class ModelB(object):
 
     def generate_annotations(self, labels):
         """Generate random annotations given labels."""
-        annotations = np.empty((self.nannotators, self.nitems))
+        annotations = np.empty((self.nannotators, self.nitems), dtype=int)
         for j in xrange(self.nannotators):
             for i in xrange(self.nitems):
-                annotations[j,i]  = random_categorical(self.theta[j,labels[i],:],
-                                                       1)
+                annotations[j,i]  = (
+                    random_categorical(self.theta[j,labels[i],:], 1))
         return annotations
