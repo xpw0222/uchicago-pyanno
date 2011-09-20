@@ -80,7 +80,9 @@ def mat_sum(x):
     return sum
 
 
+# TODO this should not be in-place
 def prob_norm(theta):
+    #raise DeprecationWarning('use normalize instead')
     Z = sum(theta)
     if Z <= 0.0:
         fill_vec(theta,1.0/float(len(theta)))
@@ -89,6 +91,24 @@ def prob_norm(theta):
     while n >= 0:
         theta[n] /= Z
         n -= 1
+
+
+def normalize(x, dtype=float):
+    """Returns a normalize distribution (sums to 1.0)."""
+    x = np.asarray(x, dtype=dtype)
+    z = x.sum()
+    if z <= 0:
+        x = np.ones_like(x)
+    return x / x.sum()
+
+
+def create_band_matrix(shape, diagonal_elements):
+    diagonal_elements = np.asarray(diagonal_elements)
+    def diag(i,j):
+        x = np.absolute(i-j)
+        x = np.minimum(diagonal_elements.shape[0]-1, x).astype(int)
+        return diagonal_elements[x]
+    return np.fromfunction(diag, shape)
 
 
 def warn_missing_vals(varname,xs):
