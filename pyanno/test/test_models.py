@@ -118,16 +118,14 @@ class TestModelB(unittest.TestCase):
 
         # create a new model with the true parameters, plus noise
         theta = true_model.theta + np.random.normal(loc=true_model.theta,
-                                                    scale=0.005/nclasses)
-        print theta[0,:10,:10]
-        print true_model.theta[0,:10,:10]
+                                                    scale=0.01/nclasses)
         pi = true_model.pi + np.random.normal(loc=true_model.pi,
-                                              scale=0.1/nclasses)
+                                              scale=0.01/nclasses)
         model = ModelB(nclasses, nannotators, nitems, pi, theta)
         model.map(annotations, epsilon=1e-3, max_epochs=1000)
 
-        np.testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
-        np.testing.assert_allclose(model.theta, true_model.theta, atol=1e-2, rtol=0.)
+        np.testing.assert_allclose(model.pi, true_model.pi, atol=1e-1, rtol=0.)
+        np.testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
 
 
 if __name__ == '__main__':
