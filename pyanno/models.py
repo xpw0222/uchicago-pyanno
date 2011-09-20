@@ -83,17 +83,57 @@ class ModelB(object):
         return annotations
 
     # TODO start from sample frequencies
-    def map(self, annotations, epsilon=0.00001, init_accuracy=0.6):
-        # FIXME temporary code to interface legacy code
+    def map(self, annotations,
+            epsilon=0.00001, init_accuracy=0.6, max_epochs=1000):
+        """Computes maximum a posteriori (MAP) estimate of parameters.
+
+        See the documentation for pyanno.multinom.mle() in this module for
+        a description of all but the following inputs:
+
+        Input:
+        annotations -- annotations[j,i] is the annotation of annotator `j`
+                       for item `i`
+
+        Output:
+        Tuple (diff,ll,lp,cat) consisting of final difference, log likelihood,
+        log prior p(acc|alpha) * p(prev|beta), and item category estimates
+
+        The estimates of the label frequency and accuracy parameters,
+        are stored in the class attributes `pi` and `theta`.
+        """
+
+        if epsilon < 0.0:
+            raise ValueError("epislon < 0.0")
+        if max_epochs < 0:
+            raise ValueError("max_epochs < 0")
+
+        llp_curve = []
+        epoch = 0
+        diff = np.inf
         item = np.repeat(np.arange(self.nitems), self.nannotators)
         anno = np.tile(np.arange(self.nannotators), self.nitems)
         label = np.ravel(annotations.T)
+        map_em_generator = pyanno.multinom.map_em(item, anno, label,
+                                                  self.alpha, self.beta,
+                                                  init_accuracy)
+        for lp, ll, prev_map, cat_map, accuracy_map in map_em_generator:
+            print "  epoch={0:6d}  log lik={1:+10.4f}  log prior={2:+10.4f}  llp={3:+10.4f}   diff={4:10.4f}".\
+            format(epoch, ll, lp, ll + lp, diff)
+            llp_curve.append(ll + lp)
+            # stopping conditions
+            if epoch > max_epochs:
+                break
+            if len(llp_curve) > 10:
+                diff = (llp_curve[epoch] - llp_curve[epoch - 10]) / 10.0
+                if abs(diff) < epsilon:
+                    break
+            epoch += 1
 
-        (diff,ll,lp,prev_map,
-         cat_map,accuracy_map) = pyanno.multinom.map(item, anno, label,
-                                                     self.alpha.tolist(), self.beta.tolist(),
-                                                     init_accuracy, epsilon)
         self.pi = prev_map
         self.theta = accuracy_map
 
         return diff, ll, lp, cat_map
+
+    def _map_em_step(self, annotations, init_accuracy=0.6):
+        # FIXME temporary code to interface legacy code
+        pass

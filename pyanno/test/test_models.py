@@ -91,5 +91,44 @@ class TestModelB(unittest.TestCase):
                 np.testing.assert_almost_equal(freq,
                                                model.theta[j,labels[i],:], 1)
 
+    def test_map_estimation(self):
+        # test simple model, check that we get to global optimum
+        # TODO test likelihood is increasing
+
+        nclasses, nannotators, nitems = 2, 3, 10000
+        # create random model and data (this is our graund truth model)
+        true_model = ModelB.random_model(nclasses, nannotators, nitems)
+        labels = true_model.generate_labels()
+        annotations = true_model.generate_annotations(labels)
+
+        # create a new, empty model and infer back the parameters
+        model = ModelB(nclasses, nannotators, nitems)
+        model.map(annotations, epsilon=1e-3, max_epochs=1000)
+
+        np.testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
+        np.testing.assert_allclose(model.theta, true_model.theta, atol=1e-2, rtol=0.)
+
+    def test_map_stability(self):
+        # test complex model, check that it is stable (converge back to optimum)
+        nclasses, nannotators, nitems = 4, 10, 10000
+        # create random model and data (this is our graund truth model)
+        true_model = ModelB.random_model(nclasses, nannotators, nitems)
+        labels = true_model.generate_labels()
+        annotations = true_model.generate_annotations(labels)
+
+        # create a new model with the true parameters, plus noise
+        theta = true_model.theta + np.random.normal(loc=true_model.theta,
+                                                    scale=0.005/nclasses)
+        print theta[0,:10,:10]
+        print true_model.theta[0,:10,:10]
+        pi = true_model.pi + np.random.normal(loc=true_model.pi,
+                                              scale=0.1/nclasses)
+        model = ModelB(nclasses, nannotators, nitems, pi, theta)
+        model.map(annotations, epsilon=1e-3, max_epochs=1000)
+
+        np.testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
+        np.testing.assert_allclose(model.theta, true_model.theta, atol=1e-2, rtol=0.)
+
+
 if __name__ == '__main__':
     unittest.main()
