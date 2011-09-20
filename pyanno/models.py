@@ -2,7 +2,7 @@
 import scipy as sp
 from pyanno.util import (random_categorical, create_band_matrix,
                          warn_missing_vals, normalize)
-from pyanno.multinom import dir_ll
+from pyanno.multinom import dirichlet_llhood
 
 # TODO generalize beta prior: different items could have different priors
 # TODO arguments checking
@@ -216,13 +216,10 @@ class ModelB(object):
                 log_likelihood += log_likelihood_i
 
             log_prior = 0.0
-            prevalence_a = np.array(prevalence[0:(nclasses - 1)])
-            log_prior += dir_ll(prevalence_a, beta)
+            log_prior += dirichlet_llhood(prevalence, beta)
             for j in xrange(nannotators):
                 for k in xrange(nclasses):
-                    acc_j_k_a = np.array(accuracy[j][k][0:(nclasses - 1)])
-                    log_prior += dir_ll(acc_j_k_a, alpha[k])
-            if np.isnan(log_prior) or np.isinf(log_prior):
+                    log_prior += dirichlet_llhood(accuracy[j,k,:], alpha[k])
             if sp.isnan(log_prior) or sp.isinf(log_prior):
                 log_prior = 0.0
 

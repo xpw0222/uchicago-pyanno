@@ -397,9 +397,17 @@ def dir_ll(theta, alpha):
         if not math.isnan(ll) and not math.isinf(ll):
             return ll
 
+def dirichlet_llhood(theta, alpha):
+    """Compute the log likelihood of theta under Dirichlet(alpha)."""
+    log_theta = sp.where(theta==0., 0., sp.log(theta))
+    return (sp.special.gammaln(alpha.sum())
+            - (sp.special.gammaln(alpha)).sum()
+            + ((alpha - 1.) * log_theta).sum())
+
 
 # TODO: refactor this is a) sample_from_model_B and b) random_parameters
 # TODO: better default prior over alpha (more meaningful)
+# TODO: generalize beta prior: different items could have different priors
 def generate_model_B(I, J, K, alpha=None, beta=None):
     """Generate random parameters and data from model B.
 
