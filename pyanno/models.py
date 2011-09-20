@@ -1,7 +1,8 @@
 """This file contains the classes defining the models."""
 import numpy as np
-from pyanno.util import random_categorical, create_band_matrix
-import pyanno.multinom
+from pyanno.util import (random_categorical, create_band_matrix,
+                         warn_missing_vals, normalize)
+from pyanno.multinom import dir_ll
 
 # TODO generalize beta prior: different items could have different priors
 # TODO arguments checking
@@ -15,6 +16,7 @@ class ModelB(object):
         self.nclasses = nclasses
         self.nannotators = nannotators
         self.nitems = nitems
+
         if pi is None:
             self.pi = np.ones((nclasses,)) / nclasses
         else:
@@ -24,6 +26,7 @@ class ModelB(object):
             self.theta = np.ones((nannotators, nclasses, nclasses)) / nclasses
         else:
             self.theta = theta.copy()
+
         # initialize prior parameters if not specified
         if alpha is None:
             self.alpha = create_band_matrix((nclasses, nclasses), [4., 2., 1.])
@@ -83,6 +86,7 @@ class ModelB(object):
         return annotations
 
     # TODO start from sample frequencies
+    # TODO argument verbose=False
     def map(self, annotations,
             epsilon=0.00001, init_accuracy=0.6, max_epochs=1000):
         """Computes maximum a posteriori (MAP) estimate of parameters.
@@ -110,12 +114,7 @@ class ModelB(object):
         llp_curve = []
         epoch = 0
         diff = np.inf
-        item = np.repeat(np.arange(self.nitems), self.nannotators)
-        anno = np.tile(np.arange(self.nannotators), self.nitems)
-        label = np.ravel(annotations.T)
-        map_em_generator = pyanno.multinom.map_em(item, anno, label,
-                                                  self.alpha, self.beta,
-                                                  init_accuracy)
+        map_em_generator = self._map_em_step(annotations, init_accuracy)
         for lp, ll, prev_map, cat_map, accuracy_map in map_em_generator:
             print "  epoch={0:6d}  log lik={1:+10.4f}  log prior={2:+10.4f}  llp={3:+10.4f}   diff={4:10.4f}".\
             format(epoch, ll, lp, ll + lp, diff)
@@ -134,6 +133,117 @@ class ModelB(object):
 
         return diff, ll, lp, cat_map
 
+    # TODO check equations with paper
     def _map_em_step(self, annotations, init_accuracy=0.6):
         # FIXME temporary code to interface legacy code
-        pass
+        item = np.repeat(np.arange(self.nitems), self.nannotators)
+        anno = np.tile(np.arange(self.nannotators), self.nitems)
+        label = np.ravel(annotations.T)
+
+        nitems = self.nitems
+        nannotators = self.nannotators
+        nclasses = self.nclasses
+        alpha = self.alpha
+        beta = self.beta
+        N = len(item)
+        Ns = range(N)
+
+        # TODO move argument checking to map_estimate
+        if not np.all(beta > 0.):
+            raise ValueError("beta should be larger than 0")
+        if not np.all(alpha > 0.):
+            raise ValueError("alpha should be larger than 0")
+
+        if annotations.shape != (nannotators, nitems):
+            raise ValueError("size of `annotations` should be nannotators x nitems")
+        if init_accuracy < 0.0 or init_accuracy > 1.0:
+            raise ValueError("init_accuracy not in [0,1]")
+        for n in xrange(N):
+            if item[n] < 0:
+                raise ValueError("item[n] < 0")
+            if anno[n] < 0:
+                raise ValueError("anno[n] < 0")
+            if label[n] < 0:
+                raise ValueError("label[n] < 0")
+        if len(alpha) != nclasses:
+            raise ValueError("len(alpha) != K")
+        for k in xrange(nclasses):
+            if len(alpha[k]) != nclasses:
+                raise ValueError("len(alpha[k]) != K")
+        if len(beta) != nclasses:
+            raise ValueError("len(beta) != K")
+
+        warn_missing_vals("item", item)
+        warn_missing_vals("anno", anno)
+        warn_missing_vals("label", label)
+
+        # initialize params
+        alpha_prior_count = alpha - 1.
+        beta_prior_count = beta - 1.
+
+        # ??? I think this is wrong, it should rather be initialize at the mean
+        # of the dirichlet, i.e., beta / beta.sum()
+        prevalence = normalize(beta_prior_count)
+
+        # category is P(category[i] | model, data)
+        category = np.zeros((nitems, nclasses))
+
+        # ??? shouldn't this be normalized?
+        accuracy = np.zeros((nannotators, nclasses, nclasses))
+        accuracy += init_accuracy
+
+        while True:
+            # -------------------------
+            # Expectation step (E-step)
+            # compute marginal likelihood P(category[i] | model, data)
+            for i in xrange(nitems):
+                category[i,:] = prevalence.copy()
+
+            for n in Ns:
+                for k in xrange(nclasses):
+                    category[item[n]][k] *= accuracy[anno[n]][k][label[n]]
+
+            # need log p(prev|beta) + SUM_k log p(acc[k]|alpha[k])
+            # log likelihood here to reuse intermediate category calc
+            log_likelihood = 0.0
+            for i in xrange(nitems):
+                likelihood_i = 0.0
+                for k in xrange(nclasses):
+                    likelihood_i += category[i][k]
+                if likelihood_i < 0.0:
+                    print "likelihood_i=", likelihood_i, "cat[i]=", category[i]
+                log_likelihood_i = np.log(likelihood_i)
+                log_likelihood += log_likelihood_i
+
+            log_prior = 0.0
+            prevalence_a = np.array(prevalence[0:(nclasses - 1)])
+            log_prior += dir_ll(prevalence_a, beta)
+            for j in xrange(nannotators):
+                for k in xrange(nclasses):
+                    acc_j_k_a = np.array(accuracy[j][k][0:(nclasses - 1)])
+                    log_prior += dir_ll(acc_j_k_a, alpha[k])
+            if np.isnan(log_prior) or np.isinf(log_prior):
+                log_prior = 0.0
+
+            for i in xrange(nitems):
+                category[i,:] = normalize(category[i,:])
+
+            # return here with E[cat|prev,acc] and LL(prev,acc;y)
+            yield (log_prior, log_likelihood, prevalence, category, accuracy)
+
+            # Maximization step (M-step)
+            # update parameters to maximize likelihood
+            # M: prevalence* + accuracy*
+            prevalence = beta_prior_count.copy()
+            for i in xrange(nitems):
+                prevalence += category[i,:]
+            prevalence = normalize(prevalence)
+
+            for j in xrange(nannotators):
+                accuracy[j,:] = alpha_prior_count.copy()
+            for n in xrange(N):
+                for k in xrange(nclasses):
+                    accuracy[anno[n]][k][label[n]] += category[item[n]][k]
+            for j in xrange(nannotators):
+                for k in xrange(nclasses):
+                    accuracy[j][k] = normalize(accuracy[j][k])
