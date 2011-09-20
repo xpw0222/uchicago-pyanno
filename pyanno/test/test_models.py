@@ -1,13 +1,14 @@
 import unittest
-import numpy as np
+import scipy as sp
+from numpy import testing
 from pyanno.models import ModelB
 
 def assert_is_distributions(distr, axis=0):
     """Check that input array represents a collection of distributions.
     """
     integral = distr.sum(axis=axis)
-    np.testing.assert_allclose(integral,
-                               np.ones_like(integral), rtol=0., atol=1e-7)
+    testing.assert_allclose(integral,
+                            sp.ones_like(integral), rtol=0., atol=1e-7)
 
 
 def assert_is_dirichlet(samples, alpha):
@@ -16,9 +17,9 @@ def assert_is_dirichlet(samples, alpha):
     alpha0 = alpha.sum(-1)
     expected_mean = alpha / alpha0
     expected_var = expected_mean * (1. - expected_mean) / (alpha0 + 1.)
-    np.testing.assert_allclose(samples.mean(0), expected_mean, rtol=0.1)
-    np.testing.assert_allclose(samples.var(0),
-                               expected_var, rtol=0.2)
+    testing.assert_allclose(samples.mean(0), expected_mean, rtol=0.1)
+    testing.assert_allclose(samples.var(0),
+                            expected_var, rtol=0.2)
 
 
 class TestModelB(unittest.TestCase):
@@ -36,12 +37,12 @@ class TestModelB(unittest.TestCase):
         assert_is_distributions(model.theta, axis=2)
 
         # check mean and variance of distribution
-        beta = np.array([10., 2., 30., 5.])
-        alpha = np.random.randint(1, 30, size=(nclasses, nclasses)).astype(float)
+        beta = sp.array([10., 2., 30., 5.])
+        alpha = sp.random.randint(1, 30, size=(nclasses, nclasses)).astype(float)
         # collect random parameters
         nsamples = 1000
-        pis = np.zeros((nsamples, nclasses))
-        thetas = np.zeros((nsamples, nannotators, nclasses, nclasses))
+        pis = sp.zeros((nsamples, nclasses))
+        thetas = sp.zeros((nsamples, nannotators, nclasses, nclasses))
         for n in xrange(nsamples):
             model = ModelB.random_model(nclasses, nannotators, nitems,
                                         alpha, beta)
@@ -59,15 +60,15 @@ class TestModelB(unittest.TestCase):
         model = ModelB.random_model(nclasses, nannotators, nitems)
 
         nsamples = 1000
-        labels = np.empty((nsamples, nitems), dtype=int)
+        labels = sp.empty((nsamples, nitems), dtype=int)
         for i in xrange(nsamples):
             labels[i] = model.generate_labels()
 
         # NOTE here we make use of the fact that the prior is the same for all
         # items
-        freq = (np.bincount(labels.flat, minlength=nclasses)
-                / float(np.prod(labels.shape)))
-        np.testing.assert_almost_equal(freq, model.pi, 2)
+        freq = (sp.bincount(labels.flat, minlength=nclasses)
+                / float(sp.prod(labels.shape)))
+        testing.assert_almost_equal(freq, model.pi, 2)
 
     def test_generate_annotations(self):
         nclasses = 4
@@ -76,9 +77,9 @@ class TestModelB(unittest.TestCase):
         model = ModelB.random_model(nclasses, nannotators, nitems)
 
         nsamples = 3000
-        labels = np.arange(nclasses)
+        labels = sp.arange(nclasses)
 
-        annotations = np.empty((nsamples, nannotators, nitems), dtype=int)
+        annotations = sp.empty((nsamples, nannotators, nitems), dtype=int)
         for i in xrange(nsamples):
             annotations[i,:,:] = model.generate_annotations(labels)
 
@@ -87,9 +88,9 @@ class TestModelB(unittest.TestCase):
                 # NOTE here we use the fact the the prior is the same for all
                 # annotators
                 tmp = annotations[:,j,i]
-                freq = np.bincount(tmp, minlength=nclasses) / float(nsamples)
-                np.testing.assert_almost_equal(freq,
-                                               model.theta[j,labels[i],:], 1)
+                freq = sp.bincount(tmp, minlength=nclasses) / float(nsamples)
+                testing.assert_almost_equal(freq,
+                                            model.theta[j,labels[i],:], 1)
 
     def test_map_estimation(self):
         # test simple model, check that we get to global optimum
@@ -105,8 +106,8 @@ class TestModelB(unittest.TestCase):
         model = ModelB(nclasses, nannotators, nitems)
         model.map(annotations, epsilon=1e-3, max_epochs=1000)
 
-        np.testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
-        np.testing.assert_allclose(model.theta, true_model.theta, atol=1e-2, rtol=0.)
+        testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
+        testing.assert_allclose(model.theta, true_model.theta, atol=1e-2, rtol=0.)
 
     def test_map_stability(self):
         # test complex model, check that it is stable (converge back to optimum)
@@ -117,15 +118,15 @@ class TestModelB(unittest.TestCase):
         annotations = true_model.generate_annotations(labels)
 
         # create a new model with the true parameters, plus noise
-        theta = true_model.theta + np.random.normal(loc=true_model.theta,
+        theta = true_model.theta + sp.random.normal(loc=true_model.theta,
                                                     scale=0.01/nclasses)
-        pi = true_model.pi + np.random.normal(loc=true_model.pi,
+        pi = true_model.pi + sp.random.normal(loc=true_model.pi,
                                               scale=0.01/nclasses)
         model = ModelB(nclasses, nannotators, nitems, pi, theta)
         model.map(annotations, epsilon=1e-3, max_epochs=1000)
 
-        np.testing.assert_allclose(model.pi, true_model.pi, atol=1e-1, rtol=0.)
-        np.testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
+        testing.assert_allclose(model.pi, true_model.pi, atol=1e-1, rtol=0.)
+        testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
 
 
 if __name__ == '__main__':

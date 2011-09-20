@@ -1,5 +1,5 @@
 """This file contains the classes defining the models."""
-import numpy as np
+import scipy as sp
 from pyanno.util import (random_categorical, create_band_matrix,
                          warn_missing_vals, normalize)
 from pyanno.multinom import dir_ll
@@ -18,12 +18,12 @@ class ModelB(object):
         self.nitems = nitems
 
         if pi is None:
-            self.pi = np.ones((nclasses,)) / nclasses
+            self.pi = sp.ones((nclasses,)) / nclasses
         else:
             self.pi = pi.copy()
         # theta[j,k,:] is P(annotator j chooses : | real label = k)
         if theta is None:
-            self.theta = np.ones((nannotators, nclasses, nclasses)) / nclasses
+            self.theta = sp.ones((nannotators, nclasses, nclasses)) / nclasses
         else:
             self.theta = theta.copy()
 
@@ -33,7 +33,7 @@ class ModelB(object):
         else:
             self.alpha = alpha
         if beta is None:
-            self.beta = np.ones((nclasses,))
+            self.beta = sp.ones((nclasses,))
         else:
             self.beta = beta
 
@@ -53,7 +53,7 @@ class ModelB(object):
 
         # TODO more meaningful choice for priors
         if alpha is None:
-            alpha = np.empty((nclasses, nclasses))
+            alpha = sp.empty((nclasses, nclasses))
             for k1 in xrange(nclasses):
                 for k2 in xrange(nclasses):
                     # using Bob Carpenter's choice as a prior
@@ -61,14 +61,14 @@ class ModelB(object):
                                            - abs(k1 - k2)) ** 4)
 
         if beta is None:
-            beta = 2.*np.ones(shape=(nclasses,))
+            beta = 2.*sp.ones(shape=(nclasses,))
 
         # generate random distributions of prevalence and accuracy
-        pi = np.random.dirichlet(beta)
-        theta = np.empty((nannotators, nclasses, nclasses))
+        pi = sp.random.dirichlet(beta)
+        theta = sp.empty((nannotators, nclasses, nclasses))
         for j in xrange(nannotators):
             for k in xrange(nclasses):
-                theta[j,k,:] = np.random.dirichlet(alpha[k,:])
+                theta[j,k,:] = sp.random.dirichlet(alpha[k,:])
 
         return ModelB(nclasses, nannotators, nitems, pi, theta, alpha, beta)
 
@@ -78,7 +78,7 @@ class ModelB(object):
 
     def generate_annotations(self, labels):
         """Generate random annotations given labels."""
-        annotations = np.empty((self.nannotators, self.nitems), dtype=int)
+        annotations = sp.empty((self.nannotators, self.nitems), dtype=int)
         for j in xrange(self.nannotators):
             for i in xrange(self.nitems):
                 annotations[j,i]  = (
@@ -113,7 +113,7 @@ class ModelB(object):
 
         llp_curve = []
         epoch = 0
-        diff = np.inf
+        diff = sp.inf
         map_em_generator = self._map_em_step(annotations, init_accuracy)
         for lp, ll, prev_map, cat_map, accuracy_map in map_em_generator:
             print "  epoch={0:6d}  log lik={1:+10.4f}  log prior={2:+10.4f}  llp={3:+10.4f}   diff={4:10.4f}".\
@@ -136,9 +136,9 @@ class ModelB(object):
     # TODO check equations with paper
     def _map_em_step(self, annotations, init_accuracy=0.6):
         # FIXME temporary code to interface legacy code
-        item = np.repeat(np.arange(self.nitems), self.nannotators)
-        anno = np.tile(np.arange(self.nannotators), self.nitems)
-        label = np.ravel(annotations.T)
+        item = sp.repeat(sp.arange(self.nitems), self.nannotators)
+        anno = sp.tile(sp.arange(self.nannotators), self.nitems)
+        label = sp.ravel(annotations.T)
 
         nitems = self.nitems
         nannotators = self.nannotators
@@ -149,9 +149,9 @@ class ModelB(object):
         Ns = range(N)
 
         # TODO move argument checking to map_estimate
-        if not np.all(beta > 0.):
+        if not sp.all(beta > 0.):
             raise ValueError("beta should be larger than 0")
-        if not np.all(alpha > 0.):
+        if not sp.all(alpha > 0.):
             raise ValueError("alpha should be larger than 0")
 
         if annotations.shape != (nannotators, nitems):
@@ -186,10 +186,10 @@ class ModelB(object):
         prevalence = normalize(beta_prior_count)
 
         # category is P(category[i] | model, data)
-        category = np.zeros((nitems, nclasses))
+        category = sp.zeros((nitems, nclasses))
 
         # ??? shouldn't this be normalized?
-        accuracy = np.zeros((nannotators, nclasses, nclasses))
+        accuracy = sp.zeros((nannotators, nclasses, nclasses))
         accuracy += init_accuracy
 
         while True:
@@ -212,7 +212,7 @@ class ModelB(object):
                     likelihood_i += category[i][k]
                 if likelihood_i < 0.0:
                     print "likelihood_i=", likelihood_i, "cat[i]=", category[i]
-                log_likelihood_i = np.log(likelihood_i)
+                log_likelihood_i = sp.log(likelihood_i)
                 log_likelihood += log_likelihood_i
 
             log_prior = 0.0
@@ -223,6 +223,7 @@ class ModelB(object):
                     acc_j_k_a = np.array(accuracy[j][k][0:(nclasses - 1)])
                     log_prior += dir_ll(acc_j_k_a, alpha[k])
             if np.isnan(log_prior) or np.isinf(log_prior):
+            if sp.isnan(log_prior) or sp.isinf(log_prior):
                 log_prior = 0.0
 
             for i in xrange(nitems):
