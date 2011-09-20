@@ -1,6 +1,7 @@
 """This file contains the classes defining the models."""
 import numpy as np
 from pyanno.util import random_categorical
+import pyanno.multinom
 
 # TODO generalize beta prior: different items could have different priors
 # TODO arguments checking
@@ -13,9 +14,9 @@ class ModelB(object):
         self.nclasses = nclasses
         self.nannotators = nannotators
         self.nitems = nitems
-        self.pi = pi
+        self.pi = pi.copy()
         # theta[j,k,:] is P(annotator j chooses : | real label = k)
-        self.theta = theta
+        self.theta = theta.copy()
         # initialize prior parameters if not specified
         self.alpha = alpha
         self.beta = beta
@@ -44,7 +45,7 @@ class ModelB(object):
                                            - abs(k1 - k2)) ** 4)
 
         if beta is None:
-            beta = np.ones(shape=(nclasses,))
+            beta = 2.*np.ones(shape=(nclasses,))
 
         # generate random distributions of prevalence and accuracy
         pi = np.random.dirichlet(beta)
@@ -67,3 +68,19 @@ class ModelB(object):
                 annotations[j,i]  = (
                     random_categorical(self.theta[j,labels[i],:], 1))
         return annotations
+
+    # TODO start from sample frequencies
+    def map(self, annotations, epsilon=0.00001, init_accuracy=0.6):
+        # FIXME temporary code to interface legacy code
+        item = np.repeat(np.arange(self.nitems), self.nannotators)
+        anno = np.tile(np.arange(self.nannotators), self.nitems)
+        label = np.ravel(annotations.T)
+
+        (diff,ll,lp,prev_map,
+         cat_map,accuracy_map) = pyanno.multinom.map(item, anno, label,
+                                                     self.alpha.tolist(), self.beta.tolist(),
+                                                     init_accuracy, epsilon)
+        self.pi = prev_map
+        self.theta = accuracy_map
+
+        return diff, ll, lp, cat_map
