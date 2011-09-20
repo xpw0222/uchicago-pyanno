@@ -1,25 +1,38 @@
 """This file contains the classes defining the models."""
 import numpy as np
-from pyanno.util import random_categorical
+from pyanno.util import random_categorical, create_band_matrix
 import pyanno.multinom
 
 # TODO generalize beta prior: different items could have different priors
 # TODO arguments checking
-# TODO default for alpha, beta
 
 class ModelB(object):
+    """See Model.txt for a description of the model."""
 
-    def __init__(self, nclasses, nannotators, nitems, pi, theta,
+    def __init__(self, nclasses, nannotators, nitems,
+                 pi=None, theta=None,
                  alpha=None, beta=None):
         self.nclasses = nclasses
         self.nannotators = nannotators
         self.nitems = nitems
-        self.pi = pi.copy()
+        if pi is None:
+            self.pi = np.ones((nclasses,)) / nclasses
+        else:
+            self.pi = pi.copy()
         # theta[j,k,:] is P(annotator j chooses : | real label = k)
-        self.theta = theta.copy()
+        if theta is None:
+            self.theta = np.ones((nannotators, nclasses, nclasses)) / nclasses
+        else:
+            self.theta = theta.copy()
         # initialize prior parameters if not specified
-        self.alpha = alpha
-        self.beta = beta
+        if alpha is None:
+            self.alpha = create_band_matrix((nclasses, nclasses), [4., 2., 1.])
+        else:
+            self.alpha = alpha
+        if beta is None:
+            self.beta = np.ones((nclasses,))
+        else:
+            self.beta = beta
 
     @staticmethod
     def random_model(nclasses, nannotators, nitems, alpha=None, beta=None):
@@ -35,12 +48,12 @@ class ModelB(object):
                 Default: beta[i] = 1.0
         """
 
+        # TODO more meaningful choice for priors
         if alpha is None:
             alpha = np.empty((nclasses, nclasses))
             for k1 in xrange(nclasses):
                 for k2 in xrange(nclasses):
                     # using Bob Carpenter's choice as a prior
-                    # TODO more meaningful choice
                     alpha[k1,k2] = max(1, (nclasses + (0.5 if k1 == k2 else 0)
                                            - abs(k1 - k2)) ** 4)
 
