@@ -1387,7 +1387,7 @@ def load_save_parameters(filename, modelname, f_best, x_best, report):
 
     if not os.path.isfile(filebest + '.db'):
         print 'new file'
-        f = shelve.open(filebest)
+        f = shelve.open(filebest + '.db')
         for model in ['A_model_8', 'A_model_11', 'Bt_model_12']:
             if model == curr:
                 put_triplet(f, f_best, x_best, model)
@@ -1397,7 +1397,7 @@ def load_save_parameters(filename, modelname, f_best, x_best, report):
         return f_best, x_best, strftime("%Y-%m-%d %H:%M:%S")
     else:
         print 'old file'
-        f = shelve.open(filebest)
+        f = shelve.open(filebest + '.db')
         f0, x0, t0 = get_triplet(f, curr)
 
         print 'Stored values:'
