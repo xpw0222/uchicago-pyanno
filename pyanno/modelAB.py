@@ -159,56 +159,17 @@ def likeBt8(x, arguments):
 
 
 #--------------------------------------------------------
-def patternFrequenciesBt(dimension, gam, t):
+def _patternFrequenciesBt(dim, gam, t, v_ijk_combinations):
     """Compute vector of P(v_{ijk} | params) for each combination of v_{ijk}."""
-    pf = sp.zeros(dimension**3, dtype=float)
-
-    count = 0
-    for vi in range(dimension):
-        for vj in range(dimension):
-            for vk in range(dimension):
-                pf[count] = valueProbabilityBt([vi, vj, vk], gam, t, dimension)
-                count += 1
-
-    return pf
-
-
-#-------------------------------------------------------
-def valueProbabilityBt(v, gam, t, dim):
-    """Compute vector of P( v_{ijk} | params ) for one combination of {ijk}.
-
-    Input:
-    v -- triplet of indices i,j,k
-    gam -- 1 x n array of gamma_psi parameters
-    t -- accuracy parameters theta, 1 x 3 vector
-    dim -- number of possible annotation values
-    """
-
-    # P(v_{ijk} | params) = \sum_psi P(v_{ijk} | psi, params) P(psi | params)
-    #                     = \sum_psi P(v_i|psi)P(v_j|psi)P(v_k|psi)P(psi)
-    # for the theta prior we have:
-    #   P(v_l | psi) =  theta_l if v_l==psi, (1-theta)/(dim-1) otherwise
-
-    p = 0
+    pf = 0.
+    not_theta = (1.-t) / (dim-1.)
     for psi in range(dim):
-        if psi == v[0]:
-            l1 = t[0]
-        else:
-            l1 = (1 - t[0]) / (dim - 1)
-
-        if psi == v[1]:
-            l2 = t[1]
-        else:
-            l2 = (1 - t[1]) / (dim - 1)
-
-        if psi == v[2]:
-            l3 = t[2]
-        else:
-            l3 = (1 - t[2]) / (dim - 1)
-
-        p += gam[psi] * l1 * l2 * l3
-
-    return p
+        p_v_ijk_given_psi = np.empty_like(v_ijk_combinations, dtype=float)
+        for j in range(3):
+            p_v_ijk_given_psi[:,j] = np.where(v_ijk_combinations[:,j]==psi,
+                                              t[j], not_theta[j])
+        pf += p_v_ijk_given_psi.prod(1) * gam[psi]
+    return pf
 
 
 #-------------------------------------------------------
@@ -250,8 +211,14 @@ def likeBt(x, data, dim, usepriors):
     # = \sum_v_{ijk}  count(v_{ijk}) P( v_{ijk} | params )
     #
     # where n is n-th annotation of triplet {ijk}]
-    pf = patternFrequenciesBt(dim, gam, t)  # compute P( v_{ijk} | params )
+
+    # list of all possible combinations of v_i, v_j, v_k elements
+    v_ijk_combinations = np.array([i for i in np.ndindex(dim,dim,dim)])
+    # compute P( v_{ijk} | params )
+    pf = _patternFrequenciesBt(dim, gam, t, v_ijk_combinations)
+
     l += (data * sp.log(pf)).sum()
+
 
     return -l
 
