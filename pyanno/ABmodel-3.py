@@ -56,7 +56,6 @@
     doi:10.1371/journal.pcbi.1000391
 """
 
-import sys, re, math
 from numpy import *
 import numpy as np
 import scipy as sp
@@ -79,22 +78,28 @@ from enthought.traits.ui.menu import CancelButton, ApplyButton, Action
 #                Model Bt
 #--------------------------------------------------------
 def random_startBt8(dim, alphaslikeomegas, counts, report):
-    """???
+    """Returns a random initial set of parameters.
 
     Input:
-    dim --
+    dim -- number of annotation values
     alphaslikeomega -- use omegas; 0: False, 1: True
     counts -- input data
     report -- verbosity level; one of 'Essentials', 'Everything', 'Nothing'
+
+    Output:
+    x -- array of initial, random parameters
+         dim-1 + 8 parameters:
+           dim-1 are the parameters gamma_i, i.e. P(label=i)
+                 the missing one is computed as 1-sum(gamma_1:dim-1)
+           8 are the parameters theta_i
     """
-    x = zeros((dim - 1) + 8, float)
+    x = sp.zeros((dim - 1) + 8, float)
     ii = 0
 
     if alphaslikeomegas == 0:
-        tmp = zeros(dim, float)
-        for i in range(dim):
-            tmp[i] = random.random()
-        tmp = sort(tmp)
+        # don't use omegas
+        tmp = sp.random.rand(dim)
+        tmp.sort()
 
         for i in range(1, dim):
             x[ii] = tmp[i] - tmp[i - 1]
@@ -119,45 +124,136 @@ def random_startBt8(dim, alphaslikeomegas, counts, report):
 #
 def likeBt8(x, arguments):
     """Log-likelihood of B-with-theta model, for 3 annotators, 8 annotations.
-    ???
+
+    Input:
+    x -- current model parameters
+    arguments -- (counts, dim, usepriors)
+                 counts is the input data in count format
+
+    Output:
+    l -- log-likelihood
     """
-    ind = array([[0, 1, 2],\
-        [1, 2, 3],\
-        [2, 3, 4],\
-        [3, 4, 5],\
-        [4, 5, 6],\
-        [5, 6, 7],\
-        [0, 6, 7],\
-        [0, 1, 7]], int)
+    ind = sp.array([[0, 1, 2],
+                    [1, 2, 3],
+                    [2, 3, 4],
+                    [3, 4, 5],
+                    [4, 5, 6],
+                    [5, 6, 7],
+                    [0, 6, 7],
+                    [0, 1, 7]], dtype=int)
 
     counts, dim, usepriors = arguments
+
     l = 0
-    xx = zeros(dim - 1 + 3, float)
-
-    xx[0:dim - 1] = x[0:dim - 1]
-
+    # xx holds the 3 gamma parameters and 3 parameters for each combination
+    # of annotators
+    xx = sp.zeros(dim-1 + 3, dtype=float)
+    xx[0:dim-1] = x[0:dim-1]
+    # loop over the 8 combinations of annotators
     for i in range(8):
-        xx[dim - 1] = x[ind[i, 0] + dim - 1]
-        xx[dim] = x[ind[i, 1] + dim - 1]
-        xx[dim + 1] = x[ind[i, 2] + dim - 1]
-        l += likeBt(xx, counts[:, i], dim, usepriors)
+        param_indices = ind[i,:] + dim - 1
+        xx[dim-1:dim+2] = x[param_indices]
+        l += likeBt(xx, counts[:,i], dim, usepriors)
 
     return l
 
 
 #--------------------------------------------------------
 def patternFrequenciesBt(dimension, gam, t):
-    n = dimension ** 3
-    pf = zeros(n, float)
+    """Compute vector of P(v_{ijk} | params) for each combination of v_{ijk}."""
+    pf = sp.zeros(dimension**3, dtype=float)
 
     count = 0
-    for i in range(dimension):
-        for j in range(dimension):
-            for k in range(dimension):
-                pf[count] = valueProbabilityBt([i, j, k], gam, t, dimension)
+    for vi in range(dimension):
+        for vj in range(dimension):
+            for vk in range(dimension):
+                pf[count] = valueProbabilityBt([vi, vj, vk], gam, t, dimension)
                 count += 1
 
     return pf
+
+
+#-------------------------------------------------------
+def valueProbabilityBt(v, gam, t, dim):
+    """Compute vector of P( v_{ijk} | params ) for one combination of {ijk}.
+
+    Input:
+    v -- triplet of indices i,j,k
+    gam -- 1 x n array of gamma_psi parameters
+    t -- accuracy parameters theta, 1 x 3 vector
+    dim -- number of possible annotation values
+    """
+
+    # P(v_{ijk} | params) = \sum_psi P(v_{ijk} | psi, params) P(psi | params)
+    #                     = \sum_psi P(v_i|psi)P(v_j|psi)P(v_k|psi)P(psi)
+    # for the theta prior we have:
+    #   P(v_l | psi) =  theta_l if v_l==psi, (1-theta)/(dim-1) otherwise
+
+    p = 0
+    for psi in range(dim):
+        if psi == v[0]:
+            l1 = t[0]
+        else:
+            l1 = (1 - t[0]) / (dim - 1)
+
+        if psi == v[1]:
+            l2 = t[1]
+        else:
+            l2 = (1 - t[1]) / (dim - 1)
+
+        if psi == v[2]:
+            l3 = t[2]
+        else:
+            l3 = (1 - t[2]) / (dim - 1)
+
+        p += gam[psi] * l1 * l2 * l3
+
+    return p
+
+
+#-------------------------------------------------------
+def likeBt(x, data, dim, usepriors):
+    """Compute the log likelihood of data for one triplet of annotators.
+
+    Input:
+    x -- model parameters (for one triplet of annotators)
+    data -- input data for one combination of annotators in count format
+    dim -- number of different annotation values
+    usepriors -- use prior? 0: False, 1: True
+    """
+
+    # unpack parameters vector
+
+    # gamma is x, with last element fixed to sum to one
+    gam = sp.zeros(dim, dtype=float)
+    gam[0:dim - 1] = x[0:dim - 1]
+    gam[dim - 1] = 1 - sum(gam[0:dim - 1])
+
+    # only the theta parameters
+    t = x[dim-1:dim+2]
+
+    # TODO: check if it's possible to replace these constraints with bounded optimization
+    if min(min(gam), min(t)) < 0.0 or max(max(gam), max(t)) > 1.0:
+        return Inf
+
+    # TODO: replace log(beta) with expression using scipy.special.betaln
+    if usepriors == 1:
+        # if requested, add prior over theta to log likelihood
+        l = (log(scipy.stats.beta.pdf(t[0], 2, 1))
+             + log(scipy.stats.beta.pdf(t[1], 2, 1))
+             + log(scipy.stats.beta.pdf(t[2], 2, 1)))
+    else:
+        l = 0.0
+
+    # log \prod_n P(v_{ijk}^{n} | params)
+    # = \sum_n log P(v_{ijk}^{n} | params)
+    # = \sum_v_{ijk}  count(v_{ijk}) P( v_{ijk} | params )
+    #
+    # where n is n-th annotation of triplet {ijk}]
+    pf = patternFrequenciesBt(dim, gam, t)  # compute P( v_{ijk} | params )
+    l += (data * sp.log(pf)).sum()
+
+    return -l
 
 
 #-------------------------------------------------------
@@ -171,79 +267,6 @@ def computePosteriorBt(v1, v2, v3, t1, t2, t3, gam, dim):
     dist = dist / summa
 
     return dist
-
-
-#-------------------------------------------------------
-def valueProbabilityBt(V, gamm, t, dim):
-# valueProbabilityBt(V,gamm,t, dim)
-# *gamm* is 1 x n array of gamma_psi parameters
-# *t* is a 1 x 3 vector of accuracies
-
-    p = 0
-    for i in range(dim):
-        if i == V[0]:
-            l1 = t[0]
-        else:
-            l1 = (1 - t[0]) / (dim - 1)
-
-        if i == V[1]:
-            l2 = t[1]
-        else:
-            l2 = (1 - t[1]) / (dim - 1)
-
-        if i == V[2]:
-            l3 = t[2]
-        else:
-            l3 = (1 - t[2]) / (dim - 1)
-
-        p += gamm[i] * l1 * l2 * l3
-
-    return p
-
-
-#-------------------------------------------------------
-def likeBt(x, data, dimension, usepriors):
-    """Compute the log likelihood of data under model B-with-theta.
-
-    Input:
-    x -- ???
-    data -- ???
-    dimension -- ???
-    usepriors -- ???
-    """
-
-    # gamma is x, with last element fixed to sum to one
-    # ??? why not re-normalize
-    gam = zeros(dimension, float)
-    gam[0:dimension - 1] = x[0:dimension - 1]
-    gam[dimension - 1] = 1 - sum(gam[0:dimension - 1])
-
-    #print gam
-
-    t = zeros(3, float)
-    t[0] = x[dimension - 1]
-    t[1] = x[dimension]
-    t[2] = x[dimension + 1]
-
-    #print t
-
-    pf = patternFrequenciesBt(dimension, gam, t)
-
-    if min(min(gam), min(t)) < 0 or max(max(gam), max(t)) > 1:
-        return Inf
-
-    # TODO: replace log(beta) with expression using scipy.special.betaln
-    if usepriors == 1:
-        l = (log(scipy.stats.beta.pdf(t[0], 2, 1))
-             + log(scipy.stats.beta.pdf(t[1], 2, 1))
-             + log(scipy.stats.beta.pdf(t[2], 2, 1)))
-    else:
-        l = 0
-
-    for i in range(len(pf)):
-        l += data[i] * log(pf[i])
-
-    return -l
 
 
 #-------------------------------------------------------
@@ -1628,8 +1651,8 @@ class ABmodelGUI(HasTraits):
                 arguments = ((alphas, omegas, data, 1, estimatealphas, dim),)
                 arguments1 = (alphas, omegas, data, 1, estimatealphas, dim)
                 x0 = random_startA8(estimatealphas, report)
-                x_best = scipy.optimize.fmin(likeA8,\
-                                             x0, args=arguments,\
+                x_best = scipy.optimize.fmin(likeA8,
+                                             x0, args=arguments,
                                              xtol=1e-8, ftol=1e-8, disp=False,
                                              maxiter=1e+10, maxfun=1e+30)
                 FF[j] = -likeA8(x_best, arguments1)
