@@ -128,8 +128,6 @@ def likeBt8(x, arguments):
         xx[dim + 1] = x[ind[i, 2] + dim - 1]
         l += likeBt(xx, counts[:, i], dim, usepriors)
 
-    del xx
-
     return l
 
 
@@ -221,10 +219,6 @@ def likeBt(x, data, dimension, usepriors):
 
     for i in range(len(pf)):
         l += data[i] * log(pf[i])
-
-    del pf
-    del gam
-    del t
 
     return -l
 
@@ -553,7 +547,6 @@ def likeA8(x, arguments):
         l -= likeA(xx, alphas, omegas, counts[:, i], usepriors, estimatealphas,
                    dim)
 
-    del xx
     # returns - log L
     return l
 
@@ -598,7 +591,6 @@ def likeA(x, alphas, omegas, counts, usepriors, estimatealphas, dim):
                 like += counts[ii] * log(
                     expPat(al, omegas, x[0], x[1], x[2], i, j, k))
                 ii += 1
-    del al
     return like
 
 
@@ -664,8 +656,6 @@ def getAlphas(omega):
     alphas[5] = a5
     alphas[6] = a5
 
-    del s2
-    del s3
     return alphas
 
 
@@ -813,7 +803,6 @@ def check_data(filename, optional_labels, report):
         if j != 8:
             print "Line #" + str(n) + " is ill-formed: " + str(j)
             print line
-    del a
 
     if cmp(report, 'Nothing') != 0:
         print string_wrap(num2comma(n) + " lines in file " + filename + '...',
@@ -866,8 +855,6 @@ def check_data(filename, optional_labels, report):
 
     # data: make sure that -1 stands for no annotation
     # the rest of codes orea 0 to dim-1
-    del ii
-
     mat = zeros([n, 8], int)
 
     for i in range(n):
@@ -915,7 +902,6 @@ def plot_annotators(aa, annotators, n, filename):
     spy(dd)
     hot()
     # plot
-    del bb
 
     # dimension is the number of distinct values excluding "-1" (no value)
 
@@ -1116,7 +1102,6 @@ def optimum_jump(likelihood, x0, arguments,
                 return dx
             Rej *= 0
 
-    del Rej
     return dx
 
 
@@ -1172,8 +1157,6 @@ def sample_distribution(likelihood, x0, arguments, dx, Metropolis_jumps, x_lower
                 x_curr[j] = xj_old
         Samples[i, :] = x_curr[:]
 
-    del Rej
-    del x_curr
     return Samples
 
 
@@ -1292,9 +1275,6 @@ def plot_modelA(values, confidence, dpidpi, numbins, x_best):
                                        linestyle='--', label='_nolegend_')
         if increment_delta == True:
             delta += max(y)
-        del x
-        del y
-        del v_tmp
 
     xlabel('$\\theta_i$', {'fontsize': 'large'})
     ylabel('$\it{Frequency}$', {'fontsize': 'large'})
@@ -1333,9 +1313,6 @@ def plot_modelA(values, confidence, dpidpi, numbins, x_best):
                                           linestyle='--', label='_nolegend_')
             if increment_delta == True:
                 delta += max(y)
-            del x
-            del y
-            del v_tmp
 
         leg2 = ax.legend(fancybox=True)
         leg2.draw_frame(False)
