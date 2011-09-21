@@ -11,7 +11,7 @@ except ImportError, e:
 I = 200
 J = 5
 K = 4
-N = I*J 
+N = I*J
 
 Is = range(I)
 Js = range(J)

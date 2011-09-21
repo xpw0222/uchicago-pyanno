@@ -94,7 +94,7 @@ def prob_norm(theta):
 
 
 def normalize(x, dtype=float):
-    """Returns a normalize distribution (sums to 1.0)."""
+    """Returns a normalized distribution (sums to 1.0)."""
     x = np.asarray(x, dtype=dtype)
     z = x.sum()
     if z <= 0:
@@ -115,10 +115,3 @@ def warn_missing_vals(varname,xs):
     missing = set(xs) - set(range(max(xs)+1))
     if len(missing) > 0:
         print "Missing values in ",varname,"=",missing
-
-
-
-        
-    
-        
-    
