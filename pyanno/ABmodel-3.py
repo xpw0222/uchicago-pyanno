@@ -58,6 +58,8 @@
 
 import sys, re, math
 from numpy import *
+import numpy as np
+import scipy as sp
 from scipy import *
 from pylab import *
 import time
@@ -77,6 +79,14 @@ from enthought.traits.ui.menu import CancelButton, ApplyButton, Action
 #                Model Bt
 #--------------------------------------------------------
 def random_startBt8(dim, alphaslikeomegas, counts, report):
+    """???
+
+    Input:
+    dim --
+    alphaslikeomega -- use omegas; 0: False, 1: True
+    counts -- input data
+    report -- verbosity level; one of 'Essentials', 'Everything', 'Nothing'
+    """
     x = zeros((dim - 1) + 8, float)
     ii = 0
 
@@ -106,7 +116,11 @@ def random_startBt8(dim, alphaslikeomegas, counts, report):
 
 
 #--------------------------------------------------------
+#
 def likeBt8(x, arguments):
+    """Log-likelihood of B-with-theta model, for 3 annotators, 8 annotations.
+    ???
+    """
     ind = array([[0, 1, 2],\
         [1, 2, 3],\
         [2, 3, 4],\
@@ -189,12 +203,20 @@ def valueProbabilityBt(V, gamm, t, dim):
 
 #-------------------------------------------------------
 def likeBt(x, data, dimension, usepriors):
+    """Compute the log likelihood of data under model B-with-theta.
 
-# Bt = model B with thetas
+    Input:
+    x -- ???
+    data -- ???
+    dimension -- ???
+    usepriors -- ???
+    """
+
+    # gamma is x, with last element fixed to sum to one
+    # ??? why not re-normalize
     gam = zeros(dimension, float)
     gam[0:dimension - 1] = x[0:dimension - 1]
     gam[dimension - 1] = 1 - sum(gam[0:dimension - 1])
-
 
     #print gam
 
@@ -210,10 +232,11 @@ def likeBt(x, data, dimension, usepriors):
     if min(min(gam), min(t)) < 0 or max(max(gam), max(t)) > 1:
         return Inf
 
+    # TODO: replace log(beta) with expression using scipy.special.betaln
     if usepriors == 1:
-        l = log(scipy.stats.beta.pdf(t[0], 2, 1))\
-            + log(scipy.stats.beta.pdf(t[1], 2, 1))\
-        + log(scipy.stats.beta.pdf(t[2], 2, 1))
+        l = (log(scipy.stats.beta.pdf(t[0], 2, 1))
+             + log(scipy.stats.beta.pdf(t[1], 2, 1))
+             + log(scipy.stats.beta.pdf(t[2], 2, 1)))
     else:
         l = 0
 
@@ -786,8 +809,21 @@ def read_labels(filein):
 
 #-------------------------------------------------------------
 def check_data(filename, optional_labels, report):
+    """
+    Output
+    mat -- array of annotations (integer array, nitems x 8)
+    dim -- number of distinct annotation values
+    values -- list of possible annotation values (same as in file - 1
+    imap -- value-to-index map
+    originaldata -- same as mat, without subtracting 1
+    annotators -- ??? (from read_labels)
+    codes -- ??? (from read_labels)
+    n -- number of annotations
+    """
     n = 0
 
+    # TODO use numpy loadtxt
+    # open file a first time to check consistency
     a = zeros(8)
     for line in open(filename):
         if not line:
@@ -808,8 +844,8 @@ def check_data(filename, optional_labels, report):
         print string_wrap(num2comma(n) + " lines in file " + filename + '...',
                           1)
 
+    # open file a second time and read the data
     aa = zeros([n, 8], int)
-
     i = 0
     for line in open(filename):
         if not line:
@@ -835,7 +871,8 @@ def check_data(filename, optional_labels, report):
     #====================================================
 
     #----------------------------
-    values = zeros(m, int)
+    # create list of annotation values
+    values = sp.zeros(m, int)
     j = 0
     for i in range(len(ii)):
         if ii[i] >= 0:
@@ -844,9 +881,9 @@ def check_data(filename, optional_labels, report):
 
     # values of annotations have to be integer and positive
     # imap is a value --> to index map
-    mm = amax(values)
-    imap = zeros(mm + 1, int)
-
+    mm = sp.amax(values)
+    imap = sp.zeros(mm + 1, int)
+    # ??? I think this is broken: it should be imap[values[i]] = i
     for i in range(m):
         imap[values[i] - 1] = i
 
@@ -855,7 +892,7 @@ def check_data(filename, optional_labels, report):
 
     # data: make sure that -1 stands for no annotation
     # the rest of codes orea 0 to dim-1
-    mat = zeros([n, 8], int)
+    mat = sp.zeros([n, 8], int)
 
     for i in range(n):
         for j in range(8):
@@ -906,8 +943,8 @@ def plot_annotators(aa, annotators, n, filename):
     # dimension is the number of distinct values excluding "-1" (no value)
 
     ee = list(aa.flatten(1))
-    ii = unique(ee)
-    m = len(ii) - 1
+    ii = unique(ee)  # list of annotations values(including -1)
+    m = len(ii) - 1  # number of distinct values for annotations
 
     title(filename + ": " + str(m) + ' distinct annotation values')
 
@@ -927,11 +964,22 @@ def plot_annotators(aa, annotators, n, filename):
         ttx = annotators
 
     xticks(arange(8), ttx)
+    show()
     return m, dd, ii
 
 
 #----------------------------------------------------------
-def compute_counts(mat, dim, values, imap):
+def compute_counts(mat, dim):
+    """Transform data in counts format.
+    Input:
+    mat -- Input data (integer array, nitems x 8)
+    dim -- number of annotation values (# classes)
+
+    Ouput:
+    data -- data[i,j] is the number of times the combination of annotators
+             number `j` voted according to pattern `i`
+             (integer array, dim^3 x 8)
+    """
     index = array([[0, 1, 2],
         [1, 2, 3],
         [2, 3, 4],
@@ -942,7 +990,7 @@ def compute_counts(mat, dim, values, imap):
         [0, 1, 7]], int)
     m = mat.shape[0]
     n = mat.shape[1]
-    mat = array(mat, int)
+    mat = sp.asarray(mat, dtype=int)
 
     if n != 8:
         print 'Strange: ' + str(n) + 'annotator number !!!'
@@ -951,14 +999,17 @@ def compute_counts(mat, dim, values, imap):
     # compute counts of 3-annotator patterns for 8 triplets
     # of annotators
 
-    data = zeros([dim ** 3, 8], int)
+    data = sp.zeros([dim ** 3, 8], dtype=int)
 
+    # transform each triple of annotations into a code in base `dim`
     for i in range(m):
-        ind = where(mat[i, :] >= 0)
+        ind = sp.where(mat[i, :] >= 0)
 
         code = mat[i, ind[0][0]] * (dim ** 2) +\
                mat[i, ind[0][1]] * dim +\
                mat[i, ind[0][2]]
+
+        # o is the index of possible combination of annotators in the loop design
         o = -100
         for j in range(8):
             k = 0
@@ -1165,7 +1216,7 @@ def sample_distribution(likelihood, x0, arguments, dx, Metropolis_jumps, x_lower
 def analyse_parameter_distribution(values, confidence, nbs):
     alpha = (1. - confidence) / 2.
     nn, bins = histogram(values, bins=nbs, range=None, normed=False,
-                         weights=None, new=None)
+                         weights=None)
     binsize = bins[1] - bins[0]
     binmin = bins[0]
     n = len(nn)
@@ -1536,7 +1587,7 @@ class ABmodelGUI(HasTraits):
         #------ prepare data ---------------------------------------------------------------------------------
         mat, dim, values, imap, originaldata, annotators, codes, n = check_data(
             filename, optional_labels, report)
-        data = compute_counts(mat, dim, values, imap)
+        data = compute_counts(mat, dim)
         FF = zeros(numberOfRuns, float)
         alphas = []
         gammas = []
@@ -1707,7 +1758,7 @@ class ABmodelGUI(HasTraits):
             fi = filename.split('.')
             filearray = fi[0] + modelname + '_' + str(
                 numberOfRuns) + '_MCMC.txt'
-            save(filearray, Samples)
+            sp.save(filearray, Samples)
             print "Saved samples ..."
 
             if cmp(report, 'Nothing') != 0:
