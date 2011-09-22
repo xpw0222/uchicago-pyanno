@@ -78,8 +78,7 @@ class ModelBt(object):
         return annotations
 
 
-    # FIXME: change default to use_omegas=1
-    def mle(self, annotations, use_priors=1, use_omegas=0):
+    def mle(self, annotations, use_priors=1, use_omegas=1):
         nclasses = self.nclasses
 
         counts = compute_counts(annotations, self.nclasses)
