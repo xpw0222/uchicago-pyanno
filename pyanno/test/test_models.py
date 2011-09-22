@@ -97,7 +97,7 @@ class TestModelB(unittest.TestCase):
         # TODO test likelihood is increasing
 
         nclasses, nannotators, nitems = 2, 3, 10000
-        # create random model and data (this is our graund truth model)
+        # create random model and data (this is our ground truth model)
         true_model = ModelB.random_model(nclasses, nannotators, nitems)
         labels = true_model.generate_labels()
         annotations = true_model.generate_annotations(labels)
@@ -112,7 +112,7 @@ class TestModelB(unittest.TestCase):
     def test_map_stability(self):
         # test complex model, check that it is stable (converge back to optimum)
         nclasses, nannotators, nitems = 4, 10, 10000
-        # create random model and data (this is our graund truth model)
+        # create random model and data (this is our ground truth model)
         true_model = ModelB.random_model(nclasses, nannotators, nitems)
         labels = true_model.generate_labels()
         annotations = true_model.generate_annotations(labels)
