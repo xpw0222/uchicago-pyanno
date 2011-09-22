@@ -3,7 +3,18 @@
 import scipy as sp
 from pyanno.modelAB import random_startBt8, likeBt8, compute_counts
 from pyanno.util import (random_categorical,
-                         warn_missing_vals, normalize)
+                         warn_missing_vals, normalize, log_beta_pdf)
+
+
+# map of `n` to list of all possible triplets of `n` elements
+_triplet_combinations = {}
+def _get_triplet_combinations(n):
+    """Return array of all possible combinations of n elements in triplets.
+    """
+    if not _triplet_combinations.has_key(n):
+        _triplet_combinations[n] = (
+            sp.array([i for i in sp.ndindex(n,n,n)]) )
+    return _triplet_combinations[n]
 
 
 class ModelBt(object):
@@ -103,3 +114,87 @@ class ModelBt(object):
         self.gamma[:nclasses-1] = x_best[:nclasses-1]
         self.gamma[-1] = 1. - self.gamma[:nclasses-1].sum()
         self.theta = x_best[nclasses-1:]
+
+
+    def _pattern_frequencies(self, theta_triplet):
+        """Compute vector of P(v_{ijk}|params) for each combination of v_{ijk}.
+
+        The arguments gamma, theta, and v_ijk_combinations are called to
+        avoid to look them up globally every time.
+        """
+
+        gamma = self.gamma
+        nclasses = self.nclasses
+        # list of all possible combinations of v_i, v_j, v_k elements
+        v_ijk_combinations = _get_triplet_combinations(nclasses)
+
+        pf = 0.
+        not_theta = (1.-theta_triplet) / (nclasses-1.)
+        p_v_ijk_given_psi = sp.empty_like(v_ijk_combinations, dtype=float)
+        for psi in range(nclasses):
+            for j in range(3):
+                p_v_ijk_given_psi[:,j] = sp.where(v_ijk_combinations[:,j]==psi,
+                                                  theta_triplet[j],
+                                                  not_theta[j])
+            pf += p_v_ijk_given_psi.prod(1) * gamma[psi]
+        return pf
+
+
+    def _log_likelihood_triplet(self, counts_triplet, theta_triplet):
+        """Compute the log likelihood of data for one triplet of annotators.
+
+        Input:
+        counts_triplet -- count data for one combination of annotators
+        theta_triplet -- theta parameters of the current triplet
+        """
+
+        gamma = self.gamma
+
+        # TODO: check if it's possible to replace these constraints with bounded optimization
+        if (min(min(gamma), min(theta_triplet)) < 0.
+            or max(max(gamma), max(theta_triplet)) > 1.):
+            return sp.inf
+
+        if self.use_priors:
+            # if requested, add prior over theta to log likelihood
+            l = log_beta_pdf(theta_triplet, 2., 1.).sum()
+        else:
+            l = 0.
+
+        # log \prod_n P(v_{ijk}^{n} | params)
+        # = \sum_n log P(v_{ijk}^{n} | params)
+        # = \sum_v_{ijk}  count(v_{ijk}) P( v_{ijk} | params )
+        #
+        # where n is n-th annotation of triplet {ijk}]
+
+        # compute P( v_{ijk} | params )
+        pf = self._pattern_frequencies(theta_triplet)
+        l += (counts_triplet * sp.log(pf)).sum()
+
+        return -l
+
+
+    def _log_likelihood_counts(self, counts):
+        """Compute the log likelihood of annotations given the model.
+
+        This method assumes the data is in counts format.
+        """
+        llhood = 0.
+        # loop over the 8 combinations of annotators
+        for i in range(8):
+            # extract the theta parameters for this triplet
+            triplet_indices = sp.arange(i, i+3) % self.nannotators
+            triplet_indices.sort()
+            theta_triplet = self.theta[triplet_indices]
+
+            # compute the likelihood for the triplet
+            llhood += self._log_likelihood_triplet(counts[:,i],
+                                                   theta_triplet)
+
+        return llhood
+
+
+    def log_likelihood(self, annotations):
+        """Compute the log likelihood of annotations given the model."""
+        return self._log_likelihood_counts(compute_counts(annotations,
+                                                          self.nclasses))
