@@ -7,8 +7,13 @@ from pyanno.util import (random_categorical,
 
 
 class ModelBt(object):
+    """
+    At the moment the model assumes 1) a total of 8 annontators, and 2) each
+    item is annotated by 3 annotators.
+    """
 
-    def __init__(self, nclasses, nitems, gamma, theta):
+    def __init__(self, nclasses, nitems, gamma, theta,
+                 use_priors=True, use_omegas=True):
         self.nclasses = nclasses
         self.nannotators = 8
         self.nitems = nitems
@@ -16,11 +21,14 @@ class ModelBt(object):
         self.annotators_per_item = 3
         self.gamma = gamma
         self.theta = theta
+        self.use_priors = use_priors
+        self.use_omegas = use_omegas
 
 
     @staticmethod
     def random_model(nclasses, nitems,
-                     gamma=None, theta=None):
+                     gamma=None, theta=None,
+                     use_priors=True, use_omegas=True):
         """Factory method returning a random model.
 
         Input:
@@ -39,7 +47,7 @@ class ModelBt(object):
             theta = sp.random.uniform(low=0.6, high=0.9,
                                       size=(nannotators,))
 
-        model = ModelBt(nclasses, nitems, gamma, theta)
+        model = ModelBt(nclasses, nitems, gamma, theta, use_priors, use_omegas)
         return model
 
 
@@ -78,12 +86,13 @@ class ModelBt(object):
         return annotations
 
 
-    def mle(self, annotations, use_priors=1, use_omegas=1):
+    def mle(self, annotations):
         nclasses = self.nclasses
 
         counts = compute_counts(annotations, self.nclasses)
-        arguments = ((counts, nclasses, use_priors),)
-        x0 = random_startBt8(nclasses, use_omegas, counts, report='Everything')
+        arguments = ((counts, nclasses, self.use_priors),)
+        x0 = random_startBt8(nclasses, self.use_omegas,
+                             counts, report='Everything')
         # TODO: use gradient, constrained optimization
         x_best = sp.optimize.fmin(likeBt8, x0, args=arguments,
                                   xtol=1e-4, ftol=1e-4,
