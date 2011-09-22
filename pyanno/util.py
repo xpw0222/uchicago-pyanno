@@ -1,10 +1,11 @@
-import numpy as np
+import scipy as sp
+
 
 def random_categorical(distr, nsamples):
     """Return an array of samples from a categorical distribution."""
-    assert np.allclose(distr.sum(), 1., atol=1e-8)
+    assert sp.allclose(distr.sum(), 1., atol=1e-8)
     cumulative = distr.cumsum()
-    return cumulative.searchsorted(np.random.random(nsamples))
+    return cumulative.searchsorted(sp.random.random(nsamples))
 
 
 def log_beta_pdf(x, a, b):
@@ -103,20 +104,20 @@ def prob_norm(theta):
 
 def normalize(x, dtype=float):
     """Returns a normalized distribution (sums to 1.0)."""
-    x = np.asarray(x, dtype=dtype)
+    x = sp.asarray(x, dtype=dtype)
     z = x.sum()
     if z <= 0:
-        x = np.ones_like(x)
+        x = sp.ones_like(x)
     return x / x.sum()
 
 
 def create_band_matrix(shape, diagonal_elements):
-    diagonal_elements = np.asarray(diagonal_elements)
+    diagonal_elements = sp.asarray(diagonal_elements)
     def diag(i,j):
-        x = np.absolute(i-j)
-        x = np.minimum(diagonal_elements.shape[0]-1, x).astype(int)
+        x = sp.absolute(i-j)
+        x = sp.minimum(diagonal_elements.shape[0]-1, x).astype(int)
         return diagonal_elements[x]
-    return np.fromfunction(diag, shape)
+    return sp.fromfunction(diag, shape)
 
 
 def warn_missing_vals(varname,xs):
