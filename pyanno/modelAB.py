@@ -958,7 +958,7 @@ def plot_annotators(aa, annotators, n, filename):
         ttx = annotators
 
     xticks(arange(8), ttx)
-    show()
+    #show()
     return m, dd, ii
 
 
@@ -1023,20 +1023,22 @@ def compute_counts(mat, dim):
 
 #------------------------------------------------------------
 #============================================================
-#     general-purpose parameter sampling routine for MCMC
+#
 
 def q_lower_upper(theta, psi, lower, upper):
-    """
-def q_lower_upper(theta,psi,lower,upper):
-return (theta,q)
+    """General-purpose parameter sampling routine for MCMC
 
-*theta*          -- current parameter value (also, the new value on return)
-*lower*, *upper* -- lower/upper boundaries for the parameter
-*psi*            -- MCMC max jump size with regard to *theta*
-*q*              -- log-ratio of probabilities of sampling 
-                       *new value given old value* 
-                                  to  
-                       *old value given new value*
+    Input:
+    theta          -- current parameter value (also, the new value on return)
+    lower, upper -- lower/upper boundaries for the parameter
+    psi            -- MCMC max jump size with regard to *theta*
+
+    Output:
+    theta
+    q              -- log-ratio of probabilities of sampling
+                        *new value given old value*
+                                   to
+                        *old value given new value*
     """
     q = 0
 
@@ -1098,12 +1100,21 @@ def form_filename(oldf, suffix):
 
 
 #------------------------------------------------------------
-# compute optimum jump for MCMC estimation of 
-# credible intervals
 def optimum_jump(likelihood, x0, arguments,
                  x_upper, x_lower,
                  evaluation_jumps, recomputing_cycle, targetreject, Delta,
                  report):
+    """Compute optimum jump for MCMC estimation of credible intervals.
+
+    Adjust jump size in Metropolis-Hasting MC to achieve given rejection rate.
+    Jump size is estimated for each argument separately.
+
+    Input:
+    likelihood -- likelihood function (??? describe arguments)
+
+    Output:
+    dx --
+    """
     m = len(x0)
     dx = zeros(m, float)
     Rej = zeros(m, float)
@@ -1113,7 +1124,7 @@ def optimum_jump(likelihood, x0, arguments,
         dx[i] = (x_upper[i] - x_lower[i]) / 100.
 
     # *x_curr* is the current version of arguments; 
-    # this assignemt should produce an array copy 
+    # this assignment should produce an array copy
     x_curr = x0[:]
     logLold = -likelihood(x0, arguments)
 
@@ -1122,6 +1133,7 @@ def optimum_jump(likelihood, x0, arguments,
             xj_old = x_curr[j]
             xj, q = q_lower_upper(xj_old, dx[j], x_lower[j], x_upper[j])
             if xj < x_lower[j] or xj > x_upper[j]:
+                # FIXME: take care of this case
                 print xj
                 print j
                 print xj_old
@@ -1132,6 +1144,7 @@ def optimum_jump(likelihood, x0, arguments,
 
             alpha = min(1, exp(logLnew - logLold + q))
 
+            # rejection step
             if random.random() < alpha:
                 logLold = logLnew
             else:
@@ -1652,6 +1665,7 @@ class ABmodelGUI(HasTraits):
                                               , report)
             #------------------------------------
 
+            # log run results
             if modelnumber == 1:
                 ffile.write(
                     ' Thetas: ' + array_format(Res[j, 0:8], '%4.3f ') + '\n')
@@ -1684,7 +1698,7 @@ class ABmodelGUI(HasTraits):
 
 
         #--------------------------------------------------------------------------
-        # --------------- save mea-data -------------------------------------------
+        # --------------- save meta-data -------------------------------------------
         save_metadata(filename, originaldata, annotators, codes, n, omegas,
                       report)
         #--------------------------------------------------------------------------
@@ -1723,6 +1737,7 @@ class ABmodelGUI(HasTraits):
             if cmp(report, 'Nothing') != 0:
                 print string_wrap('**Preparing to compute credible intervals**',
                                   4)
+            # all parameters are probabilities, i.e. between 0 and 1
             x_upper = zeros(len(x0), float) + 1.
             x_lower = zeros(len(x0), float)
 
