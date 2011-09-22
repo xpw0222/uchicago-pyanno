@@ -171,7 +171,7 @@ class ModelBt(object):
         pf = self._pattern_frequencies(theta_triplet)
         l += (counts_triplet * sp.log(pf)).sum()
 
-        return -l
+        return l
 
 
     def _log_likelihood_counts(self, counts):
