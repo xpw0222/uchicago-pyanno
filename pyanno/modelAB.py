@@ -73,6 +73,8 @@ from enthought.traits.api import HasTraits, Str, Int, Range, Bool,\
 from enthought.traits.ui.api import View, Item, Group, Handler
 from enthought.traits.ui.menu import CancelButton, ApplyButton, Action
 
+from pyanno.util import log_beta_pdf
+
 #========================================================
 #========================================================
 #                Model Bt
@@ -173,6 +175,7 @@ def _patternFrequenciesBt(dim, gam, t, v_ijk_combinations):
 
 
 #-------------------------------------------------------
+_v_ijk_combinations = None
 def likeBt(x, data, dim, usepriors):
     """Compute the log likelihood of data for one triplet of annotators.
 
@@ -197,12 +200,9 @@ def likeBt(x, data, dim, usepriors):
     if min(min(gam), min(t)) < 0.0 or max(max(gam), max(t)) > 1.0:
         return Inf
 
-    # TODO: replace log(beta) with expression using scipy.special.betaln
     if usepriors == 1:
         # if requested, add prior over theta to log likelihood
-        l = (log(scipy.stats.beta.pdf(t[0], 2, 1))
-             + log(scipy.stats.beta.pdf(t[1], 2, 1))
-             + log(scipy.stats.beta.pdf(t[2], 2, 1)))
+        l = log_beta_pdf(t, 2, 1).sum()
     else:
         l = 0.0
 
@@ -213,9 +213,13 @@ def likeBt(x, data, dim, usepriors):
     # where n is n-th annotation of triplet {ijk}]
 
     # list of all possible combinations of v_i, v_j, v_k elements
-    v_ijk_combinations = np.array([i for i in np.ndindex(dim,dim,dim)])
+    # FIXME: will be a private attribute in the ModelBt class
+    # FIXME: make it a dictionary with key 'dim'
+    global _v_ijk_combinations
+    if _v_ijk_combinations is None:
+        _v_ijk_combinations = np.array([i for i in np.ndindex(dim,dim,dim)])
     # compute P( v_{ijk} | params )
-    pf = _patternFrequenciesBt(dim, gam, t, v_ijk_combinations)
+    pf = _patternFrequenciesBt(dim, gam, t, _v_ijk_combinations)
 
     l += (data * sp.log(pf)).sum()
 

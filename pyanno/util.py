@@ -6,6 +6,14 @@ def random_categorical(distr, nsamples):
     cumulative = distr.cumsum()
     return cumulative.searchsorted(np.random.random(nsamples))
 
+
+def log_beta_pdf(x, a, b):
+    """Return the natural logarithm of the Beta(a,b) distribution at x."""
+    log_gamma = sp.special.gammaln
+    return (log_gamma(a+b) - log_gamma(a) - log_gamma(b)
+            + (a-1.)*sp.log(x) + (b-1.)*sp.log(1.-x))
+
+
 def alloc_vec(N,x=0.0):
     result = []
     n = 0
