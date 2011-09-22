@@ -1,7 +1,8 @@
 """Definition of model B-with-theta."""
 
 import numpy as np
-from pyanno.modelAB import random_startBt8, likeBt8, compute_counts
+import scipy.optimize
+from pyanno.modelAB import random_startBt8, likeBt8, compute_counts, estimateOmegas8
 from pyanno.util import (random_categorical,
                          warn_missing_vals, normalize, log_beta_pdf)
 
@@ -50,16 +51,26 @@ class ModelBt(object):
         """
 
         if gamma is None:
-            beta = 2.*np.ones((nclasses,))
-            gamma = np.random.dirichlet(beta)
+            gamma = ModelBt._random_gamma(nclasses)
 
         if theta is None:
             nannotators = 8
-            theta = np.random.uniform(low=0.6, high=0.9,
-                                      size=(nannotators,))
+            theta = ModelBt._random_theta(nannotators)
 
         model = ModelBt(nclasses, nitems, gamma, theta, use_priors, use_omegas)
         return model
+
+
+    @staticmethod
+    def _random_gamma(nclasses):
+        beta = 2.*np.ones((nclasses,))
+        return np.random.dirichlet(beta)
+
+
+    @staticmethod
+    def _random_theta(nannotators):
+        return np.random.uniform(low=0.6, high=0.95,
+                                 size=(nannotators,))
 
 
     def generate_labels(self):
@@ -101,20 +112,37 @@ class ModelBt(object):
         nclasses = self.nclasses
 
         counts = compute_counts(annotations, self.nclasses)
-        arguments = ((counts, nclasses, self.use_priors),)
-        x0 = random_startBt8(nclasses, self.use_omegas,
-                             counts, report='Everything')
+        params0 = self._random_initial_parameters(counts)
+
+        # wrap log likelihood function to give it to optimize.fmin
+        _llhood_counts = self._log_likelihood_counts
+        def _wrap_llhood(params):
+            self.gamma[:nclasses-1] = params[:nclasses-1]
+            self.gamma[-1] = 1. - self.gamma[:nclasses-1].sum()
+            self.theta = params[nclasses-1:]
+            # minimize *negative* likelihood
+            return - _llhood_counts(counts)
+
         # TODO: use gradient, constrained optimization
-        # TODO: remember to switch the sign when moving to new likelihood functions
-        x_best = np.optimize.fmin(likeBt8, x0, args=arguments,
-                                  xtol=1e-4, ftol=1e-4,
-                                  disp=True, maxiter=1e+10,
-                                  maxfun=1e+30)
-        print 'x_best', x_best
+        params_best = scipy.optimize.fmin(_wrap_llhood, params0,
+                                          xtol=1e-4, ftol=1e-4,
+                                          disp=True, maxiter=1e+10,
+                                          maxfun=1e+30)
+
         # parse arguments and update
-        self.gamma[:nclasses-1] = x_best[:nclasses-1]
+        self.gamma[:nclasses-1] = params_best[:nclasses-1]
         self.gamma[-1] = 1. - self.gamma[:nclasses-1].sum()
-        self.theta = x_best[nclasses-1:]
+        self.theta = params_best[nclasses-1:]
+
+
+    def _random_initial_parameters(self, counts):
+        if self.use_omegas:
+            gamma = estimateOmegas8(counts, self.nclasses, 'Everything')
+        else:
+            gamma = ModelBt._random_gamma(self.nclasses)
+
+        theta = ModelBt._random_theta(self.nannotators)
+        return np.r_[gamma[:-1], theta]
 
 
     def log_likelihood(self, annotations):
