@@ -1,18 +1,23 @@
-import scipy as sp
-
+import numpy as np
+import scipy.special
 
 def random_categorical(distr, nsamples):
     """Return an array of samples from a categorical distribution."""
-    assert sp.allclose(distr.sum(), 1., atol=1e-8)
+    assert np.allclose(distr.sum(), 1., atol=1e-8)
     cumulative = distr.cumsum()
-    return cumulative.searchsorted(sp.random.random(nsamples))
+    return cumulative.searchsorted(np.random.random(nsamples))
+
+
+def log0(x):
+    """Robust 'entropy' logarithm: log(0.) = 0."""
+    return np.where(x==0., 0., np.log(x))
 
 
 def log_beta_pdf(x, a, b):
     """Return the natural logarithm of the Beta(a,b) distribution at x."""
-    log_gamma = sp.special.gammaln
+    log_gamma = scipy.special.gammaln
     return (log_gamma(a+b) - log_gamma(a) - log_gamma(b)
-            + (a-1.)*sp.log(x) + (b-1.)*sp.log(1.-x))
+            + (a-1.)*log0(x) + (b-1.)*log0(1.-x))
 
 
 def alloc_vec(N,x=0.0):
@@ -104,20 +109,20 @@ def prob_norm(theta):
 
 def normalize(x, dtype=float):
     """Returns a normalized distribution (sums to 1.0)."""
-    x = sp.asarray(x, dtype=dtype)
+    x = np.asarray(x, dtype=dtype)
     z = x.sum()
     if z <= 0:
-        x = sp.ones_like(x)
+        x = np.ones_like(x)
     return x / x.sum()
 
 
 def create_band_matrix(shape, diagonal_elements):
-    diagonal_elements = sp.asarray(diagonal_elements)
+    diagonal_elements = np.asarray(diagonal_elements)
     def diag(i,j):
-        x = sp.absolute(i-j)
-        x = sp.minimum(diagonal_elements.shape[0]-1, x).astype(int)
+        x = np.absolute(i-j)
+        x = np.minimum(diagonal_elements.shape[0]-1, x).astype(int)
         return diagonal_elements[x]
-    return sp.fromfunction(diag, shape)
+    return np.fromfunction(diag, shape)
 
 
 def warn_missing_vals(varname,xs):
