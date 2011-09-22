@@ -84,6 +84,7 @@ class ModelBt(object):
         counts = compute_counts(annotations, self.nclasses)
         arguments = ((counts, nclasses, use_priors),)
         x0 = random_startBt8(nclasses, use_omegas, counts, report='Everything')
+        # TODO: use gradient, constrained optimization
         x_best = sp.optimize.fmin(likeBt8, x0, args=arguments,
                                   xtol=1e-4, ftol=1e-4,
                                   disp=True, maxiter=1e+10,
