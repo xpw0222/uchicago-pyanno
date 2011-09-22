@@ -105,6 +105,7 @@ class ModelBt(object):
         x0 = random_startBt8(nclasses, self.use_omegas,
                              counts, report='Everything')
         # TODO: use gradient, constrained optimization
+        # TODO: remember to switch the sign when moving to new likelihood functions
         x_best = sp.optimize.fmin(likeBt8, x0, args=arguments,
                                   xtol=1e-4, ftol=1e-4,
                                   disp=True, maxiter=1e+10,
@@ -127,6 +128,8 @@ class ModelBt(object):
         nclasses = self.nclasses
         # list of all possible combinations of v_i, v_j, v_k elements
         v_ijk_combinations = _get_triplet_combinations(nclasses)
+
+        # P( v_{ijk} | params ) = \sum_psi P( v_{ijk} | psi, params ) P( psi )
 
         pf = 0.
         not_theta = (1.-theta_triplet) / (nclasses-1.)
@@ -163,7 +166,7 @@ class ModelBt(object):
 
         # log \prod_n P(v_{ijk}^{n} | params)
         # = \sum_n log P(v_{ijk}^{n} | params)
-        # = \sum_v_{ijk}  count(v_{ijk}) P( v_{ijk} | params )
+        # = \sum_v_{ijk}  count(v_{ijk}) log P( v_{ijk} | params )
         #
         # where n is n-th annotation of triplet {ijk}]
 
