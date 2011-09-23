@@ -80,152 +80,6 @@ from pyanno.util import log_beta_pdf, compute_counts
 #========================================================
 #                Model Bt
 #--------------------------------------------------------
-def random_startBt8(dim, alphaslikeomegas, counts, report):
-    """Returns a random initial set of parameters.
-
-    Input:
-    dim -- number of annotation values
-    alphaslikeomega -- use omegas; 0: False, 1: True
-    counts -- input data
-    report -- verbosity level; one of 'Essentials', 'Everything', 'Nothing'
-
-    Output:
-    x -- array of initial, random parameters
-         dim-1 + 8 parameters:
-           dim-1 are the parameters gamma_i, i.e. P(label=i)
-                 the missing one is computed as 1-sum(gamma_1:dim-1)
-           8 are the parameters theta_i
-    """
-    x = sp.zeros((dim - 1) + 8, float)
-    ii = 0
-
-    if alphaslikeomegas == 0:
-        # don't use omegas
-        tmp = sp.random.rand(dim)
-        tmp.sort()
-
-        for i in range(1, dim):
-            x[ii] = tmp[i] - tmp[i - 1]
-            ii += 1
-
-    else:
-        omegas = array(estimateOmegas8(counts, dim, report), float)
-        x[0:dim - 1] = omegas[0:dim - 1]
-        ii = dim - 1
-
-    for k in range(8):
-        x[ii] = 0.95 + random.random() * 0.05
-        ii += 1
-
-    if cmp(report, 'Nothing') != 0:
-        print "Start:" + str(x)
-
-    return x
-
-
-#--------------------------------------------------------
-#
-def likeBt8(x, arguments):
-    """Log-likelihood of B-with-theta model, for 3 annotators, 8 annotations.
-
-    Input:
-    x -- current model parameters
-    arguments -- (counts, dim, usepriors)
-                 counts is the input data in count format
-
-    Output:
-    l -- log-likelihood
-    """
-    ind = sp.array([[0, 1, 2],
-                    [1, 2, 3],
-                    [2, 3, 4],
-                    [3, 4, 5],
-                    [4, 5, 6],
-                    [5, 6, 7],
-                    [0, 6, 7],
-                    [0, 1, 7]], dtype=int)
-
-    counts, dim, usepriors = arguments
-
-    l = 0
-    # xx holds the 3 gamma parameters and 3 parameters for each combination
-    # of annotators
-    xx = sp.zeros(dim-1 + 3, dtype=float)
-    xx[0:dim-1] = x[0:dim-1]
-    # loop over the 8 combinations of annotators
-    for i in range(8):
-        param_indices = ind[i,:] + dim - 1
-        xx[dim-1:dim+2] = x[param_indices]
-        l += likeBt(xx, counts[:,i], dim, usepriors)
-
-    return l
-
-
-#--------------------------------------------------------
-def _patternFrequenciesBt(dim, gam, t, v_ijk_combinations):
-    """Compute vector of P(v_{ijk} | params) for each combination of v_{ijk}."""
-    pf = 0.
-    not_theta = (1.-t) / (dim-1.)
-    for psi in range(dim):
-        p_v_ijk_given_psi = np.empty_like(v_ijk_combinations, dtype=float)
-        for j in range(3):
-            p_v_ijk_given_psi[:,j] = np.where(v_ijk_combinations[:,j]==psi,
-                                              t[j], not_theta[j])
-        pf += p_v_ijk_given_psi.prod(1) * gam[psi]
-    return pf
-
-
-#-------------------------------------------------------
-_v_ijk_combinations = None
-def likeBt(x, data, dim, usepriors):
-    """Compute the log likelihood of data for one triplet of annotators.
-
-    Input:
-    x -- model parameters (for one triplet of annotators)
-    data -- input data for one combination of annotators in count format
-    dim -- number of different annotation values
-    usepriors -- use prior? 0: False, 1: True
-    """
-
-    # unpack parameters vector
-
-    # gamma is x, with last element fixed to sum to one
-    gam = sp.zeros(dim, dtype=float)
-    gam[0:dim - 1] = x[0:dim - 1]
-    gam[dim - 1] = 1 - sum(gam[0:dim - 1])
-
-    # only the theta parameters
-    t = x[dim-1:dim+2]
-
-    # TODO: check if it's possible to replace these constraints with bounded optimization
-    if min(min(gam), min(t)) < 0.0 or max(max(gam), max(t)) > 1.0:
-        return Inf
-
-    if usepriors == 1:
-        # if requested, add prior over theta to log likelihood
-        l = log_beta_pdf(t, 2, 1).sum()
-    else:
-        l = 0.0
-
-    # log \prod_n P(v_{ijk}^{n} | params)
-    # = \sum_n log P(v_{ijk}^{n} | params)
-    # = \sum_v_{ijk}  count(v_{ijk}) P( v_{ijk} | params )
-    #
-    # where n is n-th annotation of triplet {ijk}]
-
-    # list of all possible combinations of v_i, v_j, v_k elements
-    # FIXME: will be a private attribute in the ModelBt class
-    # FIXME: make it a dictionary with key 'dim'
-    global _v_ijk_combinations
-    if _v_ijk_combinations is None:
-        _v_ijk_combinations = np.array([i for i in np.ndindex(dim,dim,dim)])
-    # compute P( v_{ijk} | params )
-    pf = _patternFrequenciesBt(dim, gam, t, _v_ijk_combinations)
-
-    l += (data * sp.log(pf)).sum()
-
-
-    return -l
 
 
 #-------------------------------------------------------
@@ -959,7 +813,7 @@ def plot_annotators(aa, annotators, n, filename):
         ttx = annotators
 
     xticks(arange(8), ttx)
-    #show()
+    show()
     return m, dd, ii
 
 
@@ -1584,15 +1438,12 @@ class ABmodelGUI(HasTraits):
                 FF[j] = -likeA8(x_best, arguments1)
             else:
                 # model B
-                arguments = ((data, dim, 1),)
-                arguments1 = (data, dim, 1)
-                x0 = random_startBt8(dim, useomegas, data, report)
-                x_best = scipy.optimize.fmin(likeBt8,\
-                                             x0, args=arguments,\
-                                             xtol=1e-8, ftol=1e-8,\
-                                             disp=False, maxiter=1e+10,
-                                             maxfun=1e+30)
-                FF[j] = -likeBt8(x_best, arguments1)
+                model = ModelBt.random_model(dim, mat.shape[0],
+                                             use_priors=use_priors,
+                                             use_omegas=use_omegas)
+                model.mle(mat)
+                x_best = model._params_to_vector(model.gamma, model.theta)
+                FF[j] = model.log_likelihood(mat)
 
             Res[j, :] = x_best[:]
             toc = time.time()
