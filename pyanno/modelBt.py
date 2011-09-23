@@ -35,6 +35,7 @@ class ModelBt(object):
         self.use_omegas = use_omegas
 
 
+    # TODO rename random_model to something more meaningful
     @staticmethod
     def random_model(nclasses, nitems,
                      gamma=None, theta=None,
