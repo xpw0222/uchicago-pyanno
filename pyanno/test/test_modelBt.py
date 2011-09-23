@@ -4,7 +4,7 @@ from numpy import testing
 from pyanno.modelBt import ModelBt
 
 
-class TestModelB(unittest.TestCase):
+class TestModelBt(unittest.TestCase):
 
     def test_mle_estimation(self):
         # test simple model, check that we get to global optimum
