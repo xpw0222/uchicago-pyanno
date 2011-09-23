@@ -129,3 +129,62 @@ def warn_missing_vals(varname,xs):
     missing = set(xs) - set(range(max(xs)+1))
     if len(missing) > 0:
         print "Missing values in ",varname,"=",missing
+
+
+# TODO clean up and simplify and rename
+def compute_counts(annotations, nclasses):
+    """Transform annotation data in counts format.
+
+    At the moment, it is hard coded for 8 annotators, 3 annotators active at
+    any time.
+
+    Input:
+    annotations -- Input data (integer array, nitems x 8)
+    nclasses -- number of annotation values (# classes)
+
+    Ouput:
+    data -- data[i,j] is the number of times the combination of annotators
+             number `j` voted according to pattern `i`
+             (integer array, nclasses^3 x 8)
+    """
+    index = np.array([[0, 1, 2],
+        [1, 2, 3],
+        [2, 3, 4],
+        [3, 4, 5],
+        [4, 5, 6],
+        [5, 6, 7],
+        [0, 6, 7],
+        [0, 1, 7]], int)
+    m = annotations.shape[0]
+    n = annotations.shape[1]
+    annotations = np.asarray(annotations, dtype=int)
+
+    assert n==8, 'Strange: ' + str(n) + 'annotator number !!!'
+
+    # compute counts of 3-annotator patterns for 8 triplets of annotators
+    data = np.zeros((nclasses ** 3, 8), dtype=int)
+
+    # transform each triple of annotations into a code in base `nclasses`
+    for i in range(m):
+        ind = np.where(annotations[i, :] >= 0)
+
+        code = annotations[i, ind[0][0]] * (nclasses ** 2) +\
+               annotations[i, ind[0][1]] * nclasses +\
+               annotations[i, ind[0][2]]
+
+        # o is the index of possible combination of annotators in the loop design
+        o = -100
+        for j in range(8):
+            k = 0
+            for l in range(3):
+                if index[j, l] == ind[0][l]:
+                    k += 1
+            if k == 3:
+                o = j
+
+        if o >= 0:
+            data[code, o] += 1
+        else:
+            print str(code) + " " + str(ind) + " = homeless code"
+
+    return data

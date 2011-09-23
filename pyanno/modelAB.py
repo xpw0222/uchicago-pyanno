@@ -73,7 +73,8 @@ from enthought.traits.api import HasTraits, Str, Int, Range, Bool,\
 from enthought.traits.ui.api import View, Item, Group, Handler
 from enthought.traits.ui.menu import CancelButton, ApplyButton, Action
 
-from pyanno.util import log_beta_pdf
+from pyanno.modelBt import ModelBt
+from pyanno.util import log_beta_pdf, compute_counts
 
 #========================================================
 #========================================================
@@ -960,65 +961,6 @@ def plot_annotators(aa, annotators, n, filename):
     xticks(arange(8), ttx)
     #show()
     return m, dd, ii
-
-
-#----------------------------------------------------------
-def compute_counts(mat, dim):
-    """Transform data in counts format.
-    Input:
-    mat -- Input data (integer array, nitems x 8)
-    dim -- number of annotation values (# classes)
-
-    Ouput:
-    data -- data[i,j] is the number of times the combination of annotators
-             number `j` voted according to pattern `i`
-             (integer array, dim^3 x 8)
-    """
-    index = array([[0, 1, 2],
-        [1, 2, 3],
-        [2, 3, 4],
-        [3, 4, 5],
-        [4, 5, 6],
-        [5, 6, 7],
-        [0, 6, 7],
-        [0, 1, 7]], int)
-    m = mat.shape[0]
-    n = mat.shape[1]
-    mat = sp.asarray(mat, dtype=int)
-
-    if n != 8:
-        print 'Strange: ' + str(n) + 'annotator number !!!'
-
-
-    # compute counts of 3-annotator patterns for 8 triplets
-    # of annotators
-
-    data = sp.zeros([dim ** 3, 8], dtype=int)
-
-    # transform each triple of annotations into a code in base `dim`
-    for i in range(m):
-        ind = sp.where(mat[i, :] >= 0)
-
-        code = mat[i, ind[0][0]] * (dim ** 2) +\
-               mat[i, ind[0][1]] * dim +\
-               mat[i, ind[0][2]]
-
-        # o is the index of possible combination of annotators in the loop design
-        o = -100
-        for j in range(8):
-            k = 0
-            for l in range(3):
-                if index[j, l] == ind[0][l]:
-                    k += 1
-            if k == 3:
-                o = j
-
-        if o >= 0:
-            data[code, o] += 1
-        else:
-            print str(code) + " " + str(ind) + " = homeless code"
-
-    return data
 
 
 #------------------------------------------------------------

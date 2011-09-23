@@ -2,8 +2,7 @@
 
 import numpy as np
 import scipy.optimize
-from pyanno.modelAB import compute_counts
-from pyanno.util import random_categorical, log_beta_pdf
+from pyanno.util import random_categorical, log_beta_pdf, compute_counts
 
 
 # map of `n` to list of all possible triplets of `n` elements
