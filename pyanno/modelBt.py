@@ -116,9 +116,7 @@ class ModelBt(object):
         # wrap log likelihood function to give it to optimize.fmin
         _llhood_counts = self._log_likelihood_counts
         def _wrap_llhood(params):
-            self.gamma[:nclasses-1] = params[:nclasses-1]
-            self.gamma[-1] = 1. - self.gamma[:nclasses-1].sum()
-            self.theta = params[nclasses-1:]
+            self.gamma, self.theta = self._vector_to_params(params)
             # minimize *negative* likelihood
             return - _llhood_counts(counts)
 
@@ -129,9 +127,7 @@ class ModelBt(object):
                                           maxfun=1e+30)
 
         # parse arguments and update
-        self.gamma[:nclasses-1] = params_best[:nclasses-1]
-        self.gamma[-1] = 1. - self.gamma[:nclasses-1].sum()
-        self.theta = params_best[nclasses-1:]
+        self.gamma, self.theta = self._vector_to_params(params_best)
 
 
     def _random_initial_parameters(self, annotations):
@@ -142,7 +138,28 @@ class ModelBt(object):
             gamma = ModelBt._random_gamma(self.nclasses)
 
         theta = ModelBt._random_theta(self.nannotators)
+        return self._params_to_vector(gamma, theta)
+
+
+    def _params_to_vector(self, gamma, theta):
+        """Convert the tuple (gamma, theta) to a parameters vector.
+
+        Used to interface with the optimization routines.
+        """
         return np.r_[gamma[:-1], theta]
+
+
+    def _vector_to_params(self, params):
+        """Convert a parmeters vector to (gamma, theta) tuple.
+
+        Used to interface with the optimization routines.
+        """
+        nclasses = self.nclasses
+        gamma = np.zeros((nclasses,))
+        gamma[:nclasses-1] = params[:nclasses-1]
+        gamma[-1] = 1. - gamma[:nclasses-1].sum()
+        theta = params[nclasses-1:]
+        return gamma, theta
 
 
     def log_likelihood(self, annotations):
