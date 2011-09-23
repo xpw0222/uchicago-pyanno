@@ -29,7 +29,7 @@ class TestModelBt(unittest.TestCase):
         # check that log likelihood is maximal at true parameters
         nclasses, nitems = 3, 1500*8
         # create random model and data (this is our ground truth model)
-        true_model = ModelBt.random_model(nclasses, nitems)
+        true_model = ModelBt.random_model(nclasses, nitems, use_priors=False)
         labels = true_model.generate_labels()
         annotations = true_model.generate_annotations(labels)
 

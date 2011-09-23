@@ -16,6 +16,9 @@ def _get_triplet_combinations(n):
     return _triplet_combinations[n]
 
 
+# ??? use_priors = True switches optimization from ML to MAP -> refactor
+# idea: have mle(annotations) optimize self.log_likelihood, and
+# map(annotations) optimize self.log_likelihood + log P(theta | beta prior)
 class ModelBt(object):
     """
     At the moment the model assumes 1) a total of 8 annontators, and 2) each
