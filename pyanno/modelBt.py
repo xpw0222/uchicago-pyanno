@@ -2,9 +2,8 @@
 
 import numpy as np
 import scipy.optimize
-from pyanno.modelAB import random_startBt8, likeBt8, compute_counts, estimateOmegas8
-from pyanno.util import (random_categorical,
-                         warn_missing_vals, normalize, log_beta_pdf)
+from pyanno.modelAB import compute_counts
+from pyanno.util import random_categorical, log_beta_pdf
 
 
 # map of `n` to list of all possible triplets of `n` elements
@@ -112,7 +111,7 @@ class ModelBt(object):
         nclasses = self.nclasses
 
         counts = compute_counts(annotations, self.nclasses)
-        params0 = self._random_initial_parameters(counts)
+        params0 = self._random_initial_parameters(annotations)
 
         # wrap log likelihood function to give it to optimize.fmin
         _llhood_counts = self._log_likelihood_counts
@@ -135,9 +134,10 @@ class ModelBt(object):
         self.theta = params_best[nclasses-1:]
 
 
-    def _random_initial_parameters(self, counts):
+    def _random_initial_parameters(self, annotations):
         if self.use_omegas:
-            gamma = estimateOmegas8(counts, self.nclasses, 'Everything')
+            # estimate gamma from observed annotations
+            gamma = np.bincount(annotations[annotations!=-1]) / (3.*self.nitems)
         else:
             gamma = ModelBt._random_gamma(self.nclasses)
 
@@ -184,7 +184,8 @@ class ModelBt(object):
         # TODO: check if it's possible to replace these constraints with bounded optimization
         if (min(min(gamma), min(theta_triplet)) < 0.
             or max(max(gamma), max(theta_triplet)) > 1.):
-            return np.inf
+            #return np.inf
+            return -1e20
 
         if self.use_priors:
             # if requested, add prior over theta to log likelihood
