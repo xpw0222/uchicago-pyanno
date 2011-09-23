@@ -975,6 +975,7 @@ def adjustJump(dx, Rej, targetreject, Delta):
                 check = False
         elif Rej[j] == 0:
             dx[j] *= 5.
+            check = False
 
     return dx, check
 
