@@ -265,11 +265,11 @@ def random_startA8(estimatealphas, report):
         x = zeros(8, float)
 
     for i in range(8):
-        x[i] = 0.5 + random.random() * 0.5
+        x[i] = 0.5 + np.random.random() * 0.5
 
     if estimatealphas == 1:
         for i in range(8, 11):
-            x[i] = random.random() / 4.
+            x[i] = np.random.random() / 4.
 
     if cmp(report, 'Nothing') != 0:
         print "Start:" + str(x)
@@ -829,7 +829,7 @@ def q_lower_upper(theta, psi, lower, upper):
     lower, upper -- lower/upper boundaries for the parameter
     psi            -- MCMC max jump size with regard to *theta*
 
-    Output:
+     Output:
     theta
     q              -- log-ratio of probabilities of sampling
                         *new value given old value*
@@ -845,7 +845,7 @@ def q_lower_upper(theta, psi, lower, upper):
         return theta, q
 
     # *a* is a uniform random number
-    a = random.random()
+    a = np.random.random()
 
     # boundary conditions
     if theta == upper:
@@ -867,7 +867,7 @@ def q_lower_upper(theta, psi, lower, upper):
         theta_old = theta
 
         #jump interval is *theta*, choose uniformly
-        theta -= random.random() * min(psi, theta_old - lower)
+        theta -= np.random.random() * min(psi, theta_old - lower)
 
         #transition probability from old to new
         q_old_to_new = -log(min(psi, theta_old - lower))
@@ -879,7 +879,7 @@ def q_lower_upper(theta, psi, lower, upper):
     else:
         # jump interval is *upper_limit*-*theta*, choose uniformly
         theta_old = theta
-        theta += random.random() * min(psi, upper - theta_old)
+        theta += np.random.random() * min(psi, upper - theta_old)
 
         q_old_to_new = -log(min(psi, upper - theta_old))
         q_new_to_old = -log(min(psi, theta - lower))
@@ -941,7 +941,7 @@ def optimum_jump(likelihood, x0, arguments,
             alpha = min(1, exp(logLnew - logLold + q))
 
             # rejection step
-            if random.random() < alpha:
+            if np.random.random() < alpha:
                 logLold = logLnew
             else:
                 Rej[j] += float(1. / recomputing_cycle)
@@ -1004,7 +1004,7 @@ def sample_distribution(likelihood, x0, arguments, dx, Metropolis_jumps, x_lower
 
             alpha = min(1, exp(logLnew - logLold + q))
 
-            if random.random() < alpha:
+            if np.random.random() < alpha:
                 logLold = logLnew
             else:
                 Rej[j] += float(1. / Metropolis_jumps)
@@ -1385,7 +1385,7 @@ class ABmodelGUI(HasTraits):
         usepriors = int(use_priors)
         filename = input_data
 
-        random.seed()
+        np.random.seed()
 
         #------ prepare data ---------------------------------------------------------------------------------
         mat, dim, values, imap, originaldata, annotators, codes, n = check_data(
