@@ -13,6 +13,16 @@ def log0(x):
     return np.where(x==0., 0., np.log(x))
 
 
+def log0_no_warning(x):
+    """Robust 'entropy' logarithm: log(0.) = 0.
+
+    This version does not raise any warning when values of x=0. are first
+    encountered. However, it is slightly more inefficient."""
+    with np.errstate(divide='ignore'):
+        res = np.where(x==0., 0., np.log(x))
+    return res
+
+
 def log_beta_pdf(x, a, b):
     """Return the natural logarithm of the Beta(a,b) distribution at x."""
     log_gamma = scipy.special.gammaln
