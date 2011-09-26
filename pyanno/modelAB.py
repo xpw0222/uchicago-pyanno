@@ -79,45 +79,6 @@ from pyanno.util import compute_counts, string_wrap
 
 # FIXME refactoring breaks the loading of best results over multiple runs
 
-#========================================================
-#========================================================
-#                Model Bt
-#--------------------------------------------------------
-
-
-#-------------------------------------------------------
-def computePosteriorBt(v1, v2, v3, t1, t2, t3, gam, dim):
-    dist = zeros(dim, float)
-
-    for i in range(dim):
-        dist[i] = probGivenTrueB(v1, v2, v3, t1, t2, t3, i, gam[i], dim)
-
-    summa = sum(dist)
-    dist = dist / summa
-
-    return dist
-
-
-#-------------------------------------------------------
-def probGivenTrueB(v1, v2, v3, t1, t2, t3, vt, gamt, dim):
-    if v1 == vt:
-        tt1 = t1
-    else:
-        tt1 = (1 - t1) / (dim - 1)
-
-    if v2 == vt:
-        tt2 = t2
-    else:
-        tt2 = (1 - t2) / (dim - 1)
-
-    if v3 == vt:
-        tt3 = t3
-    else:
-        tt3 = (1 - t3) / (dim - 1)
-
-    return gamt * tt1 * tt2 * tt3
-
-
 #=======================================================
 #=======================================================
 #                Model A
@@ -574,25 +535,25 @@ def num2comma(num):
 
 
 #----------------------------------------------------------
-def format_posteriors(mat, alphas, dimension, thetas, gam, modelnumber):
+def format_posteriors(mat, alphas, dimension, thetas, gam, modelnumber,
+                      model_Bt):
     m = mat.shape[0]
     posteriors = zeros([m, dimension], float)
     mat = array(mat)
     thetas = array(thetas)
 
-    i = 0
-    for row in mat:
-        ind = where(row >= 0)
-        ind1 = where(row < 0)
-        vijk = row[ind]
-        tijk = thetas[ind].copy()
-        if modelnumber == 1:
+    if modelnumber==1:
+        i = 0
+        for row in mat:
+            ind = where(row >= 0)
+            ind1 = where(row < 0)
+            vijk = row[ind]
+            tijk = thetas[ind].copy()
             p = computePosteriorA(vijk, tijk, alphas, dimension)
-        else:
-            p = computePosteriorBt(vijk[0], vijk[1], vijk[2], tijk[0], tijk[1],
-                                   tijk[2], gam, dimension)
-        posteriors[i, :] = p
-        i += 1
+            posteriors[i, :] = p
+            i += 1
+    else:
+        posteriors = model_Bt.infer_labels(mat)
 
     return posteriors
 
@@ -1414,24 +1375,11 @@ class ABmodelGUI(HasTraits):
                     alphas[4] = Res[i, 10]
                     alphas[5] = Res[i, 10]
                     alphas[6] = Res[i, 10]
-                #--------------------------
-                # posteriors for model Bt
-        else:
-            gammas = zeros(dim, float)
-            for i in range(numberOfRuns):
-                if cmp(report, 'Nothing') != 0:
-                    print "Run #" + str(i + 1) + ": " + str(FF[i]) + "|" + str(
-                        Res[i, :])
-
-                if maxL < FF[i]:
-                    maxL = FF[i]
-                    thetas = Res[i, dim - 1:8 + dim - 1]
-                    gammas[0:dim - 1] = Res[i, 0:dim - 1]
-                    gammas[dim - 1] = 1 - sum(gammas[0:dim - 1])
-                    alphas = []
+                model_Bt = None
 
                 # compute posteriors
-        post = format_posteriors(mat, alphas, dim, thetas, gammas, modelnumber)
+        post = format_posteriors(mat, alphas, dim, thetas, gammas, modelnumber,
+                                 model_Bt)
         post = array(post, float)
 
         for i in range(post.shape[0]):
