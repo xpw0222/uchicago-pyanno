@@ -96,5 +96,33 @@ class TestModelBt(unittest.TestCase):
         testing.assert_equal(model.theta, theta_before)
 
 
+    def test_inference(self):
+        # perfect annotation, check that inferred label is correct
+        nclasses, nitems = 3, 50*8
+
+        # create random model (this is our ground truth model)
+        gamma = np.ones((nclasses,)) / float(nclasses)
+        theta = np.ones((8,)) * 0.999
+        true_model = ModelBt(nclasses, nitems, gamma, theta)
+        # create random data
+        labels = true_model.generate_labels()
+        annotations = true_model.generate_annotations(labels)
+
+        posterior = true_model.infer_labels(annotations)
+        inferred = posterior.argmax(1)
+
+        testing.assert_equal(inferred, labels)
+        self.assertTrue(np.all(posterior[np.arange(nitems),inferred] > 0.999))
+
+        # at chance annotation, disagreeing annotators: get back prior
+        gamma = ModelBt._random_gamma(nclasses)
+        theta = np.ones((8,)) / float(nclasses)
+        model = ModelBt(nclasses, nitems, gamma, theta)
+
+        data = np.array([[-1, 0, 1, 2, -1, -1, -1, -1,]])
+        testing.assert_almost_equal(np.squeeze(model.infer_labels(data)),
+                                    model.gamma, 6)
+
+
 if __name__ == '__main__':
     unittest.main()

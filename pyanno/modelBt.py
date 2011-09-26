@@ -303,3 +303,34 @@ class ModelBt(object):
             # reset parameters
             self.gamma, self.theta = save_params
 
+
+    # ---- sampling posterior over parameters
+
+    def infer_labels(self, annotations):
+        """Infer posterior distribution over true labels."""
+        nitems = annotations.shape[0]
+        gamma = self.gamma
+        nclasses = self.nclasses
+
+        # get indices of annotators active in each row
+        valid_entries = (annotations > -1).nonzero()
+        annotator_indices = np.reshape(valid_entries[1],
+            (nitems, self.annotators_per_item))
+        valid_annotations = annotations[valid_entries]
+        valid_annotations = np.reshape(valid_annotations,
+            (nitems, self.annotators_per_item))
+
+        # thetas of active annotators
+        theta_equal = self.theta[annotator_indices]
+        theta_not_equal = (1. - theta_equal) / (nclasses - 1.)
+
+        # compute posterior over psi
+        psi_distr = np.zeros((nitems, nclasses))
+        for psi in xrange(nclasses):
+            tmp = np.where(valid_annotations == psi,
+                           theta_equal, theta_not_equal)
+            psi_distr[:,psi] = gamma[psi] * tmp.prod(1)
+
+        # normalize distribution
+        psi_distr /= psi_distr.sum(1)[:,np.newaxis]
+        return psi_distr
