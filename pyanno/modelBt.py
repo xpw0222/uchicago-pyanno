@@ -2,6 +2,7 @@
 
 import numpy as np
 import scipy.optimize
+from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import random_categorical, log_beta_pdf, compute_counts
 
 
@@ -37,6 +38,8 @@ class ModelBt(object):
         self.use_priors = use_priors
         self.use_omegas = use_omegas
 
+
+    # ---- model and data generation methods
 
     # TODO rename random_model to something more meaningful
     @staticmethod
@@ -110,6 +113,8 @@ class ModelBt(object):
         return distr
 
 
+    # ---- Parameters estimation methods
+
     def mle(self, annotations):
         nclasses = self.nclasses
 
@@ -164,6 +169,8 @@ class ModelBt(object):
         theta = params[nclasses-1:]
         return gamma, theta
 
+
+    # ---- model likelihood
 
     def log_likelihood(self, annotations):
         """Compute the log likelihood of annotations given the model."""
@@ -250,3 +257,52 @@ class ModelBt(object):
                                                   not_theta[j])
             pf += p_v_ijk_given_psi.prod(1) * gamma[psi]
         return pf
+
+
+    # ---- sampling posterior over parameters
+
+    # TODO arguments for burn-in, thinning
+    def sample_posterior_over_theta(self, annotations, nsamples,
+                                    target_rejection_rate = 0.3,
+                                    rejection_rate_tolerance = 0.05,
+                                    step_optimization_nsamples = 500,
+                                    adjust_step_every = 100):
+        """Return samples from posterior distribution over theta given data.
+        """
+        # optimize step size
+        counts = compute_counts(annotations, self.nclasses)
+
+        # wrap log likelihood function to give it to optimum_jump and
+        # sample_distribution
+        _llhood_counts = self._log_likelihood_counts
+        def _wrap_llhood(params, counts):
+            self.theta = params
+            # minimize *negative* likelihood
+            return _llhood_counts(counts)
+
+        # TODO this save-reset is rather ugly, refactor: create copy of
+        #      model and sample over it
+        # save internal parameters to reset at the end of sampling
+        save_params = (self.gamma, self.theta)
+        try:
+            # compute optimal step size for given target rejection rate
+            params_start = self.theta.copy()
+            params_upper = np.ones((self.nannotators,))
+            params_lower = np.zeros((self.nannotators,))
+            step = optimum_jump(_wrap_llhood, params_start, counts,
+                                params_upper, params_lower,
+                                step_optimization_nsamples,
+                                adjust_step_every,
+                                target_rejection_rate,
+                                rejection_rate_tolerance, 'Everything')
+
+            # draw samples from posterior distribution over theta
+            samples = sample_distribution(_wrap_llhood, params_start, counts,
+                                          step, nsamples,
+                                          params_lower, params_upper,
+                                          'Everything')
+            return samples
+        finally:
+            # reset parameters
+            self.gamma, self.theta = save_params
+
