@@ -7,11 +7,21 @@ from pyanno.util import string_wrap
 
 
 # TODO need to change sign convention for likelihood: positive, not negative
+# TODO add parameters for burn-in, thinning
+# ??? vectorizing this and optimum_jump gives a 10x speedup
+#     (evaluation only after sampling the *full* parameters space)
 def sample_distribution(likelihood, x0, arguments, dx,
                         nsamples, x_lower, x_upper, report):
     """General-purpose sampling routine for MCMC sampling.
 
     Draw samples from a distribution given its unnormalized log likelihood.
+
+    Input:
+    likelihood -- unnormalized log likelihood function. the function accepts two
+                   arguments: likelihood(params, values); `params` is a vector
+                   containing a vector of parameters that will be sampled over
+                   by this function; `values` contains the observed values.
+                  The function should return the *negative* log likelihood
     """
     m = len(x0)
     samples = np.zeros((nsamples, m), dtype=float)
@@ -134,6 +144,7 @@ def _adjust_jump(dx, rejection, target_reject_rate, delta):
     return dx, check
 
 
+# TODO vectorize this to sample from all dimensions at once
 def q_lower_upper(theta, psi, lower, upper):
     """Returns a sample from the proposal distribution.
 
@@ -149,7 +160,6 @@ def q_lower_upper(theta, psi, lower, upper):
                                    to
                         *old value given new value*
     """
-    q = 0
 
     if theta < lower or theta > upper:
         raise ValueError('Parameter values out or range')
