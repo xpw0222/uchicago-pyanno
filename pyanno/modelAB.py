@@ -1234,12 +1234,12 @@ class ABmodelGUI(HasTraits):
                 FF[j] = -likeA8(x_best, arguments1)
             else:
                 # model B
-                model = ModelBt.random_model(dim, mat.shape[0],
+                model_Bt = ModelBt.random_model(dim, mat.shape[0],
                                              use_priors=use_priors,
                                              use_omegas=use_omegas)
-                model.mle(mat)
-                x_best = model._params_to_vector(model.gamma, model.theta)
-                FF[j] = model.log_likelihood(mat)
+                model_Bt.mle(mat)
+                x_best = model_Bt._params_to_vector(model_Bt.gamma, model_Bt.theta)
+                FF[j] = model_Bt.log_likelihood(mat)
 
             Res[j, :] = x_best[:]
             toc = time.time()
@@ -1331,27 +1331,34 @@ class ABmodelGUI(HasTraits):
             x_lower = zeros(len(x0), float)
 
             if modelnumber == 1:
-                likelihood = -likeA8
+                likelihood = lambda x, arguments: -likeA8(x, arguments)
                 arguments = (alphas, omegas, data, 1, estimatealphas, dim)
+
+                if cmp(report, 'Nothing') != 0:
+                    print string_wrap(
+                        'Optimizing jump (to get closer to the target rejection)...'
+                        , 4)
+                dx = optimum_jump(likelihood, x0, arguments,
+                                  x_upper, x_lower,
+                                  evaluation_jumps, recomputing_cycle, targetreject,
+                                  Delta, report)
+
+                if cmp(report, 'Nothing') != 0:
+                    print string_wrap('**Computing credible intervals**', 4)
+
+                Samples = sample_distribution(likelihood, x0, arguments,
+                                              dx, Metropolis_jumps, x_lower, x_upper
+                                              , report)
             else:
-                likelihood = -likeBt8
-                arguments = (data, dim, 1)
+                if cmp(report, 'Nothing') != 0:
+                    print string_wrap('**Computing credible intervals**', 4)
+                Samples = model_Bt.sample_posterior_over_theta(
+                    mat, Metropolis_jumps,
+                    target_rejection_rate = targetreject,
+                    rejection_rate_tolerance = Delta,
+                    step_optimization_nsamples = evaluation_jumps,
+                    adjust_step_every = recomputing_cycle)
 
-            if cmp(report, 'Nothing') != 0:
-                print string_wrap(
-                    'Optimizing jump (to get closer to the target rejection)...'
-                    , 4)
-            dx = optimum_jump(likelihood, x0, arguments,
-                              x_upper, x_lower,
-                              evaluation_jumps, recomputing_cycle, targetreject,
-                              Delta, report)
-
-            if cmp(report, 'Nothing') != 0:
-                print string_wrap('**Computing credible intervals**', 4)
-
-            Samples = sample_distribution(likelihood, x0, arguments,
-                                          dx, Metropolis_jumps, x_lower, x_upper
-                                          , report)
             print "Save samples!!!"
             fi = filename.split('.')
             filearray = fi[0] + modelname + '_' + str(
