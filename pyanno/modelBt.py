@@ -2,6 +2,7 @@
 
 import numpy as np
 import scipy.optimize
+from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import random_categorical, log_beta_pdf, compute_counts
 
 
@@ -37,6 +38,8 @@ class ModelBt(object):
         self.use_priors = use_priors
         self.use_omegas = use_omegas
 
+
+    # ---- model and data generation methods
 
     # TODO rename random_model to something more meaningful
     @staticmethod
@@ -110,6 +113,8 @@ class ModelBt(object):
         return distr
 
 
+    # ---- Parameters estimation methods
+
     def mle(self, annotations):
         nclasses = self.nclasses
 
@@ -164,6 +169,8 @@ class ModelBt(object):
         theta = params[nclasses-1:]
         return gamma, theta
 
+
+    # ---- model likelihood
 
     def log_likelihood(self, annotations):
         """Compute the log likelihood of annotations given the model."""
@@ -228,9 +235,6 @@ class ModelBt(object):
 
     def _pattern_frequencies(self, theta_triplet):
         """Compute vector of P(v_{ijk}|params) for each combination of v_{ijk}.
-
-        The arguments gamma, theta, and v_ijk_combinations are called to
-        avoid to look them up globally every time.
         """
 
         gamma = self.gamma
@@ -250,3 +254,83 @@ class ModelBt(object):
                                                   not_theta[j])
             pf += p_v_ijk_given_psi.prod(1) * gamma[psi]
         return pf
+
+
+    # ---- sampling posterior over parameters
+
+    # TODO arguments for burn-in, thinning
+    def sample_posterior_over_theta(self, annotations, nsamples,
+                                    target_rejection_rate = 0.3,
+                                    rejection_rate_tolerance = 0.05,
+                                    step_optimization_nsamples = 500,
+                                    adjust_step_every = 100):
+        """Return samples from posterior distribution over theta given data.
+        """
+        # optimize step size
+        counts = compute_counts(annotations, self.nclasses)
+
+        # wrap log likelihood function to give it to optimum_jump and
+        # sample_distribution
+        _llhood_counts = self._log_likelihood_counts
+        def _wrap_llhood(params, counts):
+            self.theta = params
+            # minimize *negative* likelihood
+            return _llhood_counts(counts)
+
+        # TODO this save-reset is rather ugly, refactor: create copy of
+        #      model and sample over it
+        # save internal parameters to reset at the end of sampling
+        save_params = (self.gamma, self.theta)
+        try:
+            # compute optimal step size for given target rejection rate
+            params_start = self.theta.copy()
+            params_upper = np.ones((self.nannotators,))
+            params_lower = np.zeros((self.nannotators,))
+            step = optimum_jump(_wrap_llhood, params_start, counts,
+                                params_upper, params_lower,
+                                step_optimization_nsamples,
+                                adjust_step_every,
+                                target_rejection_rate,
+                                rejection_rate_tolerance, 'Everything')
+
+            # draw samples from posterior distribution over theta
+            samples = sample_distribution(_wrap_llhood, params_start, counts,
+                                          step, nsamples,
+                                          params_lower, params_upper,
+                                          'Everything')
+            return samples
+        finally:
+            # reset parameters
+            self.gamma, self.theta = save_params
+
+
+    # ---- sampling posterior over parameters
+
+    def infer_labels(self, annotations):
+        """Infer posterior distribution over true labels."""
+        nitems = annotations.shape[0]
+        gamma = self.gamma
+        nclasses = self.nclasses
+
+        # get indices of annotators active in each row
+        valid_entries = (annotations > -1).nonzero()
+        annotator_indices = np.reshape(valid_entries[1],
+            (nitems, self.annotators_per_item))
+        valid_annotations = annotations[valid_entries]
+        valid_annotations = np.reshape(valid_annotations,
+            (nitems, self.annotators_per_item))
+
+        # thetas of active annotators
+        theta_equal = self.theta[annotator_indices]
+        theta_not_equal = (1. - theta_equal) / (nclasses - 1.)
+
+        # compute posterior over psi
+        psi_distr = np.zeros((nitems, nclasses))
+        for psi in xrange(nclasses):
+            tmp = np.where(valid_annotations == psi,
+                           theta_equal, theta_not_equal)
+            psi_distr[:,psi] = gamma[psi] * tmp.prod(1)
+
+        # normalize distribution
+        psi_distr /= psi_distr.sum(1)[:,np.newaxis]
+        return psi_distr
