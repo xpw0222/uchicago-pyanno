@@ -198,3 +198,23 @@ def compute_counts(annotations, nclasses):
             print str(code) + " " + str(ind) + " = homeless code"
 
     return data
+
+
+def string_wrap(st, mode):
+    st = str(st)
+
+    if mode == 1:
+        st = "\033[1;29m" + st + "\033[0m"
+    elif mode == 2:
+        st = "\033[1;34m" + st + "\033[0m"
+    elif mode == 3:
+        st = "\033[1;44m" + st + "\033[0m"
+    elif mode == 4:
+        st = "\033[1;35m" + st + "\033[0m"
+    elif mode == 5:
+        st = "\033[1;33;44m" + st + "\033[0m"
+    elif mode == 5:
+        st = "\033[1;47;34m" + st + "\033[0m"
+    else:
+        st = st + ' '
+    return st

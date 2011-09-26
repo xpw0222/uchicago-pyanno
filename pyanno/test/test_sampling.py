@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 from numpy import testing
 import scipy.stats
-from pyanno.modelAB import sample_distribution, optimum_jump
+from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import log_beta_pdf
 
 class TestSampling(unittest.TestCase):
