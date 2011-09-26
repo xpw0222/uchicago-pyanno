@@ -28,7 +28,7 @@ class TestSampling(unittest.TestCase):
             llhood = 0.
             for k in range(nclasses):
                 llhood += log_beta_pdf(values[:,k], a[k], b[k]).sum()
-            return -llhood
+            return llhood
 
         x_lower = np.zeros((nclasses*2,)) + 0.5
         x_upper = np.zeros((nclasses*2,)) + 8.

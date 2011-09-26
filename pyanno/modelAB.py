@@ -1331,10 +1331,10 @@ class ABmodelGUI(HasTraits):
             x_lower = zeros(len(x0), float)
 
             if modelnumber == 1:
-                likelihood = likeA8
+                likelihood = -likeA8
                 arguments = (alphas, omegas, data, 1, estimatealphas, dim)
             else:
-                likelihood = likeBt8
+                likelihood = -likeBt8
                 arguments = (data, dim, 1)
 
             if cmp(report, 'Nothing') != 0:

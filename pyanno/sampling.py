@@ -6,7 +6,6 @@ import numpy as np
 from pyanno.util import string_wrap
 
 
-# TODO need to change sign convention for likelihood: positive, not negative
 # TODO add parameters for burn-in, thinning
 # ??? vectorizing this and optimum_jump gives a 10x speedup
 #     (evaluation only after sampling the *full* parameters space)
@@ -21,12 +20,13 @@ def sample_distribution(likelihood, x0, arguments, dx,
                    arguments: likelihood(params, values); `params` is a vector
                    containing a vector of parameters that will be sampled over
                    by this function; `values` contains the observed values.
-                  The function should return the *negative* log likelihood
+                  The function should return the unnormalized log likelihood
+                  of data given the parameters
     """
     m = len(x0)
     samples = np.zeros((nsamples, m), dtype=float)
     x_curr = x0.copy()
-    llhood = -likelihood(x0, arguments)
+    llhood = likelihood(x0, arguments)
     #rejection = np.zeros((m,), dtype=float)
 
     for i in range(nsamples):
@@ -38,7 +38,7 @@ def sample_distribution(likelihood, x0, arguments, dx,
             xj_old = x_curr[j]
             xj, q = q_lower_upper(xj_old, dx[j], x_lower[j], x_upper[j])
             x_curr[j] = xj
-            llhood_new = -likelihood(x_curr, arguments)
+            llhood_new = likelihood(x_curr, arguments)
 
             # rejection step; reject with probability `alpha`
             alpha = min(1, np.exp(llhood_new - llhood + q))
@@ -67,7 +67,8 @@ def optimum_jump(likelihood, x0, arguments,
                    arguments: likelihood(params, values); `params` is a vector
                    containing a vector of parameters that will be sampled over
                    by this function; `values` contains the observed values.
-                  The function should return the *negative* log likelihood
+                  The function should return the unnormalized log likelihood
+                  of data given the parameters
 
     Output:
     dx -- the final jump size
@@ -82,7 +83,7 @@ def optimum_jump(likelihood, x0, arguments,
 
     # *x_curr* is the current version of arguments
     x_curr = x0.copy()
-    llhood = -likelihood(x0, arguments)
+    llhood = likelihood(x0, arguments)
 
     for i in range(evaluation_jumps):
         for j in range(m):
@@ -92,7 +93,7 @@ def optimum_jump(likelihood, x0, arguments,
                 raise ValueError('Parameter values out or range')
 
             x_curr[j] = xj
-            llhood_new = -likelihood(x_curr, arguments)
+            llhood_new = likelihood(x_curr, arguments)
             alpha = min(1, np.exp(llhood_new - llhood + q))
 
             # rejection step; accept with probability `alpha`
