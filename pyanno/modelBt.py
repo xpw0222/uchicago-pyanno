@@ -235,9 +235,6 @@ class ModelBt(object):
 
     def _pattern_frequencies(self, theta_triplet):
         """Compute vector of P(v_{ijk}|params) for each combination of v_{ijk}.
-
-        The arguments gamma, theta, and v_ijk_combinations are called to
-        avoid to look them up globally every time.
         """
 
         gamma = self.gamma

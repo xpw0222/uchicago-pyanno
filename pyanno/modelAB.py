@@ -76,6 +76,9 @@ from pyanno.modelBt import ModelBt
 from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import compute_counts, string_wrap
 
+
+# FIXME refactoring breaks the loading of best results over multiple runs
+
 #========================================================
 #========================================================
 #                Model Bt
