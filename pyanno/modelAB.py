@@ -433,7 +433,7 @@ def likeA(x, alphas, omegas, counts, usepriors, estimatealphas, dim):
 #----------------------------------------------------------
 def getAlphas(omega):
     n = len(omega)
-    alphas = zeros(8, float)
+    alphas = zeros(7, float)
     # dublet sums
     s2 = zeros(n, float)
     s3 = zeros(n, float)
