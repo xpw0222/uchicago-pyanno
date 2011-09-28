@@ -76,6 +76,8 @@ class ModelA(object):
         self.use_priors = use_priors
 
 
+    # ---- model and data generation methods
+
     @staticmethod
     def random_model(nclasses, theta=None, omega=None,
                      use_priors=True):
@@ -112,6 +114,40 @@ class ModelA(object):
         return np.random.dirichlet(beta)
 
 
+    def generate_annotations(self, nitems):
+        """Generate random annotations given labels."""
+        theta = self.theta
+        nannotators = self.nannotators
+        nitems_per_loop = nitems // nannotators
+
+        annotations = np.empty((nitems, nannotators), dtype=int)
+        annotations.fill(-1)
+
+        # loop over annotator triplets (loop design)
+        for j in range(nannotators):
+            triplet_indices = np.arange(j, j+3) % self.nannotators
+
+            # -- step 1: generate correct / incorrect labels
+
+            # parameters for this triplet
+            theta_triplet = self.theta[triplet_indices]
+            incorrect = self._generate_incorrectness(nitems_per_loop,
+                                                     theta_triplet)
+
+            # -- step 2: generate agreement patterns given correctness
+            # convert boolean correctness into combination indices
+            # (indices as in Table 3)
+            agreement = self._generate_agreement(incorrect)
+
+            # -- step 3: generate annotations
+            annotations[j*nitems_per_loop:(j+1)*nitems_per_loop,
+            triplet_indices] = (
+                self._generate_annotations(agreement)
+                )
+
+        return annotations
+
+
     def _generate_incorrectness(self, n, theta_triplet):
         _rnd = np.random.rand(n, self.annotators_per_item)
         incorrect = _rnd >= theta_triplet
@@ -144,7 +180,7 @@ class ModelA(object):
 
         # convert correctness pattern to index in the A_ijk tensor
         correct_idx = correctness_to_agreement_idx[
-            incorrect[:,0]*1 + incorrect[:,1]*2 + incorrect[:,2]*4]
+                      incorrect[:,0]*1 + incorrect[:,1]*2 + incorrect[:,2]*4]
 
         # the indices stored in `agreement` correspond to agreement patterns
         # as in Table 3: 0=aaa, 1=aaA, 2=aAa, 3=Aaa, 4=Aa@
@@ -173,40 +209,6 @@ class ModelA(object):
             # draw annotation
             compatible_idx = random_categorical(distr, 1)[0]
             annotations[i,:] = compatible[compatible_idx, :]
-        return annotations
-
-
-    def generate_annotations(self, nitems):
-        """Generate random annotations given labels."""
-        theta = self.theta
-        nannotators = self.nannotators
-        nitems_per_loop = nitems // nannotators
-
-        annotations = np.empty((nitems, nannotators), dtype=int)
-        annotations.fill(-1)
-
-        # loop over annotator triplets (loop design)
-        for j in range(nannotators):
-            triplet_indices = np.arange(j, j+3) % self.nannotators
-
-            # -- step 1: generate correct / incorrect labels
-
-            # parameters for this triplet
-            theta_triplet = self.theta[triplet_indices]
-            incorrect = self._generate_incorrectness(nitems_per_loop,
-                                                     theta_triplet)
-
-            # -- step 2: generate agreement patterns given correctness
-            # convert boolean correctness into combination indices
-            # (indices as in Table 3)
-            agreement = self._generate_agreement(incorrect)
-
-            # -- step 3: generate annotations
-            annotations[j*nitems_per_loop:(j+1)*nitems_per_loop,
-                        triplet_indices] = (
-                            self._generate_annotations(agreement)
-                        )
-
         return annotations
 
 
