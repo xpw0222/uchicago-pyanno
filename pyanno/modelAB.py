@@ -1188,14 +1188,14 @@ class ABmodelGUI(HasTraits):
             # optimize parameters by maximizing the log likelihood of the model
             if modelnumber == 1:
                 # model A
-                arguments = ((alphas, omegas, data, 1, estimatealphas, dim),)
-                arguments1 = (alphas, omegas, data, 1, estimatealphas, dim)
-                x0 = random_startA8(estimatealphas, report)
-                x_best = scipy.optimize.fmin(likeA8,
-                                             x0, args=arguments,
-                                             xtol=1e-8, ftol=1e-8, disp=False,
-                                             maxiter=1e+10, maxfun=1e+30)
-                FF[j] = -likeA8(x_best, arguments1)
+                model_A = ModelA.random_model(dim)
+                model_A.mle(mat)
+                if estimate_alphas:
+                    alpha = model_A._compute_alpha()
+                    x_best = np.r_[model_A.theta, [alpha[0], alpha[3], alpha[-1]]]
+                else:
+                    x_best = model_A.theta.copy()
+                FF[j] = model_A.log_likelihood(mat)
             else:
                 # model B
                 model_Bt = ModelBt.random_model(dim, mat.shape[0],
