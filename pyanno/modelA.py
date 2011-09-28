@@ -306,53 +306,67 @@ class ModelA(object):
         if use_prior:
             llhood += log_beta_pdf(theta_triplet, 2., 1.).sum()
 
-
-        # abbreviations
-        thetat = theta_triplet
-        not_thetat = (1.-theta_triplet)
-
         # loop over all possible agreement patterns
         # 0=aaa, 1=aaA, 2=aAa, 3=Aaa, 4=Aa@
 
-        # TODO make more robust by taking logarithms earlier
-        # TODO could be vectorized some more using the A_ijk tensor
         pattern_to_indices = _compatibility_tables(nclasses)
         for pattern in range(5):
             # P( A_ijk | T_ijk ) * P( T_ijk )  , or "alpha * theta triplet"
-            if pattern == 0:  # aaa patterns
-                prob = (thetat.prod() + not_thetat.prod() * alpha[3])
+            prob = self._prob_a_and_t(pattern, theta_triplet, alpha)
 
-            elif pattern == 1:  # aaA patterns
-                prob = (  thetat[0]     * thetat[1]     * not_thetat[2]
-                        + not_thetat[0] * not_thetat[1] * thetat[2]     * alpha[2]
-                        + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[4])
-
-            elif pattern == 2:  # aAa patterns
-                prob = (  thetat[0]     * not_thetat[1] * thetat[2]
-                        + not_thetat[0] * thetat[1]     * not_thetat[2] * alpha[1]
-                        + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[5])
-
-            elif pattern == 3:  # Aaa patterns
-                prob = (  not_thetat[0] * thetat[1]     * thetat[2]
-                        + thetat[0]     * not_thetat[1] * not_thetat[2] * alpha[0]
-                        + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[6])
-
-            elif pattern == 4:  # Aa@ pattern
-                prob = (  not_thetat[0] * not_thetat[1]     * not_thetat[2]
-                           * (1. - alpha[3] - alpha[4] - alpha[5] - alpha[6])
-                        + thetat[0]     * not_thetat[1] * not_thetat[2]
-                           * (1. - alpha[0])
-                        + not_thetat[0] * thetat[1]     * not_thetat[2]
-                           * (1. - alpha[1])
-                        + not_thetat[0] * not_thetat[1] * thetat[2]
-                           * (1. - alpha[2]))
-
+            # P( V_ijk ! A_ijk) * P( A_ijk | T_ijk ) * P( T_ijk )
+            #   = P( V_ijk | A, T, model)
             prob *= beta[pattern]
+
+            # P( V_ijk | model ) = sum over A and T of conditional probability
             indices = pattern_to_indices[pattern]
             count_indices = _triplet_to_counts_index(indices, nclasses)
             llhood += (counts_triplet[count_indices] * np.log(prob)).sum()
 
         return llhood
+
+
+    def _prob_a_and_t(self, pattern, theta_triplet, alpha):
+        # TODO make more robust by taking logarithms earlier
+        # TODO could be vectorized some more using the A_ijk tensor
+        # 0=aaa, 1=aaA, 2=aAa, 3=Aaa, 4=Aa@
+
+        # abbreviations
+        thetat = theta_triplet
+        not_thetat = (1.-theta_triplet)
+
+        if pattern == 0:  # aaa patterns
+            prob = (thetat.prod() + not_thetat.prod() * alpha[3])
+
+        elif pattern == 1:  # aaA patterns
+            prob = (  thetat[0] * thetat[1] * not_thetat[2]
+                      + not_thetat[0] * not_thetat[1] * thetat[2] * alpha[2]
+                      + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[
+                                                                        4])
+
+        elif pattern == 2:  # aAa patterns
+            prob = (  thetat[0] * not_thetat[1] * thetat[2]
+                      + not_thetat[0] * thetat[1] * not_thetat[2] * alpha[1]
+                      + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[
+                                                                        5])
+
+        elif pattern == 3:  # Aaa patterns
+            prob = (  not_thetat[0] * thetat[1] * thetat[2]
+                      + thetat[0] * not_thetat[1] * not_thetat[2] * alpha[0]
+                      + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[
+                                                                        6])
+
+        elif pattern == 4:  # Aa@ pattern
+            prob = (  not_thetat[0] * not_thetat[1] * not_thetat[2]
+                      * (1. - alpha[3] - alpha[4] - alpha[5] - alpha[6])
+                      + thetat[0] * not_thetat[1] * not_thetat[2]
+            * (1. - alpha[0])
+                      + not_thetat[0] * thetat[1] * not_thetat[2]
+            * (1. - alpha[1])
+                      + not_thetat[0] * not_thetat[1] * thetat[2]
+            * (1. - alpha[2]))
+
+        return prob
 
 
     # TODO optimize using outer products
