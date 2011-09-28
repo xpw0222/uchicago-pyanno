@@ -64,22 +64,19 @@ class ModelA(object):
     item is annotated by 3 annotators.
     """
 
-    def __init__(self, nclasses, theta, omega,
-                 use_priors=True):
+    def __init__(self, nclasses, theta, omega):
         self.nclasses = nclasses
         self.nannotators = 8
         # number of annotators rating each item in the loop design
         self.annotators_per_item = 3
         self.theta = theta
         self.omega = omega
-        self.use_priors = use_priors
 
 
     # ---- model and data generation methods
 
     @staticmethod
-    def random_model(nclasses, theta=None, omega=None,
-                     use_priors=True):
+    def random_model(nclasses, theta=None, omega=None):
         """Factory method returning a random model.
 
          Input:
@@ -98,7 +95,7 @@ class ModelA(object):
         if omega is None:
             omega = ModelA._random_omega(nclasses)
 
-        return ModelA(nclasses, theta, omega, use_priors)
+        return ModelA(nclasses, theta, omega)
 
 
     @staticmethod
@@ -213,7 +210,8 @@ class ModelA(object):
 
     # ---- Parameters estimation methods
 
-    def mle(self, annotations, estimate_alpha=False, estimate_omega=True):
+    def mle(self, annotations, estimate_alpha=False, estimate_omega=True,
+            use_prior = True):
         counts = compute_counts(annotations, self.nclasses)
 
         if estimate_omega:
@@ -225,7 +223,7 @@ class ModelA(object):
         def _wrap_lhood(params, arguments):
             return pyanno.modelAB.likeA8(params, arguments)
 
-        arguments = ((alphas, omegas, counts, 1,
+        arguments = ((alphas, omegas, counts, int(use_prior),
                       int(estimate_alpha), self.nclasses),)
         params_start = pyanno.modelAB.random_startA8(int(estimate_alpha), 'Everything')
         params_best = scipy.optimize.fmin(_wrap_lhood,
