@@ -219,10 +219,9 @@ class ModelA(object):
         counts = compute_counts(annotations, self.nclasses)
 
         if estimate_omega:
-            self.omega = pyanno.modelAB.estimateOmegas8(counts, self.nclasses, 'Everything')
-        omegas = self.omega
-        alphas = self._compute_alpha()
-        print 'estimates', alphas
+            # TODO duplication w/ ModelBt
+            self.omega = (np.bincount(annotations[annotations!=-1])
+                          / (3.*annotations.shape[0]))
 
         def _wrap_lhood(params):
             self.theta = params
