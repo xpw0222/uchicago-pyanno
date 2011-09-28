@@ -258,7 +258,15 @@ class ModelA(object):
         This method assumes the data is in counts format.
         """
 
+        # compute alpha and beta (they do not depend on theta)
         alpha = self._compute_alpha()
+        beta = [None]*5
+        pattern_to_indices = _compatibility_tables(self.nclasses)
+        for pattern in range(5):
+            indices = pattern_to_indices[pattern]
+            beta[pattern] = self.omega[indices].prod(1)
+            beta[pattern] /= beta[pattern].sum()
+
         llhood = 0.
         # loop over the 8 combinations of annotators
         for i in range(8):
@@ -270,13 +278,13 @@ class ModelA(object):
             # compute the likelihood for the triplet
             llhood += self._log_likelihood_triplet(counts[:,i],
                                                    theta_triplet,
-                                                   alpha, use_prior)
+                                                   alpha, beta, use_prior)
 
         return llhood
 
 
     def _log_likelihood_triplet(self, counts_triplet, theta_triplet,
-                                alpha, use_prior):
+                                alpha, beta, use_prior):
         """Compute the log likelihood of data for one triplet of annotators.
 
         Input:
@@ -302,7 +310,6 @@ class ModelA(object):
         pattern_to_indices = _compatibility_tables(nclasses)
 
         # TODO make more robust by taking logarithms earlier
-        # TODO betas do not depend on theta, can be pre-computed
 
         # abbreviations
         thetat = theta_triplet
@@ -311,51 +318,41 @@ class ModelA(object):
         # 0=aaa, 1=aaA, 2=aAa, 3=Aaa, 4=Aa@
         # aaa patterns
         indices_aaa = pattern_to_indices[0]
-        beta_aaa = self.omega[indices_aaa].prod(1)
-        beta_aaa /= beta_aaa.sum()
         prob_aaa = ((thetat.prod()
                      + not_thetat.prod() * alpha[3])
-                     * beta_aaa)
+                     * beta[0])
         count_indices = _triplet_to_counts_index(indices_aaa, nclasses)
         llhood += (counts_triplet[count_indices] * np.log(prob_aaa)).sum()
 
         # aaA patterns
         indices_aaA = pattern_to_indices[1]
-        beta_aaA = self.omega[indices_aaA].prod(1)
-        beta_aaA /= beta_aaA.sum()
         prob_aaA = ((  thetat[0]     * thetat[1]     * not_thetat[2]
                      + not_thetat[0] * not_thetat[1] * thetat[2]     * alpha[2]
                      + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[4])
-                    * beta_aaA)
+                    * beta[1])
         count_indices = _triplet_to_counts_index(indices_aaA, nclasses)
         llhood += (counts_triplet[count_indices] * np.log(prob_aaA)).sum()
 
         # aAa patterns
         indices_aAa = pattern_to_indices[2]
-        beta_aAa = self.omega[indices_aAa].prod(1)
-        beta_aAa /= beta_aAa.sum()
         prob_aAa = ((  thetat[0]     * not_thetat[1] * thetat[2]
                      + not_thetat[0] * thetat[1]     * not_thetat[2] * alpha[1]
                      + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[5])
-                    * beta_aAa)
+                    * beta[2])
         count_indices = _triplet_to_counts_index(indices_aAa, nclasses)
         llhood += (counts_triplet[count_indices] * np.log(prob_aAa)).sum()
 
         # aaA patterns
         indices_Aaa = pattern_to_indices[3]
-        beta_Aaa = self.omega[indices_Aaa].prod(1)
-        beta_Aaa /= beta_Aaa.sum()
         prob_Aaa = ((  not_thetat[0] * thetat[1]     * thetat[2]
                      + thetat[0]     * not_thetat[1] * not_thetat[2] * alpha[0]
                      + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[6])
-                    * beta_Aaa)
+                    * beta[3])
         count_indices = _triplet_to_counts_index(indices_Aaa, nclasses)
         llhood += (counts_triplet[count_indices] * np.log(prob_Aaa)).sum()
 
         # Aa@ patterns
         indices_Aab = pattern_to_indices[4]
-        beta_Aab = self.omega[indices_Aab].prod(1)
-        beta_Aab /= beta_Aab.sum()
         prob_Aab = ((  not_thetat[0] * not_thetat[1]     * not_thetat[2]
                         * (1. - alpha[3] - alpha[4] - alpha[5] - alpha[6])
                      + thetat[0]     * not_thetat[1] * not_thetat[2]
@@ -364,7 +361,7 @@ class ModelA(object):
                         * (1. - alpha[1])
                      + not_thetat[0] * not_thetat[1] * thetat[2]
                         * (1. - alpha[2])
-                    ) * beta_Aab)
+                    ) * beta[4])
         count_indices = _triplet_to_counts_index(indices_Aab, nclasses)
         llhood += (counts_triplet[count_indices] * np.log(prob_Aab)).sum()
 
