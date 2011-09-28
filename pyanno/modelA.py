@@ -368,6 +368,55 @@ class ModelA(object):
         return prob
 
 
+    # ---- sampling posterior over parameters
+
+    # TODO duplicated functionality w/ ModelBt, refactor
+    # TODO arguments for burn-in, thinning
+    def sample_posterior_over_theta(self, annotations, nsamples,
+                                    target_rejection_rate = 0.3,
+                                    rejection_rate_tolerance = 0.05,
+                                    step_optimization_nsamples = 500,
+                                    adjust_step_every = 100):
+        """Return samples from posterior distribution over theta given data.
+        """
+        # optimize step size
+        counts = compute_counts(annotations, self.nclasses)
+
+        # wrap log likelihood function to give it to optimum_jump and
+        # sample_distribution
+        _llhood_counts = self._log_likelihood_counts
+        def _wrap_llhood(params, counts):
+            self.theta = params
+            # minimize *negative* likelihood
+            return _llhood_counts(counts)
+
+        # TODO this save-reset is rather ugly, refactor: create copy of
+        #      model and sample over it
+        # save internal parameters to reset at the end of sampling
+        save_params = self.theta
+        try:
+            # compute optimal step size for given target rejection rate
+            params_start = self.theta.copy()
+            params_upper = np.ones((self.nannotators,))
+            params_lower = np.zeros((self.nannotators,))
+            step = optimum_jump(_wrap_llhood, params_start, counts,
+                                params_upper, params_lower,
+                                step_optimization_nsamples,
+                                adjust_step_every,
+                                target_rejection_rate,
+                                rejection_rate_tolerance, 'Everything')
+
+            # draw samples from posterior distribution over theta
+            samples = sample_distribution(_wrap_llhood, params_start, counts,
+                                          step, nsamples,
+                                          params_lower, params_upper,
+                                          'Everything')
+            return samples
+        finally:
+            # reset parameters
+            self.theta = save_params
+
+
     # TODO optimize using outer products
     def _compute_alpha(self):
         """Compute the parameters `alpha` given the parameters `omega`."""

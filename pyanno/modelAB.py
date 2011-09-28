@@ -71,6 +71,7 @@ from enthought.traits.api import HasTraits, Str, Int, Range, Bool,\
     Array, Enum, Dict, File, on_trait_change, Button
 from enthought.traits.ui.api import View, Item, Group, Handler
 from enthought.traits.ui.menu import CancelButton, ApplyButton, Action
+from pyanno.modelA import ModelA
 
 from pyanno.modelBt import ModelBt
 from pyanno.sampling import optimum_jump, sample_distribution
@@ -1295,33 +1296,17 @@ class ABmodelGUI(HasTraits):
             x_lower = zeros(len(x0), float)
 
             if modelnumber == 1:
-                likelihood = lambda x, arguments: -likeA8(x, arguments)
-                arguments = (alphas, omegas, data, 1, estimatealphas, dim)
-
-                if cmp(report, 'Nothing') != 0:
-                    print string_wrap(
-                        'Optimizing jump (to get closer to the target rejection)...'
-                        , 4)
-                dx = optimum_jump(likelihood, x0, arguments,
-                                  x_upper, x_lower,
-                                  evaluation_jumps, recomputing_cycle, targetreject,
-                                  Delta, report)
-
-                if cmp(report, 'Nothing') != 0:
-                    print string_wrap('**Computing credible intervals**', 4)
-
-                Samples = sample_distribution(likelihood, x0, arguments,
-                                              dx, Metropolis_jumps, x_lower, x_upper
-                                              , report)
+                model = model_A
             else:
-                if cmp(report, 'Nothing') != 0:
-                    print string_wrap('**Computing credible intervals**', 4)
-                Samples = model_Bt.sample_posterior_over_theta(
-                    mat, Metropolis_jumps,
-                    target_rejection_rate = targetreject,
-                    rejection_rate_tolerance = Delta,
-                    step_optimization_nsamples = evaluation_jumps,
-                    adjust_step_every = recomputing_cycle)
+                model = model_Bt
+            if cmp(report, 'Nothing') != 0:
+                print string_wrap('**Computing credible intervals**', 4)
+            Samples = model.sample_posterior_over_theta(
+                mat, Metropolis_jumps,
+                target_rejection_rate = targetreject,
+                rejection_rate_tolerance = Delta,
+                step_optimization_nsamples = evaluation_jumps,
+                adjust_step_every = recomputing_cycle)
 
             print "Save samples!!!"
             fi = filename.split('.')
