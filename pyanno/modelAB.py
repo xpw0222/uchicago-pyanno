@@ -20,23 +20,6 @@
 
   *dim* -- total number of admissible annotation values
 
-  model A requires:
-                        *estimateOmegas8*
-                        *expPat*
-                        *getAlphas*
-                        *getBeta*
-                        *likeA*
-                        *likeA8*
-                        *random_start8*
-                        *computePosteriorA*
-
- model B requires:
-                        *likeBt*
-                        *likeBt8*
-                        *patternFrequenciesBt*
-                        *random_startBt8*
-                        *computePosteriorBt*
-
  shared service functions:
 
                         *check_data*
@@ -71,6 +54,7 @@ from enthought.traits.api import HasTraits, Str, Int, Range, Bool,\
     Array, Enum, Dict, File, on_trait_change, Button
 from enthought.traits.ui.api import View, Item, Group, Handler
 from enthought.traits.ui.menu import CancelButton, ApplyButton, Action
+from pyanno.modelA import ModelA
 
 from pyanno.modelBt import ModelBt
 from pyanno.sampling import optimum_jump, sample_distribution
@@ -232,267 +216,15 @@ def random_startA8(estimatealphas, report):
         x[i] = 0.5 + np.random.random() * 0.5
 
     if estimatealphas == 1:
-        for i in range(8, 11):
-            x[i] = np.random.random() / 4.
+        while True:
+            for i in range(8, 11):
+                x[i] = np.random.random() / 4.
+            if x[9] + 3. * x[10] < 0.99:
+                break
 
     if cmp(report, 'Nothing') != 0:
         print "Start:" + str(x)
     return x
-
-
-#-------------------------------------------------------------
-def getBeta(omegas, i1, i2, i3):
-    n = len(omegas)
-    onebeta = []
-
-    if i1 == i2 and i2 == i3:
-        tmp3 = 0
-        for i in range(n):
-            tmp3 += omegas[i] ** 3
-
-    if (i1 == i2 and i2 != i3) or\
-       (i1 == i3 and i2 != i3) or\
-       (i2 == i3 and i1 != i3):
-        tmp = 0
-        for i in range(n):
-            for j in range(n):
-                if i != j:
-                    tmp += (omegas[i] ** 2) * omegas[j]
-
-    if i1 != i2 and i2 != i3 and i1 != i3:
-        tmp1 = 0
-        for i in range(n):
-            for j in range(n):
-                for k in range(n):
-                    if i != j and j != k and i != k:
-                        tmp1 += omegas[i] * omegas[j] * omegas[k]
-
-    if i1 == i2 and i2 == i3:
-        return (omegas[i1] ** 3) / tmp3
-
-    elif i1 == i2 and i2 != i3:
-        return (omegas[i1] ** 2) * omegas[i3] / tmp
-
-    elif i1 == i3 and i2 != i3:
-        return (omegas[i1] ** 2) * omegas[i2] / tmp
-
-    elif i2 == i3 and i1 != i3:
-        return omegas[i1] * omegas[i2] ** 2 / tmp
-
-    elif i1 != i2 and i2 != i3 and i1 != i3:
-        if tmp1 == 0:
-            tmp1 = 1
-        return omegas[i1] * omegas[i2] * omegas[i3] / tmp1
-
-    else:
-        print 'Unexpected condition!!!'
-
-    return onebeta
-
-
-#-------------------------------------------------------------
-def expPat(alphas, omegas, theta1, theta2, theta3, i1, i2, i3):
-    if i1 == i2 and i2 == i3:
-        p = (theta1 * theta2 * theta3 +\
-             (1 - theta1) * (1 - theta2) * (1 - theta3) * alphas[3])
-        p *= getBeta(omegas, i1, i2, i3)
-        return p
-
-    elif i1 == i2 and i2 != i3:
-        p = (theta1 * theta2 * (1 - theta3) +\
-             (1 - theta1) * (1 - theta2) * theta3 * alphas[2] +\
-             (1 - theta1) * (1 - theta2) * (1 - theta3) * alphas[4])
-        p *= getBeta(omegas, i1, i2, i3)
-        return p
-
-    elif i1 == i3 and i2 != i1:
-        p = (theta1 * (1 - theta2) * theta3 +\
-             (1 - theta1) * theta2 * (1 - theta3) * alphas[1] +\
-             (1 - theta1) * (1 - theta2) * (1 - theta3) * alphas[5])
-        p *= getBeta(omegas, i1, i2, i3)
-        return p
-
-    elif i2 == i3 and i1 != i2:
-        p = ((1 - theta1) * theta2 * theta3 +\
-             theta1 * (1 - theta2) * (1 - theta3) * alphas[0] +\
-             (1 - theta1) * (1 - theta2) * (1 - theta3) * alphas[6]);
-        p *= getBeta(omegas, i1, i2, i3)
-        return p
-
-    elif i1 != i2 and i2 != i3 and i1 != i3:
-        p = ( (1 - theta1) * (1 - theta2) * (1 - theta3) *\
-              (1 - alphas[3] - alphas[4] - alphas[5] - alphas[6]) +\
-              theta1 * (1 - theta2) * (1 - theta3) * (1 - alphas[0]) +\
-              (1 - theta1) * theta2 * (1 - theta3) * (1 - alphas[1]) +\
-              (1 - theta1) * (1 - theta2) * theta3 * (1 - alphas[2]) )
-        p *= getBeta(omegas, i1, i2, i3)
-        return p
-
-    else:
-        print 'Unexpected condition!!'
-
-    return p
-
-
-#----------------------------------------------------------
-def estimateOmegas8(counts, dim, report):
-    omegas = zeros(dim, float)
-    ii = 0
-
-    for i in range(dim):
-        for j in range(dim):
-            for k in range(dim):
-                for nchunks in range(8):
-                    omegas[i] += counts[ii, nchunks]
-                    omegas[j] += counts[ii, nchunks]
-                    omegas[k] += counts[ii, nchunks]
-                ii += 1
-
-    omegas = omegas / (3. * sum(sum(counts)))
-    if cmp(report, 'Nothing') != 0:
-        print "Omegas: " + str(omegas)
-
-    return omegas
-
-
-#----------------------------------------------------------
-def likeA8(x, arguments):
-    ind = array([[0, 1, 2],\
-        [1, 2, 3],\
-        [2, 3, 4],\
-        [3, 4, 5],\
-        [4, 5, 6],\
-        [5, 6, 7],\
-        [0, 6, 7],\
-        [0, 1, 7]], int)
-
-    alphas, omegas, counts, usepriors, estimatealphas, dim = arguments
-    l = 0
-
-    for i in range(8):
-        if estimatealphas == 1:
-            xx = zeros(6, float)
-            for j in range(3):
-                xx[j] = x[int(ind[i, j])]
-                xx[j + 3] = x[8 + j]
-        else:
-            xx = zeros(3, float)
-            for j in range(3):
-                xx[j] = x[int(ind[i, j])]
-
-        l -= likeA(xx, alphas, omegas, counts[:, i], usepriors, estimatealphas,
-                   dim)
-
-    # returns - log L
-    return l
-
-
-#----------------------------------------------------------
-def likeA(x, alphas, omegas, counts, usepriors, estimatealphas, dim):
-    like = -Inf
-
-    if estimatealphas == 1 and x[4] + 3 * x[5] > 1:
-        return like
-
-    if amin(x) <= 0 or amax(x) > 1:
-        return like
-
-    al = zeros(len(alphas))
-
-    for i in range(len(alphas)):
-        al[i] = alphas[i]
-
-    if estimatealphas == 1:
-        al[0] = x[3]
-        al[1] = x[3]
-        al[2] = x[3]
-        al[3] = x[4]
-        al[4] = x[5]
-        al[5] = x[5]
-        al[6] = x[5]
-
-
-    # prior on *thetas*
-    if usepriors == 1:
-        like = log(scipy.stats.beta.pdf(x[0], 2, 1))\
-               + log(scipy.stats.beta.pdf(x[1], 2, 1))\
-        + log(scipy.stats.beta.pdf(x[2], 2, 1))
-    else:
-        like = 0
-
-    ii = 0
-    for i in range(dim):
-        for j in range(dim):
-            for k in range(dim):
-                like += counts[ii] * log(
-                    expPat(al, omegas, x[0], x[1], x[2], i, j, k))
-                ii += 1
-    return like
-
-
-#----------------------------------------------------------
-def getAlphas(omega):
-    n = len(omega)
-    alphas = zeros(8, float)
-    # dublet sums
-    s2 = zeros(n, float)
-    s3 = zeros(n, float)
-
-    for k in range(n):
-        for i in range(n):
-            for j in range(n):
-                if i != k and j != k:
-                    s2[k] += omega[i] * omega[j]
-                    # triplet sums
-
-    for k in range(n):
-        for i in range(n):
-            for j in range(n):
-                for l in range(n):
-                    if i != k and j != k and l != k:
-                        s3[k] += omega[i] * omega[j] * omega[l]
-
-    # a1 / a2 / a3
-    a1 = 0
-    for i in range(n):
-        tmp = 0
-        for j in range(n):
-            if j != i:
-                tmp += omega[j] ** 2
-        a1 += omega[i] * tmp / s2[i]
-
-    alphas[0] = a1
-    alphas[1] = a1
-    alphas[2] = a1
-
-    # a4
-
-    a4 = 0
-    for i in range(n):
-        tmp = 0
-        for j in range(n):
-            if j != i:
-                tmp += omega[j] ** 3
-        a4 += omega[i] * tmp / s3[i]
-
-    alphas[3] = a4
-
-    # a5, a6, a7
-
-    a5 = 0
-    for i in range(n):
-        tmp = 0
-        for j in range(n):
-            for k in range(n):
-                if j != i and k != i and j != k:
-                    tmp += omega[k] * omega[j] ** 2
-        a5 += omega[i] * tmp / s3[i]
-
-    alphas[4] = a5
-    alphas[5] = a5
-    alphas[6] = a5
-
-    return alphas
 
 
 #==========================================================
@@ -1188,14 +920,14 @@ class ABmodelGUI(HasTraits):
             # optimize parameters by maximizing the log likelihood of the model
             if modelnumber == 1:
                 # model A
-                arguments = ((alphas, omegas, data, 1, estimatealphas, dim),)
-                arguments1 = (alphas, omegas, data, 1, estimatealphas, dim)
-                x0 = random_startA8(estimatealphas, report)
-                x_best = scipy.optimize.fmin(likeA8,
-                                             x0, args=arguments,
-                                             xtol=1e-8, ftol=1e-8, disp=False,
-                                             maxiter=1e+10, maxfun=1e+30)
-                FF[j] = -likeA8(x_best, arguments1)
+                model_A = ModelA.random_model(dim)
+                model_A.mle(mat)
+                if estimate_alphas:
+                    alpha = model_A._compute_alpha()
+                    x_best = np.r_[model_A.theta, [alpha[0], alpha[3], alpha[-1]]]
+                else:
+                    x_best = model_A.theta.copy()
+                FF[j] = model_A.log_likelihood(mat)
             else:
                 # model B
                 model_Bt = ModelBt.random_model(dim, mat.shape[0],
@@ -1295,33 +1027,17 @@ class ABmodelGUI(HasTraits):
             x_lower = zeros(len(x0), float)
 
             if modelnumber == 1:
-                likelihood = lambda x, arguments: -likeA8(x, arguments)
-                arguments = (alphas, omegas, data, 1, estimatealphas, dim)
-
-                if cmp(report, 'Nothing') != 0:
-                    print string_wrap(
-                        'Optimizing jump (to get closer to the target rejection)...'
-                        , 4)
-                dx = optimum_jump(likelihood, x0, arguments,
-                                  x_upper, x_lower,
-                                  evaluation_jumps, recomputing_cycle, targetreject,
-                                  Delta, report)
-
-                if cmp(report, 'Nothing') != 0:
-                    print string_wrap('**Computing credible intervals**', 4)
-
-                Samples = sample_distribution(likelihood, x0, arguments,
-                                              dx, Metropolis_jumps, x_lower, x_upper
-                                              , report)
+                model = model_A
             else:
-                if cmp(report, 'Nothing') != 0:
-                    print string_wrap('**Computing credible intervals**', 4)
-                Samples = model_Bt.sample_posterior_over_theta(
-                    mat, Metropolis_jumps,
-                    target_rejection_rate = targetreject,
-                    rejection_rate_tolerance = Delta,
-                    step_optimization_nsamples = evaluation_jumps,
-                    adjust_step_every = recomputing_cycle)
+                model = model_Bt
+            if cmp(report, 'Nothing') != 0:
+                print string_wrap('**Computing credible intervals**', 4)
+            Samples = model.sample_posterior_over_theta(
+                mat, Metropolis_jumps,
+                target_rejection_rate = targetreject,
+                rejection_rate_tolerance = Delta,
+                step_optimization_nsamples = evaluation_jumps,
+                adjust_step_every = recomputing_cycle)
 
             print "Save samples!!!"
             fi = filename.split('.')
