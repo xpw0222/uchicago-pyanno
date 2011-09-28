@@ -4,7 +4,7 @@ from collections import defaultdict
 import numpy as np
 import scipy.optimize
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import compute_counts, random_categorical
+from pyanno.util import compute_counts, random_categorical, log_beta_pdf
 import pyanno
 
 
@@ -236,6 +236,75 @@ class ModelA(object):
             self.alpha[3] = params_best[9]
             self.alpha[4:] = params_best[10]
         self.theta = params_best[:8]
+
+
+    # ---- model likelihood
+
+    # TODO code duplication with ModelBt -> refactor
+    def log_likelihood(self, annotations, use_prior=False):
+        """Compute the log likelihood of annotations given the model."""
+        return self._log_likelihood_counts(compute_counts(annotations,
+                                                          self.nclasses),
+                                           use_prior)
+
+
+    def _log_likelihood_counts(self, counts, use_prior=False):
+        """Compute the log likelihood of annotations given the model.
+
+        This method assumes the data is in counts format.
+        """
+
+        alpha = self._compute_alpha()
+        llhood = 0.
+        # loop over the 8 combinations of annotators
+        for i in range(8):
+            # extract the theta parameters for this triplet
+            triplet_indices = np.arange(i, i+3) % self.nannotators
+            triplet_indices.sort()
+            theta_triplet = self.theta[triplet_indices]
+
+            # compute the likelihood for the triplet
+            llhood += self._log_likelihood_triplet(counts[:,i],
+                                                   theta_triplet,
+                                                   alpha, use_prior)
+
+        return llhood
+
+
+    def _log_likelihood_triplet(self, counts_triplet, theta_triplet,
+                                alpha, use_prior):
+        """Compute the log likelihood of data for one triplet of annotators.
+
+        Input:
+        counts_triplet -- count data for one combination of annotators
+        theta_triplet -- theta parameters of the current triplet
+        """
+
+        nclasses = self.nclasses
+        omega = self.omega
+
+        # TODO: check if it's possible to replace these constraints with bounded optimization
+        # TODO: this check can be done in _log_likelihood_counts
+        if np.amin(theta_triplet) <= 0 or np.amax(theta_triplet) > 1:
+            # return np.inf
+            return -1e20
+
+        llhood = 0.
+
+        # prior on *thetas*
+        if use_prior:
+            llhood += log_beta_pdf(theta_triplet, 2., 1.).sum()
+
+        for i in range(nclasses):
+            for j in range(nclasses):
+                for k in range(nclasses):
+                        pyanno.modelAB.expPat(alpha, self.omega,
+                                              theta_triplet[0],
+                                              theta_triplet[1],
+                                              theta_triplet[2], i, j, k))
+                    ii += 1
+        return llhood
+
 
     # TODO optimize using outer products
     def _compute_alpha(self):
