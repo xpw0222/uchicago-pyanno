@@ -33,7 +33,7 @@ class TestModelA(unittest.TestCase):
         incorrect = np.ones((nitems, 3), dtype=bool)
         agreement = model._generate_agreement(incorrect)
         frequency = np.bincount(agreement, minlength=5) / float(nitems)
-        expected = model.alpha[3:]
+        expected = model._compute_alpha()[3:]
         testing.assert_allclose(frequency[:-1], expected, atol=1e-1, rtol=0)
 
 

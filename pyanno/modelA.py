@@ -72,7 +72,6 @@ class ModelA(object):
         self.annotators_per_item = 3
         self.theta = theta
         self.omega = omega
-        self.alpha = pyanno.modelAB.getAlphas(omega)
         self.use_priors = use_priors
 
 
@@ -163,7 +162,7 @@ class ModelA(object):
 
         # create tensor A_ijk
         # (cf. Table 3 in Rzhetsky et al., 2009, suppl. mat.)
-        alpha = self.alpha
+        alpha = self._compute_alpha()
         agreement_tbl = np.array(
             [[1.,       0.,       0.,       0.,       0.],
              [0.,       1.,       0.,       0.,       0.],
@@ -220,7 +219,7 @@ class ModelA(object):
         if estimate_omega:
             self.omega = pyanno.modelAB.estimateOmegas8(counts, self.nclasses, 'Everything')
         omegas = self.omega
-        alphas = pyanno.modelAB.getAlphas(omegas)
+        alphas = self._compute_alpha()
         print 'estimates', alphas
 
         def _wrap_lhood(params, arguments):
@@ -239,3 +238,71 @@ class ModelA(object):
             self.alpha[3] = params_best[9]
             self.alpha[4:] = params_best[10]
         self.theta = params_best[:8]
+
+    # TODO optimize using outer products
+    def _compute_alpha(self):
+        """Compute the parameters `alpha` given the parameters `omega`."""
+
+        omega = self.omega
+        nclasses = self.nclasses
+        alpha = np.zeros((7,))
+
+        # dublet sums
+        s2 = np.zeros((nclasses,))
+        s3 = np.zeros((nclasses,))
+
+        for k in range(nclasses):
+            for i in range(nclasses):
+                for j in range(nclasses):
+                    if i != k and j != k:
+                        s2[k] += omega[i] * omega[j]
+                        # triplet sums
+
+        for k in range(nclasses):
+            for i in range(nclasses):
+                for j in range(nclasses):
+                    for l in range(nclasses):
+                        if i != k and j != k and l != k:
+                            s3[k] += omega[i] * omega[j] * omega[l]
+
+        # a1 / a2 / a3
+        a1 = 0
+        for i in range(nclasses):
+            tmp = 0
+            for j in range(nclasses):
+                if j != i:
+                    tmp += omega[j] ** 2
+            a1 += omega[i] * tmp / s2[i]
+
+        alpha[0] = a1
+        alpha[1] = a1
+        alpha[2] = a1
+
+        # a4
+
+        a4 = 0
+        for i in range(nclasses):
+            tmp = 0
+            for j in range(nclasses):
+                if j != i:
+                    tmp += omega[j] ** 3
+            a4 += omega[i] * tmp / s3[i]
+
+        alpha[3] = a4
+
+        # a5, a6, a7
+
+        a5 = 0
+        for i in range(nclasses):
+            tmp = 0
+            for j in range(nclasses):
+                for k in range(nclasses):
+                    if j != i and k != i and j != k:
+                        tmp += omega[k] * omega[j] ** 2
+            a5 += omega[i] * tmp / s3[i]
+
+        alpha[4] = a5
+        alpha[5] = a5
+        alpha[6] = a5
+
+        return alpha
