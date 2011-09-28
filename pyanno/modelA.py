@@ -427,6 +427,151 @@ class ModelA(object):
 
     def infer_labels(self, annotations):
         """Infer posterior distribution over true labels."""
+        nitems = annotations.shape[0]
+        nclasses = self.nclasses
+
+        posteriors = np.zeros((nitems, nclasses))
+        alpha = self._compute_alpha()
+        i = 0
+        for row in annotations:
+            ind = np.where(row >= 0)
+            vijk = row[ind]
+            tijk = self.theta[ind].copy()
+            p = self._compute_posterior_triplet(vijk, tijk, alpha)
+            posteriors[i, :] = p
+            i += 1
+
+        return posteriors
+
+
+    def _compute_posterior_triplet(self, vijk, tijk, alpha):
+        nclasses = self.nclasses
+        posteriors = np.zeros(nclasses, float)
+
+        #-----------------------------------------------
+        # aaa
+        if vijk[0] == vijk[1] and vijk[1] == vijk[2]:
+            x1 = tijk[0] * tijk[1] * tijk[2]
+            x2 = (1 - tijk[0]) * (1 - tijk[1]) * (1 - tijk[2])
+            p1 = x1 / (x1 + alpha[3] * x2)
+            p2 = (1 - p1) / (nclasses - 1)
+
+            for j in range(nclasses):
+                if vijk[0] == j:
+                    posteriors[j] = p1
+                else:
+                    posteriors[j] = p2
+                #-----------------------------------------------
+                # aaA
+        elif vijk[0] == vijk[1] and vijk[1] != vijk[2]:
+            x1 = tijk[0] * tijk[1] * (1 - tijk[2])
+            x2 = (1 - tijk[0]) * (1 - tijk[1]) * tijk[2]
+            x3 = (1 - tijk[0]) * (1 - tijk[1]) * (1 - tijk[2])
+
+            # a is correct
+            p1 = x1 / (x1 + alpha[2] * x2 + alpha[4] * x3)
+
+            # A is correct
+            p2 = (alpha[2] * x2) / (x1 + alpha[2] * x2 + alpha[4] * x3)
+
+            # neither
+            p3 = (1 - p1 - p2) / (nclasses - 2)
+
+            for j in range(nclasses):
+                if vijk[0] == j:
+                    posteriors[j] = p1
+                elif vijk[2] == j:
+                    posteriors[j] = p2
+                else:
+                    posteriors[j] = p3
+                #-----------------------------------------------
+                # aAa
+        elif vijk[0] == vijk[2] and vijk[1] != vijk[2]:
+            x1 = tijk[0] * (1 - tijk[1]) * tijk[2]
+            x2 = (1 - tijk[0]) * tijk[1] * (1 - tijk[2])
+            x3 = (1 - tijk[0]) * (1 - tijk[1]) * (1 - tijk[2])
+
+            # a is correct
+            p1 = x1 / (x1 + alpha[1] * x2 + alpha[5] * x3)
+
+            # A is correct
+            p2 = (alpha[1] * x2) / (x1 + alpha[1] * x2 + alpha[5] * x3)
+
+            # neither
+            p3 = (1 - p1 - p2) / (nclasses - 2)
+
+            for j in range(nclasses):
+                if vijk[0] == j:
+                    posteriors[j] = p1
+                elif vijk[1] == j:
+                    posteriors[j] = p2
+                else:
+                    posteriors[j] = p3
+                #-----------------------------------------------
+                # Aaa
+        elif vijk[1] == vijk[2] and vijk[0] != vijk[2]:
+            x1 = (1 - tijk[0]) * tijk[1] * tijk[2]
+            x2 = tijk[0] * (1 - tijk[1]) * (1 - tijk[2])
+            x3 = (1 - tijk[0]) * (1 - tijk[1]) * (1 - tijk[2])
+
+            # a is correct
+            p1 = x1 / (x1 + alpha[0] * x2 + alpha[6] * x3)
+
+            # A is correct
+            p2 = (alpha[0] * x2) / (x1 + alpha[0] * x2 + alpha[6] * x3)
+
+            # neither
+            p3 = (1 - p1 - p2) / (nclasses - 2)
+
+            for j in range(nclasses):
+                if vijk[0] == j:
+                    posteriors[j] = p2
+                elif vijk[2] == j:
+                    posteriors[j] = p1
+                else:
+                    posteriors[j] = p3
+                #-----------------------------------------------
+                # aAb
+        elif vijk[0] != vijk[1] and vijk[1] != vijk[2]:
+            x1 = tijk[0] * (1 - tijk[1]) * (1 - tijk[2])
+            x2 = (1 - tijk[0]) * tijk[1] * (1 - tijk[2])
+            x3 = (1 - tijk[0]) * (1 - tijk[1]) * tijk[2]
+            x4 = (1 - tijk[0]) * (1 - tijk[1]) * (1 - tijk[2])
+
+            summa1 = 1 - alpha[3] - alpha[4] - alpha[5] - alpha[6]
+            summa2 = (1 - alpha[0]) * x1 + (1 - alpha[1]) * x2 + (1 - alpha[
+                                                                        2]) * x3 + summa1 * x4
+
+            # a is correct
+            p1 = (1 - alpha[0]) * x1 / summa2
+
+            # A is correct
+            p2 = (1 - alpha[1]) * x2 / summa2
+
+            # b is correct
+            p3 = (1 - alpha[2]) * x3 / summa2
+
+            # (a, A, b) are all incorrect
+            p4 = (summa1 * x4 / summa2) / (nclasses - 3)
+
+            for j in range(nclasses):
+                if vijk[0] == j:
+                    posteriors[j] = p1
+                elif vijk[1] == j:
+                    posteriors[j] = p2
+                elif vijk[2] == j:
+                    posteriors[j] = p3
+                else:
+                    posteriors[j] = p4
+
+        # check posteriors: non-negative, sum to 1
+        if sum(posteriors) - 1.0 > 0.0000001 or min(posteriors) < 0:
+            print 'Aberrant posteriors!!!', posteriors
+            print sum(posteriors)
+            print min(posteriors)
+            time.sleep(60)
+
+        return posteriors
 
 
     # TODO optimize using outer products
