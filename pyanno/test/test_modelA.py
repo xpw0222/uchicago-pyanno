@@ -29,14 +29,12 @@ class TestModelA(unittest.TestCase):
 
         # all incorrect, check frequency corresponds to alpha[3:]
         nitems = 10000
-        alpha = np.array([0., 0., 0.,
-                          0.2, 0.1, 0.4, 0.12])
-        expected = np.r_[alpha[3:], 1.-alpha.sum()]
-        model = ModelA.random_model(nclasses, alpha=alpha)
+        model = ModelA.random_model(nclasses)
         incorrect = np.ones((nitems, 3), dtype=bool)
         agreement = model._generate_agreement(incorrect)
         frequency = np.bincount(agreement, minlength=5) / float(nitems)
-        testing.assert_allclose(frequency, expected, atol=1e-2, rtol=0)
+        expected = model.alpha[3:]
+        testing.assert_allclose(frequency[:-1], expected, atol=1e-1, rtol=0)
 
 
     def test_generate_triplet_annotation(self):
@@ -70,7 +68,7 @@ class TestModelA(unittest.TestCase):
 
 
     def test_generate_annotations(self):
-        nitems = 50*8
+        nitems = 2000*8
         nclasses = 3
 
         # create random model
@@ -80,6 +78,34 @@ class TestModelA(unittest.TestCase):
 
         self.assertEqual(annotations.shape, (nitems, model.nannotators))
         self.assertTrue(np.all((annotations!=-1).sum(1) == 3))
+
+        freqs = (np.array([(annotations==psi).sum() / float(nitems*3)
+                           for psi in range(nclasses)]))
+        testing.assert_allclose(model.omega, freqs, atol=1e-1, rtol=0.)
+
+
+    def test_ml_estimation_theta_only(self):
+        # test simple model, check that we get to global optimum
+        nclasses, nitems = 3, 1000*8
+        # create random model and data (this is our ground truth model)
+        theta = np.array([0.5, 0.9, 0.6, 0.65, 0.87, 0.2, 0.9, 0.78])
+        true_model = ModelA.random_model(nclasses, theta=theta)
+        annotations = true_model.generate_annotations(nitems)
+
+        # create a new, empty model and infer back the parameters
+        model = ModelA.random_model(nclasses, omega=true_model.omega)
+        #before_llhood = model.log_likelihood(annotations)
+        model.mle(annotations, estimate_alphas=False)
+        #after_llhood = model.log_likelihood(annotations)
+
+        #self.assertGreater(after_llhood, before_llhood)
+        testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
+
+
+    def test_ml_estimation(self):
+        pass
+        #testing.assert_allclose(model.alpha, true_model.alpha, atol=1e-1, rtol=0.)
+
 
 
 if __name__ == '__main__':

@@ -5,6 +5,7 @@ import numpy as np
 import scipy.optimize
 from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import compute_counts, random_categorical
+import pyanno
 
 
 _compatibility_tables_cache = {}
@@ -63,21 +64,21 @@ class ModelA(object):
     item is annotated by 3 annotators.
     """
 
-    def __init__(self, nclasses, theta, alpha, omega,
+    def __init__(self, nclasses, theta, omega,
                  use_priors=True, use_omegas=True):
         self.nclasses = nclasses
         self.nannotators = 8
         # number of annotators rating each item in the loop design
         self.annotators_per_item = 3
         self.theta = theta
-        self.alpha = alpha
         self.omega = omega
+        self.alpha = pyanno.modelAB.getAlphas(omega)
         self.use_priors = use_priors
         self.use_omegas = use_omegas
 
 
     @staticmethod
-    def random_model(nclasses, theta=None, alpha=None, omega=None,
+    def random_model(nclasses, theta=None, omega=None,
                      use_priors=True, use_omegas=True):
         """Factory method returning a random model.
 
@@ -94,30 +95,16 @@ class ModelA(object):
             nannotators = 8
             theta = ModelA._random_theta(nannotators)
 
-        if alpha is None:
-            alpha = ModelA._random_alpha()
-
         if omega is None:
             omega = ModelA._random_omega(nclasses)
 
-        return ModelA(nclasses, theta, alpha, omega, use_priors, use_omegas)
+        return ModelA(nclasses, theta, omega, use_priors, use_omegas)
 
 
     @staticmethod
     def _random_theta(nannotators):
         return np.random.uniform(low=0.6, high=0.95,
                                  size=(nannotators,))
-
-
-    @staticmethod
-    def _random_alpha():
-        alpha = np.empty((7,))
-        alpha[0:3] = np.random.uniform(0.6, 0.99)
-        alpha[4:7] = np.random.uniform(0.1, 0.25)
-        rest = 1. - alpha[4:7].sum()
-        alpha[3] = np.random.uniform(0.01, rest-0.01)
-        assert alpha[3:].sum() < 1.
-        return alpha
 
 
     @staticmethod
@@ -226,5 +213,26 @@ class ModelA(object):
 
     # ---- Parameters estimation methods
 
-    def mle(self, annotations):
-        pass
+    def mle(self, annotations, estimate_alphas=True):
+        counts = compute_counts(annotations, self.nclasses)
+
+        omegas = pyanno.modelAB.estimateOmegas8(counts, self.nclasses, 'Everything')
+        alphas = pyanno.modelAB.getAlphas(omegas)
+        print 'estimates', alphas
+
+        def _wrap_lhood(params, arguments):
+            return pyanno.modelAB.likeA8(params, arguments)
+
+        arguments = ((alphas, omegas, counts, 1,
+                      int(estimate_alphas), self.nclasses),)
+        params_start = pyanno.modelAB.random_startA8(int(estimate_alphas), 'Everything')
+        params_best = scipy.optimize.fmin(_wrap_lhood,
+                                          params_start, args=arguments,
+                                          xtol=1e-4, ftol=1e-4, disp=True,
+                                          maxiter=1e+10, maxfun=1e+30)
+
+        if estimate_alphas:
+            self.alpha[:3] = params_best[8]
+            self.alpha[3] = params_best[9]
+            self.alpha[4:] = params_best[10]
+        self.theta = params_best[:8]
