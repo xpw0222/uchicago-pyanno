@@ -5,7 +5,6 @@ import numpy as np
 import scipy.optimize
 from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import compute_counts, random_categorical, log_beta_pdf
-import pyanno
 
 
 _compatibility_tables_cache = {}
@@ -218,16 +217,13 @@ class ModelA(object):
             use_prior = True):
         counts = compute_counts(annotations, self.nclasses)
 
-        if estimate_omega:
-            # TODO duplication w/ ModelBt
-            self.omega = (np.bincount(annotations[annotations!=-1])
-                          / (3.*annotations.shape[0]))
-
         def _wrap_lhood(params):
             self.theta = params
             return - self._log_likelihood_counts(counts)
 
-        params_start = pyanno.modelAB.random_startA8(int(estimate_alpha), 'Everything')
+        params_start, omega = self._random_initial_parameters(annotations,
+                                                              estiamte_omega)
+        self.omega = omega
         params_best = scipy.optimize.fmin(_wrap_lhood,
                                           params_start,
                                           xtol=1e-4, ftol=1e-4, disp=True,
@@ -238,6 +234,19 @@ class ModelA(object):
             self.alpha[3] = params_best[9]
             self.alpha[4:] = params_best[10]
         self.theta = params_best[:8]
+
+
+    def _random_initial_parameters(self, annotations, estimate_omega):
+        # TODO duplication w/ ModelBt
+        if estimate_omega:
+            # estimate gamma from observed annotations
+            omega = (np.bincount(annotations[annotations!=-1])
+                          / (3.*annotations.shape[0]))
+        else:
+            omega = ModelA._random_omega(self.nclasses)
+
+        theta = ModelA._random_theta(self.nannotators)
+        return theta, omega
 
 
     # ---- model likelihood
@@ -414,6 +423,10 @@ class ModelA(object):
         finally:
             # reset parameters
             self.theta = save_params
+
+
+    def infer_labels(self, annotations):
+        """Infer posterior distribution over true labels."""
 
 
     # TODO optimize using outer products
