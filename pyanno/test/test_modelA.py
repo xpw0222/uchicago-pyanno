@@ -95,7 +95,7 @@ class TestModelA(unittest.TestCase):
         # create a new, empty model and infer back the parameters
         model = ModelA.random_model(nclasses, omega=true_model.omega)
         #before_llhood = model.log_likelihood(annotations)
-        model.mle(annotations, estimate_alphas=False)
+        model.mle(annotations, estimate_alpha=False, estimate_omega=False)
         #after_llhood = model.log_likelihood(annotations)
 
         #self.assertGreater(after_llhood, before_llhood)

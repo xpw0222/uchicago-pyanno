@@ -65,7 +65,7 @@ class ModelA(object):
     """
 
     def __init__(self, nclasses, theta, omega,
-                 use_priors=True, use_omegas=True):
+                 use_priors=True):
         self.nclasses = nclasses
         self.nannotators = 8
         # number of annotators rating each item in the loop design
@@ -74,12 +74,11 @@ class ModelA(object):
         self.omega = omega
         self.alpha = pyanno.modelAB.getAlphas(omega)
         self.use_priors = use_priors
-        self.use_omegas = use_omegas
 
 
     @staticmethod
     def random_model(nclasses, theta=None, omega=None,
-                     use_priors=True, use_omegas=True):
+                     use_priors=True):
         """Factory method returning a random model.
 
          Input:
@@ -98,7 +97,7 @@ class ModelA(object):
         if omega is None:
             omega = ModelA._random_omega(nclasses)
 
-        return ModelA(nclasses, theta, omega, use_priors, use_omegas)
+        return ModelA(nclasses, theta, omega, use_priors)
 
 
     @staticmethod
@@ -213,10 +212,12 @@ class ModelA(object):
 
     # ---- Parameters estimation methods
 
-    def mle(self, annotations, estimate_alphas=True):
+    def mle(self, annotations, estimate_alpha=False, estimate_omega=True):
         counts = compute_counts(annotations, self.nclasses)
 
-        omegas = pyanno.modelAB.estimateOmegas8(counts, self.nclasses, 'Everything')
+        if estimate_omega:
+            self.omega = pyanno.modelAB.estimateOmegas8(counts, self.nclasses, 'Everything')
+        omegas = self.omega
         alphas = pyanno.modelAB.getAlphas(omegas)
         print 'estimates', alphas
 
@@ -224,14 +225,14 @@ class ModelA(object):
             return pyanno.modelAB.likeA8(params, arguments)
 
         arguments = ((alphas, omegas, counts, 1,
-                      int(estimate_alphas), self.nclasses),)
-        params_start = pyanno.modelAB.random_startA8(int(estimate_alphas), 'Everything')
+                      int(estimate_alpha), self.nclasses),)
+        params_start = pyanno.modelAB.random_startA8(int(estimate_alpha), 'Everything')
         params_best = scipy.optimize.fmin(_wrap_lhood,
                                           params_start, args=arguments,
                                           xtol=1e-4, ftol=1e-4, disp=True,
                                           maxiter=1e+10, maxfun=1e+30)
 
-        if estimate_alphas:
+        if estimate_alpha:
             self.alpha[:3] = params_best[8]
             self.alpha[3] = params_best[9]
             self.alpha[4:] = params_best[10]
