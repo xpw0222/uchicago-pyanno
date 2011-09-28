@@ -224,14 +224,13 @@ class ModelA(object):
         alphas = self._compute_alpha()
         print 'estimates', alphas
 
-        def _wrap_lhood(params, arguments):
-            return pyanno.modelAB.likeA8(params, arguments)
+        def _wrap_lhood(params):
+            self.theta = params
+            return - self._log_likelihood_counts(counts)
 
-        arguments = ((alphas, omegas, counts, int(use_prior),
-                      int(estimate_alpha), self.nclasses),)
         params_start = pyanno.modelAB.random_startA8(int(estimate_alpha), 'Everything')
         params_best = scipy.optimize.fmin(_wrap_lhood,
-                                          params_start, args=arguments,
+                                          params_start,
                                           xtol=1e-4, ftol=1e-4, disp=True,
                                           maxiter=1e+10, maxfun=1e+30)
 
