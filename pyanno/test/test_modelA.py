@@ -135,5 +135,35 @@ class TestModelA(unittest.TestCase):
             self.assertGreater(max_llhood, llhood)
 
 
+    def test_sampling_theta(self):
+        nclasses, nitems = 3, 500*8
+        nsamples = 1000
+
+        # create random model (this is our ground truth model)
+        true_model = ModelA.random_model(nclasses)
+        # create random data
+        annotations = true_model.generate_annotations(nitems)
+
+        # create a new model
+        model = ModelA.random_model(nclasses)
+        # get optimal parameters (to make sure we're at the optimum)
+        model.mle(annotations)
+
+        # modify parameters, to give false start to sampler
+        real_theta = model.theta.copy()
+        model.theta = model._random_theta(model.nannotators)
+        # save current parameters
+        omega_before, theta_before = model.omega.copy(), model.theta.copy()
+        samples = model.sample_posterior_over_theta(annotations, nsamples)
+        # test: the mean of the sampled parameters is the same as the MLE one
+        # (up to 3 standard deviations of the estimate sample distribution)
+        testing.assert_array_less(np.absolute(samples.mean(0)-real_theta),
+                                  3.*samples.std(0))
+
+        # check that original parameters are intact
+        testing.assert_equal(model.omega, omega_before)
+        testing.assert_equal(model.theta, theta_before)
+
+
 if __name__ == '__main__':
     unittest.main()
