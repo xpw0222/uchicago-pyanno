@@ -98,6 +98,7 @@ class TestModelBt(unittest.TestCase):
         annotations = true_model.generate_annotations(labels)
 
         posterior = true_model.infer_labels(annotations)
+        testing.assert_allclose(posterior.sum(1), 1., atol=1e-6, rtol=0.)
         inferred = posterior.argmax(1)
 
         testing.assert_equal(inferred, labels)
