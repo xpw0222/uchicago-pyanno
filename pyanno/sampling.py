@@ -7,7 +7,6 @@ from pyanno.util import string_wrap
 
 
 # TODO add parameters for burn-in, thinning
-# ??? vectorizing this and optimum_jump gives a 10x speedup
 #     (evaluation only after sampling the *full* parameters space)
 def sample_distribution(likelihood, x0, arguments, dx,
                         nsamples, x_lower, x_upper, report):
@@ -27,32 +26,32 @@ def sample_distribution(likelihood, x0, arguments, dx,
     samples = np.zeros((nsamples, m), dtype=float)
     x_curr = x0.copy()
     llhood = likelihood(x0, arguments)
-    #rejection = np.zeros((m,), dtype=float)
 
     for i in range(nsamples):
         if (i + 1) % 100 == 0:
             if cmp(report, 'Nothing') != 0:
                 print string_wrap(str(i + 1), 4)
 
+        q_tot = 0.
+        x_old = x_curr.copy()
         for j in range(m):
-            xj_old = x_curr[j]
-            xj, q = q_lower_upper(xj_old, dx[j], x_lower[j], x_upper[j])
+            xj, q = q_lower_upper(x_old[j], dx[j], x_lower[j], x_upper[j])
+            q_tot += q
             x_curr[j] = xj
-            llhood_new = likelihood(x_curr, arguments)
 
-            # rejection step; reject with probability `alpha`
-            alpha = min(1, np.exp(llhood_new - llhood + q))
-            if np.random.random() < alpha:
-                llhood = llhood_new
-            else:
-                #rejection[j] += 1. / nsamples
-                x_curr[j] = xj_old
+        llhood_new = likelihood(x_curr, arguments)
+
+        # rejection step; reject with probability `alpha`
+        alpha = min(1, np.exp(llhood_new - llhood + q_tot))
+        if np.random.random() < alpha:
+            llhood = llhood_new
+        else:
+            x_curr = x_old
         samples[i,:] = x_curr
 
     return samples
 
 
-# TODO: simplify, move stopping condition ("check") to optimum_jump
 def optimum_jump(likelihood, x0, arguments,
                  x_upper, x_lower,
                  evaluation_jumps, recomputing_cycle, target_rejection_rate,
@@ -79,13 +78,15 @@ def optimum_jump(likelihood, x0, arguments,
 
     # initial jump sizes are random
     for i in range(m):
-        dx[i] = (x_upper[i] - x_lower[i]) / 100.
+        dx[i] = (x_upper[i] - x_lower[i]) / 30.
 
     # *x_curr* is the current version of arguments
     x_curr = x0.copy()
     llhood = likelihood(x0, arguments)
 
     for i in range(evaluation_jumps):
+        # we need to evaluate every dimension separately to have an estimate
+        # of the rejection rate per parameter
         for j in range(m):
             xj_old = x_curr[j]
             xj, q = q_lower_upper(xj_old, dx[j], x_lower[j], x_upper[j])
@@ -94,9 +95,9 @@ def optimum_jump(likelihood, x0, arguments,
 
             x_curr[j] = xj
             llhood_new = likelihood(x_curr, arguments)
-            alpha = min(1, np.exp(llhood_new - llhood + q))
 
             # rejection step; accept with probability `alpha`
+            alpha = min(1, np.exp(llhood_new - llhood + q))
             if np.random.random() < alpha:
                 llhood = llhood_new
             else:
@@ -107,21 +108,22 @@ def optimum_jump(likelihood, x0, arguments,
         if i % recomputing_cycle == 0 and i > 0:
             if cmp(report, 'Nothing') != 0:
                 print i
-                print rejection
-                print dx
+                print 'rejection rate', rejection
+                print 'step size', dx
             dx, check = _adjust_jump(dx, rejection, target_rejection_rate, delta)
             if check == True:
                 # all rejection rates within range
                 print i
-                print rejection
-                print dx
+                print 'final rejection rate', rejection
+                print 'final step size', dx
                 return dx
-                # reset all rejection rates
+            # reset all rejection rates
             rejection *= 0.
 
     return dx
 
 
+# TODO: simplify, move stopping condition ("check") to optimum_jump
 def _adjust_jump(dx, rejection, target_reject_rate, delta):
     """Adapt step size to get closer to target rejection rate.
 
