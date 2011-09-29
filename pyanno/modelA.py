@@ -422,6 +422,32 @@ class ModelA(object):
             self.theta = save_params
 
 
+    # TODO ideally, one would infer the posterior over correctness (T_ijk)
+    #   first, and then return the probability of each value
+#    def infer_correctness(self, annotations):
+#        """Infer posterior distribution over correctness patterns."""
+#        nitems = annotations.shape[0]
+#        nclasses = self.nclasses
+#
+#        posterior = np.zeros((nitems, self.annotators_per_item**2))
+#        alpha = self._compute_alpha()
+#        for i, row in enumerate(annotations):
+#            valid_idx = np.where(row >= 0)
+#            vijk = row[valid_idx]
+#            tijk = self.theta[valid_idx]
+#            p = self._compute_posterior_T_triplet(vijk, tijk, alpha)
+#            posteriors[i, :] = p
+#
+#        return posteriors
+#
+#
+#    def _compute_posterior_T_triplet(self, v, t, alpha):
+#        # switch over agreement pattern
+#        # 0=aaa, 1=aaA, 2=aAa, 3=Aaa, 4=Aa@
+#        if v[0] == v[1] == v[2]:  # aaa pattern
+#            pass
+
+
     def infer_labels(self, annotations):
         """Infer posterior distribution over true labels."""
         nitems = annotations.shape[0]
