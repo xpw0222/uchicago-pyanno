@@ -65,20 +65,9 @@ class TestModelBt(unittest.TestCase):
         annotations = true_model.generate_annotations(labels)
 
         # create a new model
-        # do not start from gamma_i = 1/nclasses: it is a symmetry point
         model = ModelBt.random_model(nclasses, nitems)
-        # get optimal parameters (to make sure we're at the optimum
+        # get optimal parameters (to make sure we're at the optimum)
         model.mle(annotations)
-
-        print 'MLE gamma'
-        print model.gamma
-        print 'MLE theta'
-        print model.theta
-
-        def wrap_lhood(x, arguments):
-            gamma, theta = model._vector_to_params(x)
-            counts, dim, _ = arguments
-            return model._log_likelihood_counts(counts)
 
         # modify parameters, to give false start to sampler
         real_theta = model.theta.copy()
@@ -86,7 +75,7 @@ class TestModelBt(unittest.TestCase):
         # save current parameters
         gamma_before, theta_before = model.gamma.copy(), model.theta.copy()
         samples = model.sample_posterior_over_theta(annotations, nsamples)
-        # test_ the mean of the sampled parameters is the same as the MLE one
+        # test: the mean of the sampled parameters is the same as the MLE one
         # (up to 3 standard deviations of the estimate sample distribution)
         testing.assert_array_less(np.absolute(samples.mean(0)-real_theta),
                                   3.*samples.std(0))
