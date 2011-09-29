@@ -88,7 +88,7 @@ class TestModelA(unittest.TestCase):
         # test simple model, check that we get to global optimum
         nclasses, nitems = 3, 1000*8
         # create random model and data (this is our ground truth model)
-        theta = np.array([0.5, 0.9, 0.6, 0.65, 0.87, 0.2, 0.9, 0.78])
+        theta = np.array([0.5, 0.9, 0.6, 0.65, 0.87, 0.54, 0.9, 0.78])
         true_model = ModelA.random_model(nclasses, theta=theta)
         annotations = true_model.generate_annotations(nitems)
 
@@ -98,8 +98,8 @@ class TestModelA(unittest.TestCase):
         model.mle(annotations, estimate_alpha=False, estimate_omega=False)
         after_llhood = model.log_likelihood(annotations)
 
-        self.assertGreater(after_llhood, before_llhood)
         testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
+        self.assertGreater(after_llhood, before_llhood)
 
 
     def test_ml_estimation(self):
@@ -119,7 +119,7 @@ class TestModelA(unittest.TestCase):
         for _ in xrange(20):
             theta = true_model.theta
             omega = np.random.normal(loc=true_model.omega, scale=0.1)
-            omega = np.clip(omega, 0., 1.)
+            omega = np.clip(omega, 0.001, 0.999)
             omega /= omega.sum()
             model = ModelA(nclasses, omega=omega, theta=theta)
             llhood = model.log_likelihood(annotations)

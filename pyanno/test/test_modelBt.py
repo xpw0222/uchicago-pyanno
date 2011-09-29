@@ -20,9 +20,9 @@ class TestModelBt(unittest.TestCase):
         model.mle(annotations)
         after_llhood = model.log_likelihood(annotations)
 
-        self.assertGreater(after_llhood, before_llhood)
         testing.assert_allclose(model.gamma, true_model.gamma, atol=1e-1, rtol=0.)
         testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
+        self.assertGreater(after_llhood, before_llhood)
 
 
     def test_log_likelihood(self):
