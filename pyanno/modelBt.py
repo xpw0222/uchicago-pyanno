@@ -22,7 +22,7 @@ def _get_triplet_combinations(n):
 # map(annotations) optimize self.log_likelihood + log P(theta | beta prior)
 class ModelBt(object):
     """
-    At the moment the model assumes 1) a total of 8 annontators, and 2) each
+    At the moment the model assumes 1) a total of 8 annotators, and 2) each
     item is annotated by 3 annotators.
     """
 
@@ -116,10 +116,8 @@ class ModelBt(object):
     # ---- Parameters estimation methods
 
     def mle(self, annotations):
-        nclasses = self.nclasses
-
         counts = compute_counts(annotations, self.nclasses)
-        params0 = self._random_initial_parameters(annotations)
+        params_start = self._random_initial_parameters(annotations)
 
         # wrap log likelihood function to give it to optimize.fmin
         _llhood_counts = self._log_likelihood_counts
@@ -129,7 +127,7 @@ class ModelBt(object):
             return - _llhood_counts(counts)
 
         # TODO: use gradient, constrained optimization
-        params_best = scipy.optimize.fmin(_wrap_llhood, params0,
+        params_best = scipy.optimize.fmin(_wrap_llhood, params_start,
                                           xtol=1e-4, ftol=1e-4,
                                           disp=True, maxiter=1e+10,
                                           maxfun=1e+30)
@@ -158,7 +156,7 @@ class ModelBt(object):
 
 
     def _vector_to_params(self, params):
-        """Convert a parmeters vector to (gamma, theta) tuple.
+        """Convert a parameters vector to (gamma, theta) tuple.
 
         Used to interface with the optimization routines.
         """
@@ -209,6 +207,7 @@ class ModelBt(object):
         gamma = self.gamma
 
         # TODO: check if it's possible to replace these constraints with bounded optimization
+        # TODO: this check can be done in _log_likelihood_counts
         if (min(min(gamma), min(theta_triplet)) < 0.
             or max(max(gamma), max(theta_triplet)) > 1.):
             #return np.inf
@@ -304,7 +303,7 @@ class ModelBt(object):
             self.gamma, self.theta = save_params
 
 
-    # ---- sampling posterior over parameters
+    # ---- posterior distributions
 
     def infer_labels(self, annotations):
         """Infer posterior distribution over true labels."""

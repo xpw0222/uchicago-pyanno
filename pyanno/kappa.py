@@ -4,7 +4,7 @@ def agr(confusion_mat):
     """Return the agreement rate for the specified confusion matrix.
     
     Keyword arguments:
-    confusion_mat -- square confusion matrix of catgorical responses
+    confusion_mat -- square confusion matrix of categorical responses
     """
     tot = mat_sum(confusion_mat)
     agr = 0
@@ -19,7 +19,7 @@ def s(confusion_mat):
     """Return the s statistic for the specified confusion matrix.
 
     Keyword arguments:
-    confusion_mat -- square confusion matrix of catgorical responses
+    confusion_mat -- square confusion matrix of categorical responses
     """
     agr_ = agr(confusion_mat)
     e_agr = 1.0/float(len(confusion_mat))
@@ -30,7 +30,7 @@ def pi(confusion_mat):
     """Return Scott's pi statistic for the specified confusion matrix.
 
     Keyword arguments:
-    confusion_mat -- square confusion matrix of catgorical responses
+    confusion_mat -- square confusion matrix of categorical responses
     """
     agr_ = agr(confusion_mat)
     K = len(confusion_mat)
@@ -51,7 +51,7 @@ def kappa(confusion_mat):
     """Return Cohen's kappa statistic for the specified confusion matrix.
 
     Keyword arguments:
-    confusion_mat -- square confusion matrix of catgorical responses
+    confusion_mat -- square confusion matrix of categorical responses
     """
     agr_ = agr(confusion_mat)
     K = len(confusion_mat)
@@ -79,7 +79,7 @@ def chance_adj_agr(agr,expected_agr):
     Keyword arguments:
     agr -- agreement
     expected_agr -- expected agreement
-    confusion_mat -- square confusion matrix of catgorical responses
+    confusion_mat -- square confusion matrix of categorical responses
     """
     return (agr - expected_agr)/(1.0 - expected_agr)
           

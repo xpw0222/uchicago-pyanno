@@ -346,32 +346,29 @@ class ModelA(object):
             prob = (thetat.prod() + not_thetat.prod() * alpha[3])
 
         elif pattern == 1:  # aaA patterns
-            prob = (  thetat[0] * thetat[1] * not_thetat[2]
-                      + not_thetat[0] * not_thetat[1] * thetat[2] * alpha[2]
-                      + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[
-                                                                        4])
+            prob = (thetat[0] * thetat[1] * not_thetat[2]
+                    + not_thetat[0] * not_thetat[1] * thetat[2] * alpha[2]
+                    + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[4])
 
         elif pattern == 2:  # aAa patterns
-            prob = (  thetat[0] * not_thetat[1] * thetat[2]
-                      + not_thetat[0] * thetat[1] * not_thetat[2] * alpha[1]
-                      + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[
-                                                                        5])
+            prob = (thetat[0] * not_thetat[1] * thetat[2]
+                    + not_thetat[0] * thetat[1] * not_thetat[2] * alpha[1]
+                    + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[5])
 
         elif pattern == 3:  # Aaa patterns
-            prob = (  not_thetat[0] * thetat[1] * thetat[2]
-                      + thetat[0] * not_thetat[1] * not_thetat[2] * alpha[0]
-                      + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[
-                                                                        6])
+            prob = (not_thetat[0] * thetat[1] * thetat[2]
+                    + thetat[0] * not_thetat[1] * not_thetat[2] * alpha[0]
+                    + not_thetat[0] * not_thetat[1] * not_thetat[2] * alpha[6])
 
         elif pattern == 4:  # Aa@ pattern
-            prob = (  not_thetat[0] * not_thetat[1] * not_thetat[2]
+            prob = (not_thetat[0] * not_thetat[1] * not_thetat[2]
                       * (1. - alpha[3] - alpha[4] - alpha[5] - alpha[6])
-                      + thetat[0] * not_thetat[1] * not_thetat[2]
-            * (1. - alpha[0])
-                      + not_thetat[0] * thetat[1] * not_thetat[2]
-            * (1. - alpha[1])
-                      + not_thetat[0] * not_thetat[1] * thetat[2]
-            * (1. - alpha[2]))
+                    + thetat[0] * not_thetat[1] * not_thetat[2]
+                      * (1. - alpha[0])
+                    + not_thetat[0] * thetat[1] * not_thetat[2]
+                      * (1. - alpha[1])
+                    + not_thetat[0] * not_thetat[1] * thetat[2]
+                      * (1. - alpha[2]))
 
         return prob
 
