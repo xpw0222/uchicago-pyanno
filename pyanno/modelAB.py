@@ -57,174 +57,10 @@ from enthought.traits.ui.menu import CancelButton, ApplyButton, Action
 from pyanno.modelA import ModelA
 
 from pyanno.modelBt import ModelBt
-from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import compute_counts, string_wrap
 
 
 # FIXME refactoring breaks the loading of best results over multiple runs
-
-#=======================================================
-#=======================================================
-#                Model A
-#-------------------------------------------------------
-def computePosteriorA(vijk, tijk, alphas, dimension):
-#
-# *vijk* -- values provided by annotators *i*, *j*, and *k*
-# *tijk* -- correctness values for annotators *i*, *j*, and *k*
-#  *alphas* -- pre-computed values of alpha-parameters
-#  *dimension* -- the number of permissible annotation values
-#
-#  *posteriors*  -- posterior probability values for annotations 1, 2, ..., *dimension*
-#  note: annotation values *vijk(i)* -- *integer* values between 1 and *dimension*
-
-    posteriors = zeros(dimension, float)
-
-    #-----------------------------------------------
-    # aaa
-    if vijk[0] == vijk[1] and vijk[1] == vijk[2]:
-        x1 = tijk[0] * tijk[1] * tijk[2]
-        x2 = (1 - tijk[0]) * (1 - tijk[1]) * (1 - tijk[2])
-        p1 = x1 / (x1 + alphas[3] * x2)
-        p2 = (1 - p1) / (dimension - 1)
-
-        for j in range(dimension):
-            if vijk[0] == j:
-                posteriors[j] = p1
-            else:
-                posteriors[j] = p2
-            #-----------------------------------------------
-            # aaA
-    elif vijk[0] == vijk[1] and vijk[1] != vijk[2]:
-        x1 = tijk[0] * tijk[1] * (1 - tijk[2])
-        x2 = (1 - tijk[0]) * (1 - tijk[1]) * tijk[2]
-        x3 = (1 - tijk[0]) * (1 - tijk[1]) * (1 - tijk[2])
-
-        # a is correct
-        p1 = x1 / (x1 + alphas[2] * x2 + alphas[4] * x3)
-
-        # A is correct
-        p2 = (alphas[2] * x2) / (x1 + alphas[2] * x2 + alphas[4] * x3)
-
-        # neither
-        p3 = (1 - p1 - p2) / (dimension - 2)
-
-        for j in range(dimension):
-            if vijk[0] == j:
-                posteriors[j] = p1
-            elif vijk[2] == j:
-                posteriors[j] = p2
-            else:
-                posteriors[j] = p3
-            #-----------------------------------------------
-            # aAa
-    elif vijk[0] == vijk[2] and vijk[1] != vijk[2]:
-        x1 = tijk[0] * (1 - tijk[1]) * tijk[2]
-        x2 = (1 - tijk[0]) * tijk[1] * (1 - tijk[2])
-        x3 = (1 - tijk[0]) * (1 - tijk[1]) * (1 - tijk[2])
-
-        # a is correct
-        p1 = x1 / (x1 + alphas[1] * x2 + alphas[5] * x3)
-
-        # A is correct
-        p2 = (alphas[1] * x2) / (x1 + alphas[1] * x2 + alphas[5] * x3)
-
-        # neither
-        p3 = (1 - p1 - p2) / (dimension - 2)
-
-        for j in range(dimension):
-            if vijk[0] == j:
-                posteriors[j] = p1
-            elif vijk[1] == j:
-                posteriors[j] = p2
-            else:
-                posteriors[j] = p3
-            #-----------------------------------------------
-            # Aaa
-    elif vijk[1] == vijk[2] and vijk[0] != vijk[2]:
-        x1 = (1 - tijk[0]) * tijk[1] * tijk[2]
-        x2 = tijk[0] * (1 - tijk[1]) * (1 - tijk[2])
-        x3 = (1 - tijk[0]) * (1 - tijk[1]) * (1 - tijk[2])
-
-        # a is correct
-        p1 = x1 / (x1 + alphas[0] * x2 + alphas[6] * x3)
-
-        # A is correct
-        p2 = (alphas[0] * x2) / (x1 + alphas[0] * x2 + alphas[6] * x3)
-
-        # neither
-        p3 = (1 - p1 - p2) / (dimension - 2)
-
-        for j in range(dimension):
-            if vijk[0] == j:
-                posteriors[j] = p2
-            elif vijk[2] == j:
-                posteriors[j] = p1
-            else:
-                posteriors[j] = p3
-            #-----------------------------------------------
-            # aAb
-    elif vijk[0] != vijk[1] and vijk[1] != vijk[2]:
-        x1 = tijk[0] * (1 - tijk[1]) * (1 - tijk[2])
-        x2 = (1 - tijk[0]) * tijk[1] * (1 - tijk[2])
-        x3 = (1 - tijk[0]) * (1 - tijk[1]) * tijk[2]
-        x4 = (1 - tijk[0]) * (1 - tijk[1]) * (1 - tijk[2])
-
-        summa1 = 1 - alphas[3] - alphas[4] - alphas[5] - alphas[6]
-        summa2 = (1 - alphas[0]) * x1 + (1 - alphas[1]) * x2 + (1 - alphas[
-                                                                    2]) * x3 + summa1 * x4
-
-        # a is correct
-        p1 = (1 - alphas[0]) * x1 / summa2
-
-        # A is correct
-        p2 = (1 - alphas[1]) * x2 / summa2
-
-        # b is correct
-        p3 = (1 - alphas[2]) * x3 / summa2
-
-        # (a, A, b) are all incorrect
-        p4 = (summa1 * x4 / summa2) / (dimension - 3)
-
-        for j in range(dimension):
-            if vijk[0] == j:
-                posteriors[j] = p1
-            elif vijk[1] == j:
-                posteriors[j] = p2
-            elif vijk[2] == j:
-                posteriors[j] = p3
-            else:
-                posteriors[j] = p4
-
-    # check posteriors: non-negative, sum to 1
-    if sum(posteriors) - 1.0 > 0.0000001 or min(posteriors) < 0:
-        print 'Aberrant posteriors!!!', posteriors
-        print sum(posteriors)
-        print min(posteriors)
-        time.sleep(60)
-
-    return posteriors
-
-
-#-------------------------------------------------------------
-def random_startA8(estimatealphas, report):
-    if estimatealphas == 1:
-        x = zeros(11, float)
-    else:
-        x = zeros(8, float)
-
-    for i in range(8):
-        x[i] = 0.5 + np.random.random() * 0.5
-
-    if estimatealphas == 1:
-        while True:
-            for i in range(8, 11):
-                x[i] = np.random.random() / 4.
-            if x[9] + 3. * x[10] < 0.99:
-                break
-
-    if cmp(report, 'Nothing') != 0:
-        print "Start:" + str(x)
-    return x
 
 
 #==========================================================
@@ -268,24 +104,9 @@ def num2comma(num):
 
 #----------------------------------------------------------
 def format_posteriors(mat, alphas, dimension, thetas, gam, modelnumber,
-                      model_Bt):
-    m = mat.shape[0]
-    posteriors = zeros([m, dimension], float)
+                      model):
     mat = array(mat)
-    thetas = array(thetas)
-
-    if modelnumber==1:
-        i = 0
-        for row in mat:
-            ind = where(row >= 0)
-            ind1 = where(row < 0)
-            vijk = row[ind]
-            tijk = thetas[ind].copy()
-            p = computePosteriorA(vijk, tijk, alphas, dimension)
-            posteriors[i, :] = p
-            i += 1
-    else:
-        posteriors = model_Bt.infer_labels(mat)
+    posteriors = model.infer_labels(mat)
 
     return posteriors
 
@@ -886,13 +707,11 @@ class ABmodelGUI(HasTraits):
         FF = zeros(numberOfRuns, float)
         alphas = []
         gammas = []
-        omegas = estimateOmegas8(data, dim, report)
 
 
         #---------
         # model A
         if modelnumber == 1:
-            alphas = getAlphas(omegas)
             if estimatealphas == True:
                 Res = zeros([numberOfRuns, 11], float)
             else:
@@ -984,6 +803,10 @@ class ABmodelGUI(HasTraits):
 
         #--------------------------------------------------------------------------
         # --------------- save meta-data -------------------------------------------
+        if modelnumber==1:
+            omegas = model_A.omega
+        else:
+            omegas = []
         save_metadata(filename, originaldata, annotators, codes, n, omegas,
                       report)
         #--------------------------------------------------------------------------
@@ -1091,11 +914,16 @@ class ABmodelGUI(HasTraits):
                     alphas[4] = Res[i, 10]
                     alphas[5] = Res[i, 10]
                     alphas[6] = Res[i, 10]
-                model_Bt = None
+                else:
+                    alphas = model_A._compute_alpha()
+            post = format_posteriors(mat, model_A._compute_alpha(), dim,
+                                     model_A.theta, [], modelnumber,
+                                     model_A)
+        else:
+            # compute posteriors
+            post = format_posteriors(mat, alphas, dim, thetas, gammas, modelnumber,
+                                     model_Nt)
 
-                # compute posteriors
-        post = format_posteriors(mat, alphas, dim, thetas, gammas, modelnumber,
-                                 model_Bt)
         post = array(post, float)
 
         for i in range(post.shape[0]):
