@@ -243,7 +243,7 @@ class ModelA(object):
             omega = (np.bincount(annotations[annotations!=-1])
                           / (3.*annotations.shape[0]))
         else:
-            omega = ModelA._random_omega(self.nclasses)
+            omega = self.omega
 
         theta = ModelA._random_theta(self.nannotators)
         return theta, omega
