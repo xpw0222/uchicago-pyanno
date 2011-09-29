@@ -222,7 +222,7 @@ class ModelA(object):
             return - self._log_likelihood_counts(counts)
 
         params_start, omega = self._random_initial_parameters(annotations,
-                                                              estiamte_omega)
+                                                              estimate_omega)
         self.omega = omega
         params_best = scipy.optimize.fmin(_wrap_lhood,
                                           params_start,
