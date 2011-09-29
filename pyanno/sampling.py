@@ -78,7 +78,7 @@ def optimum_jump(likelihood, x0, arguments,
 
     # initial jump sizes are random
     for i in range(m):
-        dx[i] = (x_upper[i] - x_lower[i]) / 30.
+        dx[i] = (x_upper[i] - x_lower[i]) / 100.
 
     # *x_curr* is the current version of arguments
     x_curr = x0.copy()
