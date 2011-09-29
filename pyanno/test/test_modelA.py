@@ -165,5 +165,38 @@ class TestModelA(unittest.TestCase):
         testing.assert_equal(model.theta, theta_before)
 
 
+    def test_inference(self):
+        # annotators agreeing, check that inferred correctness is either
+        # CCC or III
+        nclasses, nitems = 4, 50*8
+
+        # create random model (this is our ground truth model)
+        omega = np.ones((nclasses,)) / float(nclasses)
+        theta = np.ones((8,)) * 0.9999
+        true_model = ModelA(nclasses, theta, omega)
+        # create random data
+        annotations = true_model.generate_annotations(nitems)
+
+        posterior = true_model.infer_labels(annotations)
+        testing.assert_allclose(posterior.sum(1), 1., atol=1e-6, rtol=0.)
+        inferred = posterior.argmax(1)
+        expected = annotations.max(1)
+
+        testing.assert_equal(inferred, expected)
+        self.assertTrue(np.all(posterior[np.arange(nitems),inferred] > 0.999))
+
+        # at chance, disagreeing annotators: most accurate wins
+        omega = np.ones((nclasses,)) / float(nclasses)
+        theta = np.ones((8,))
+        theta[1:4] = np.array([0.9, 0.6, 0.5])
+        model = ModelA(nclasses, theta, omega)
+
+        data = np.array([[-1, 0, 1, 2, -1, -1, -1, -1,]])
+        posterior = model.infer_labels(data)
+        posterior = posterior[0]
+        self.assertTrue(posterior[0] > posterior[1]
+                        > posterior[2] > posterior[3])
+
+
 if __name__ == '__main__':
     unittest.main()
