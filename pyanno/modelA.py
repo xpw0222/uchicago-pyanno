@@ -571,58 +571,56 @@ class ModelA(object):
         return posteriors
 
 
-    # TODO optimize using outer products
     def _compute_alpha(self):
-        """Compute the parameters `alpha` given the parameters `omega`."""
+        """Compute the parameters `alpha` given the parameters `omega`.
+
+        Cf. Table 4 in Rzhetsky et al., 2009.
+        """
 
         omega = self.omega
         nclasses = self.nclasses
         alpha = np.zeros((7,))
 
-        # dublet sums
-        s2 = np.zeros((nclasses,))
-        s3 = np.zeros((nclasses,))
+        # ------ alpha_1,2,3
+
+        # sum over all doublets
+        outer_omega = np.outer(omega, omega)
+        sum_wi_wk =  outer_omega.sum()
+
+        # sum over all omega_i * omega_j, where i!=k and j!=k
+        sum_wi_wj_not_k = np.zeros((nclasses,))
+        # sum over all omega_i ** 2, where i!=k
+        sum_wi2_not_k = np.zeros((nclasses,))
 
         for k in range(nclasses):
-            for i in range(nclasses):
-                for j in range(nclasses):
-                    if i != k and j != k:
-                        s2[k] += omega[i] * omega[j]
-                        # triplet sums
+            sum_wi_wj_not_k[k] = (sum_wi_wk
+                                  - 2*outer_omega[:,k].sum()
+                                  + outer_omega[k,k])
+            sum_wi2_not_k[k] = (outer_omega.diagonal().sum()
+                                  - outer_omega[k,k])
 
+        a1 = (omega * sum_wi2_not_k / sum_wi_wj_not_k).sum()
+        alpha[0:3] = a1
+
+        # ------ alpha_4,5,6,7
+
+        # sum over all triplets
+        outer_omega3 = (outer_omega[:,:,np.newaxis]
+                        * omega[np.newaxis,np.newaxis,:])
+        sum_wi_wj_wl = outer_omega3.sum()
+
+        # sum over omega_i * omega_j * omega_l, where i!=k and j!=k and l!=k
+        sum_wi_wj_wl_not_k = np.zeros((nclasses,))
         for k in range(nclasses):
-            for i in range(nclasses):
-                for j in range(nclasses):
-                    for l in range(nclasses):
-                        if i != k and j != k and l != k:
-                            s3[k] += omega[i] * omega[j] * omega[l]
+            sum_wi_wj_wl_not_k[k] = (sum_wi_wj_wl
+                                     - 3.*outer_omega3[:,:,k].sum()
+                                     + 3.*outer_omega3[:,k,k].sum()
+                                     - outer_omega3[k,k,k])
+        omega3 = omega**3
+        sum_wi3_not_k = omega3.sum() - omega3
 
-        # a1 / a2 / a3
-        a1 = 0
-        for i in range(nclasses):
-            tmp = 0
-            for j in range(nclasses):
-                if j != i:
-                    tmp += omega[j] ** 2
-            a1 += omega[i] * tmp / s2[i]
-
-        alpha[0] = a1
-        alpha[1] = a1
-        alpha[2] = a1
-
-        # a4
-
-        a4 = 0
-        for i in range(nclasses):
-            tmp = 0
-            for j in range(nclasses):
-                if j != i:
-                    tmp += omega[j] ** 3
-            a4 += omega[i] * tmp / s3[i]
-
+        a4 = (omega * sum_wi3_not_k / sum_wi_wj_wl_not_k).sum()
         alpha[3] = a4
-
-        # a5, a6, a7
 
         a5 = 0
         for i in range(nclasses):
@@ -631,10 +629,8 @@ class ModelA(object):
                 for k in range(nclasses):
                     if j != i and k != i and j != k:
                         tmp += omega[k] * omega[j] ** 2
-            a5 += omega[i] * tmp / s3[i]
+            a5 += omega[i] * tmp / sum_wi_wj_wl_not_k[i]
 
-        alpha[4] = a5
-        alpha[5] = a5
-        alpha[6] = a5
+        alpha[4:7] = a5
 
         return alpha
