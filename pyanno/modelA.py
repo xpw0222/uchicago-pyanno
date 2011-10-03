@@ -214,12 +214,12 @@ class ModelA(object):
     ##### Parameters estimation methods #######################################
 
     def mle(self, annotations, estimate_alpha=False, estimate_omega=True,
-            use_prior = True):
+            use_prior=False):
         counts = compute_counts(annotations, self.nclasses)
 
         def _wrap_lhood(params):
             self.theta = params
-            return - self._log_likelihood_counts(counts)
+            return - self._log_likelihood_counts(counts, use_prior=use_prior)
 
         params_start, omega = self._random_initial_parameters(annotations,
                                                               estimate_omega)
