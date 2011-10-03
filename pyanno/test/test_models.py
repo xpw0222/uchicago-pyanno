@@ -30,7 +30,7 @@ class TestModelB(unittest.TestCase):
         nitems = 8
 
         # check size of parameters
-        model = ModelB.create_initial_state(nclasses, nannotators, nitems)
+        model = ModelB.create_initial_state(nclasses, nannotators)
         self.assertEqual(model.pi.shape, (nclasses,))
         assert_is_distributions(model.pi)
         self.assertEqual(model.theta.shape, (nannotators, nclasses, nclasses))
@@ -44,8 +44,8 @@ class TestModelB(unittest.TestCase):
         pis = sp.zeros((nsamples, nclasses))
         thetas = sp.zeros((nsamples, nannotators, nclasses, nclasses))
         for n in xrange(nsamples):
-            model = ModelB.create_initial_state(nclasses, nannotators, nitems,
-                                        alpha, beta)
+            model = ModelB.create_initial_state(nclasses, nannotators,
+                                                alpha, beta)
             pis[n,:] = model.pi
             thetas[n,...] = model.theta
         assert_is_dirichlet(pis, beta)
@@ -57,12 +57,12 @@ class TestModelB(unittest.TestCase):
         nclasses = 4
         nannotators = 6
         nitems = 8
-        model = ModelB.create_initial_state(nclasses, nannotators, nitems)
+        model = ModelB.create_initial_state(nclasses, nannotators)
 
         nsamples = 1000
         labels = sp.empty((nsamples, nitems), dtype=int)
         for i in xrange(nsamples):
-            labels[i] = model.generate_labels()
+            labels[i] = model.generate_labels(nitems)
 
         # NOTE here we make use of the fact that the prior is the same for all
         # items
@@ -74,7 +74,7 @@ class TestModelB(unittest.TestCase):
         nclasses = 4
         nannotators = 6
         nitems = 4
-        model = ModelB.create_initial_state(nclasses, nannotators, nitems)
+        model = ModelB.create_initial_state(nclasses, nannotators)
 
         nsamples = 3000
         labels = sp.arange(nclasses)
@@ -98,12 +98,12 @@ class TestModelB(unittest.TestCase):
 
         nclasses, nannotators, nitems = 2, 3, 10000
         # create random model and data (this is our ground truth model)
-        true_model = ModelB.create_initial_state(nclasses, nannotators, nitems)
-        labels = true_model.generate_labels()
+        true_model = ModelB.create_initial_state(nclasses, nannotators)
+        labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations(labels)
 
         # create a new, empty model and infer back the parameters
-        model = ModelB(nclasses, nannotators, nitems)
+        model = ModelB(nclasses, nannotators)
         model.map(annotations, epsilon=1e-3, max_epochs=1000)
 
         testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
@@ -113,8 +113,8 @@ class TestModelB(unittest.TestCase):
         # test complex model, check that it is stable (converge back to optimum)
         nclasses, nannotators, nitems = 4, 10, 10000
         # create random model and data (this is our ground truth model)
-        true_model = ModelB.create_initial_state(nclasses, nannotators, nitems)
-        labels = true_model.generate_labels()
+        true_model = ModelB.create_initial_state(nclasses, nannotators)
+        labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations(labels)
 
         # create a new model with the true parameters, plus noise
@@ -122,7 +122,7 @@ class TestModelB(unittest.TestCase):
                                                     scale=0.01/nclasses)
         pi = true_model.pi + sp.random.normal(loc=true_model.pi,
                                               scale=0.01/nclasses)
-        model = ModelB(nclasses, nannotators, nitems, pi, theta)
+        model = ModelB(nclasses, nannotators, pi, theta)
         model.map(annotations, epsilon=1e-3, max_epochs=1000)
 
         testing.assert_allclose(model.pi, true_model.pi, atol=1e-1, rtol=0.)

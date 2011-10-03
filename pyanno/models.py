@@ -10,12 +10,11 @@ from pyanno.multinom import dirichlet_llhood
 class ModelB(object):
     """See Model.txt for a description of the model."""
 
-    def __init__(self, nclasses, nannotators, nitems,
+    def __init__(self, nclasses, nannotators,
                  pi=None, theta=None,
                  alpha=None, beta=None):
         self.nclasses = nclasses
         self.nannotators = nannotators
-        self.nitems = nitems
 
         if pi is None:
             self.pi = sp.ones((nclasses,)) / nclasses
@@ -40,12 +39,11 @@ class ModelB(object):
     ##### Model and data generation methods ###################################
 
     @staticmethod
-    def create_initial_state(nclasses, nannotators, nitems, alpha=None, beta=None):
+    def create_initial_state(nclasses, nannotators, alpha=None, beta=None):
         """Factory method that returns a random model.
 
         Input:
         nclasses -- number of categories
-        nitems -- number of items being annotated
         nannotators -- number of annotators
         alpha -- Parameters of Dirichlet prior over annotator choices
                  Default: peaks at correct annotation, decays to 1
@@ -72,17 +70,18 @@ class ModelB(object):
             for k in xrange(nclasses):
                 theta[j,k,:] = sp.random.dirichlet(alpha[k,:])
 
-        return ModelB(nclasses, nannotators, nitems, pi, theta, alpha, beta)
+        return ModelB(nclasses, nannotators, pi, theta, alpha, beta)
 
-    def generate_labels(self):
+    def generate_labels(self, nitems):
         """Generate random labels from the model."""
-        return random_categorical(self.pi, self.nitems)
+        return random_categorical(self.pi, nitems)
 
     def generate_annotations(self, labels):
         """Generate random annotations given labels."""
-        annotations = sp.empty((self.nannotators, self.nitems), dtype=int)
+        nitems = labels.shape[0]
+        annotations = sp.empty((self.nannotators, nitems), dtype=int)
         for j in xrange(self.nannotators):
-            for i in xrange(self.nitems):
+            for i in xrange(nitems):
                 annotations[j,i]  = (
                     random_categorical(self.theta[j,labels[i],:], 1))
         return annotations
@@ -141,11 +140,12 @@ class ModelB(object):
     # TODO check equations with paper
     def _map_em_step(self, annotations, init_accuracy=0.6):
         # FIXME temporary code to interface legacy code
-        item = sp.repeat(sp.arange(self.nitems), self.nannotators)
-        anno = sp.tile(sp.arange(self.nannotators), self.nitems)
+        nitems = annotations.shape[1]
+
+        item = sp.repeat(sp.arange(nitems), self.nannotators)
+        anno = sp.tile(sp.arange(self.nannotators), nitems)
         label = sp.ravel(annotations.T)
 
-        nitems = self.nitems
         nannotators = self.nannotators
         nclasses = self.nclasses
         alpha = self.alpha
