@@ -30,7 +30,7 @@ class TestModelB(unittest.TestCase):
         nitems = 8
 
         # check size of parameters
-        model = ModelB.random_model(nclasses, nannotators, nitems)
+        model = ModelB.create_initial_state(nclasses, nannotators, nitems)
         self.assertEqual(model.pi.shape, (nclasses,))
         assert_is_distributions(model.pi)
         self.assertEqual(model.theta.shape, (nannotators, nclasses, nclasses))
@@ -44,7 +44,7 @@ class TestModelB(unittest.TestCase):
         pis = sp.zeros((nsamples, nclasses))
         thetas = sp.zeros((nsamples, nannotators, nclasses, nclasses))
         for n in xrange(nsamples):
-            model = ModelB.random_model(nclasses, nannotators, nitems,
+            model = ModelB.create_initial_state(nclasses, nannotators, nitems,
                                         alpha, beta)
             pis[n,:] = model.pi
             thetas[n,...] = model.theta
@@ -57,7 +57,7 @@ class TestModelB(unittest.TestCase):
         nclasses = 4
         nannotators = 6
         nitems = 8
-        model = ModelB.random_model(nclasses, nannotators, nitems)
+        model = ModelB.create_initial_state(nclasses, nannotators, nitems)
 
         nsamples = 1000
         labels = sp.empty((nsamples, nitems), dtype=int)
@@ -74,7 +74,7 @@ class TestModelB(unittest.TestCase):
         nclasses = 4
         nannotators = 6
         nitems = 4
-        model = ModelB.random_model(nclasses, nannotators, nitems)
+        model = ModelB.create_initial_state(nclasses, nannotators, nitems)
 
         nsamples = 3000
         labels = sp.arange(nclasses)
@@ -98,7 +98,7 @@ class TestModelB(unittest.TestCase):
 
         nclasses, nannotators, nitems = 2, 3, 10000
         # create random model and data (this is our ground truth model)
-        true_model = ModelB.random_model(nclasses, nannotators, nitems)
+        true_model = ModelB.create_initial_state(nclasses, nannotators, nitems)
         labels = true_model.generate_labels()
         annotations = true_model.generate_annotations(labels)
 
@@ -113,7 +113,7 @@ class TestModelB(unittest.TestCase):
         # test complex model, check that it is stable (converge back to optimum)
         nclasses, nannotators, nitems = 4, 10, 10000
         # create random model and data (this is our ground truth model)
-        true_model = ModelB.random_model(nclasses, nannotators, nitems)
+        true_model = ModelB.create_initial_state(nclasses, nannotators, nitems)
         labels = true_model.generate_labels()
         annotations = true_model.generate_annotations(labels)
 

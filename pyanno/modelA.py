@@ -79,7 +79,7 @@ class ModelA(object):
     ##### Model and data generation methods ###################################
 
     @staticmethod
-    def random_model(nclasses, theta=None, omega=None):
+    def create_initial_state(nclasses, theta=None, omega=None):
         """Factory method returning a random model.
 
          Input:

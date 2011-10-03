@@ -40,7 +40,7 @@ class ModelB(object):
     ##### Model and data generation methods ###################################
 
     @staticmethod
-    def random_model(nclasses, nannotators, nitems, alpha=None, beta=None):
+    def create_initial_state(nclasses, nannotators, nitems, alpha=None, beta=None):
         """Factory method that returns a random model.
 
         Input:

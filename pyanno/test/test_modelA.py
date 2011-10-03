@@ -10,7 +10,7 @@ class TestModelA(unittest.TestCase):
         nitems = 50000
         nclasses = 3
         theta = np.array([0.3, 0.6, 0.7])
-        model = ModelA.random_model(nclasses)
+        model = ModelA.create_initial_state(nclasses)
         incorrect = model._generate_incorrectness(nitems, theta)
         correct_freq = 1. - incorrect.sum(0)/float(nitems)
         testing.assert_allclose(correct_freq, theta, atol=1e-2, rtol=0)
@@ -21,7 +21,7 @@ class TestModelA(unittest.TestCase):
 
         # when all correct, only index 0 (aaa) is possible
         nitems = 100
-        model = ModelA.random_model(nclasses)
+        model = ModelA.create_initial_state(nclasses)
         incorrect = np.zeros((nitems, 3), dtype=bool)
         agreement = model._generate_agreement(incorrect)
         self.assertTrue(agreement.shape, (nitems,))
@@ -29,7 +29,7 @@ class TestModelA(unittest.TestCase):
 
         # all incorrect, check frequency corresponds to alpha[3:]
         nitems = 10000
-        model = ModelA.random_model(nclasses)
+        model = ModelA.create_initial_state(nclasses)
         incorrect = np.ones((nitems, 3), dtype=bool)
         agreement = model._generate_agreement(incorrect)
         frequency = np.bincount(agreement, minlength=5) / float(nitems)
@@ -41,7 +41,7 @@ class TestModelA(unittest.TestCase):
         nitems = 100
         nclasses = 4
         omega = np.array([0.22, 0.38, 0.3, 0.1])
-        model = ModelA.random_model(nclasses, omega=omega)
+        model = ModelA.create_initial_state(nclasses, omega=omega)
 
         # check that one gets the expected number of unique items
         # for each agreement pattern
@@ -72,7 +72,7 @@ class TestModelA(unittest.TestCase):
         nclasses = 3
 
         # create random model
-        model = ModelA.random_model(nclasses)
+        model = ModelA.create_initial_state(nclasses)
         # create random data
         annotations = model.generate_annotations(nitems)
 
@@ -89,11 +89,11 @@ class TestModelA(unittest.TestCase):
         nclasses, nitems = 3, 1000*8
         # create random model and data (this is our ground truth model)
         theta = np.array([0.5, 0.9, 0.6, 0.65, 0.87, 0.54, 0.9, 0.78])
-        true_model = ModelA.random_model(nclasses, theta=theta)
+        true_model = ModelA.create_initial_state(nclasses, theta=theta)
         annotations = true_model.generate_annotations(nitems)
 
         # create a new, empty model and infer back the parameters
-        model = ModelA.random_model(nclasses, omega=true_model.omega)
+        model = ModelA.create_initial_state(nclasses, omega=true_model.omega)
         before_llhood = model.log_likelihood(annotations)
         model.mle(annotations, estimate_alpha=False, estimate_omega=False)
         after_llhood = model.log_likelihood(annotations)
@@ -111,7 +111,7 @@ class TestModelA(unittest.TestCase):
         # check that log likelihood is maximal at true parameters
         nclasses, nitems = 3, 1500*8
         # create random model and data (this is our ground truth model)
-        true_model = ModelA.random_model(nclasses)
+        true_model = ModelA.create_initial_state(nclasses)
         annotations = true_model.generate_annotations(nitems)
 
         max_llhood = true_model.log_likelihood(annotations)
@@ -140,12 +140,12 @@ class TestModelA(unittest.TestCase):
         nsamples = 1000
 
         # create random model (this is our ground truth model)
-        true_model = ModelA.random_model(nclasses)
+        true_model = ModelA.create_initial_state(nclasses)
         # create random data
         annotations = true_model.generate_annotations(nitems)
 
         # create a new model
-        model = ModelA.random_model(nclasses)
+        model = ModelA.create_initial_state(nclasses)
         # get optimal parameters (to make sure we're at the optimum)
         model.mle(annotations)
 

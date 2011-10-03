@@ -37,9 +37,8 @@ class ModelBt(object):
 
     ##### Model and data generation methods ###################################
 
-    # TODO rename random_model to something more meaningful
     @staticmethod
-    def random_model(nclasses, gamma=None, theta=None):
+    def create_initial_state(nclasses, gamma=None, theta=None):
         """Factory method returning a random model.
 
         Input:

@@ -739,7 +739,7 @@ class ABmodelGUI(HasTraits):
             # optimize parameters by maximizing the log likelihood of the model
             if modelnumber == 1:
                 # model A
-                model_A = ModelA.random_model(dim)
+                model_A = ModelA.create_initial_state(dim)
                 model_A.mle(mat)
                 if estimate_alphas:
                     alpha = model_A._compute_alpha()
@@ -749,7 +749,7 @@ class ABmodelGUI(HasTraits):
                 FF[j] = model_A.log_likelihood(mat)
             else:
                 # model B
-                model_Bt = ModelBt.random_model(dim, mat.shape[0],
+                model_Bt = ModelBt.create_initial_state(dim, mat.shape[0],
                                              use_priors=use_priors,
                                              use_omegas=use_omegas)
                 model_Bt.mle(mat)

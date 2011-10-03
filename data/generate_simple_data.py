@@ -6,7 +6,7 @@ DATA_PER_LOOP = 100
 # TODO replace ModelB with ModelBt and specify target annotator accuracy
 
 # create simple model for 8 annotators
-model = ModelB.random_model(nclasses=4, nannotators=8, nitems=8*DATA_PER_LOOP)
+model = ModelB.create_initial_state(nclasses=4, nannotators=8, nitems=8*DATA_PER_LOOP)
 # generate data
 labels = model.generate_labels()
 data = model.generate_annotations(labels).T + 1

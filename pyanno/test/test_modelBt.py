@@ -10,12 +10,12 @@ class TestModelBt(unittest.TestCase):
         # test simple model, check that we get to global optimum
         nclasses, nitems = 3, 500*8
         # create random model and data (this is our ground truth model)
-        true_model = ModelBt.random_model(nclasses)
+        true_model = ModelBt.create_initial_state(nclasses)
         labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations(labels)
 
         # create a new, empty model and infer back the parameters
-        model = ModelBt.random_model(nclasses)
+        model = ModelBt.create_initial_state(nclasses)
         before_llhood = model.log_likelihood(annotations, use_prior=True)
         model.mle(annotations, use_prior=True)
         after_llhood = model.log_likelihood(annotations, use_prior=True)
@@ -29,7 +29,7 @@ class TestModelBt(unittest.TestCase):
         # check that log likelihood is maximal at true parameters
         nclasses, nitems = 3, 1500*8
         # create random model and data (this is our ground truth model)
-        true_model = ModelBt.random_model(nclasses)
+        true_model = ModelBt.create_initial_state(nclasses)
         labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations(labels)
 
@@ -59,13 +59,13 @@ class TestModelBt(unittest.TestCase):
         nsamples = 1000
 
         # create random model (this is our ground truth model)
-        true_model = ModelBt.random_model(nclasses)
+        true_model = ModelBt.create_initial_state(nclasses)
         # create random data
         labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations(labels)
 
         # create a new model
-        model = ModelBt.random_model(nclasses)
+        model = ModelBt.create_initial_state(nclasses)
         # get optimal parameters (to make sure we're at the optimum)
         model.mle(annotations, use_prior=False)
 

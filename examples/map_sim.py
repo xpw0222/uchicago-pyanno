@@ -24,7 +24,7 @@ print "# classes=",nclasses
 
 print "SIMULATING ORDINAL CODING DATA SET"
 # create random model (this is our graund truth model)
-true_model = ModelB.random_model(nclasses, nannotators, nitems)
+true_model = ModelB.create_initial_state(nclasses, nannotators, nitems)
 # create random data
 labels = true_model.generate_labels()
 annotations = true_model.generate_annotations(labels)
