@@ -35,7 +35,7 @@ class ModelBt(object):
         self.theta = theta
 
 
-    # ---- model and data generation methods
+    ##### Model and data generation methods ###################################
 
     # TODO rename random_model to something more meaningful
     @staticmethod
@@ -107,7 +107,7 @@ class ModelBt(object):
         return distr
 
 
-    # ---- Parameters estimation methods
+    ##### Parameters estimation methods #######################################
 
     def mle(self, annotations, estimate_gamma=True, use_prior=False):
         counts = compute_counts(annotations, self.nclasses)
@@ -164,7 +164,7 @@ class ModelBt(object):
         return gamma, theta
 
 
-    # ---- model likelihood
+    ##### Model likelihood methods ############################################
 
     def log_likelihood(self, annotations, use_prior=False):
         """Compute the log likelihood of annotations given the model."""
@@ -254,7 +254,7 @@ class ModelBt(object):
         return pf
 
 
-    # ---- sampling posterior over parameters
+    ##### Sampling posterior over parameters ##################################
 
     # TODO arguments for burn-in, thinning
     def sample_posterior_over_theta(self, annotations, nsamples,
@@ -303,10 +303,10 @@ class ModelBt(object):
             self.gamma, self.theta = save_params
 
 
-    # ---- posterior distributions
+    ##### Posterior distributions #############################################
 
     def infer_labels(self, annotations):
-        """Infer posterior distribution over true labels."""
+        """Infer posterior distribution over true labels given theta."""
         nitems = annotations.shape[0]
         gamma = self.gamma
         nclasses = self.nclasses

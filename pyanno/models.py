@@ -37,6 +37,8 @@ class ModelB(object):
         else:
             self.beta = beta
 
+    ##### Model and data generation methods ###################################
+
     @staticmethod
     def random_model(nclasses, nannotators, nitems, alpha=None, beta=None):
         """Factory method that returns a random model.
@@ -84,6 +86,9 @@ class ModelB(object):
                 annotations[j,i]  = (
                     random_categorical(self.theta[j,labels[i],:], 1))
         return annotations
+
+
+    ##### Parameters estimation methods #######################################
 
     # TODO start from sample frequencies
     # TODO argument verbose=False

@@ -76,7 +76,7 @@ class ModelA(object):
         self.omega = omega
 
 
-    # ---- model and data generation methods
+    ##### Model and data generation methods ###################################
 
     @staticmethod
     def random_model(nclasses, theta=None, omega=None):
@@ -211,7 +211,7 @@ class ModelA(object):
         return annotations
 
 
-    # ---- Parameters estimation methods
+    ##### Parameters estimation methods #######################################
 
     def mle(self, annotations, estimate_alpha=False, estimate_omega=True,
             use_prior = True):
@@ -239,7 +239,7 @@ class ModelA(object):
     def _random_initial_parameters(self, annotations, estimate_omega):
         # TODO duplication w/ ModelBt
         if estimate_omega:
-            # estimate gamma from observed annotations
+            # estimate omega from observed annotations
             omega = (np.bincount(annotations[annotations!=-1])
                           / (3.*annotations.shape[0]))
         else:
@@ -249,7 +249,7 @@ class ModelA(object):
         return theta, omega
 
 
-    # ---- model likelihood
+    ##### Model likelihood methods ############################################
 
     # TODO code duplication with ModelBt -> refactor
     def log_likelihood(self, annotations, use_prior=False):
@@ -373,7 +373,7 @@ class ModelA(object):
         return prob
 
 
-    # ---- sampling posterior over parameters
+    ##### Sampling posterior over parameters ##################################
 
     # TODO duplicated functionality w/ ModelBt, refactor
     # TODO arguments for burn-in, thinning
@@ -421,6 +421,8 @@ class ModelA(object):
             # reset parameters
             self.theta = save_params
 
+
+    ##### Posterior distributions #############################################
 
     # TODO ideally, one would infer the posterior over correctness (T_ijk)
     #   first, and then return the probability of each value
