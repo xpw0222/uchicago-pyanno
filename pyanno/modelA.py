@@ -1,4 +1,9 @@
-"""Definition of model A."""
+"""Definition of model A from Rzhetsly et al., 2009.
+
+See reference:
+Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most from
+your curation effort", PLoS Computational Biology, 5(5).
+"""
 
 from collections import defaultdict
 import numpy as np
@@ -58,13 +63,19 @@ def _compatibility_tables(nclasses):
 
 
 def _triplet_to_counts_index(triplet, nclasses):
+    """Map annotator triplets to data indices for the counts format.
+    """
     return (triplet * np.array([nclasses**2, nclasses, 1])).sum(1)
 
 
 class ModelA(object):
-    """
+    """Model A in Rzhetsky et al., 2009.
+
     At the moment the model assumes 1) a total of 8 annotators, and 2) each
     item is annotated by 3 annotators.
+
+    Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most from
+    your curation effort", PLoS Computational Biology, 5(5).
     """
 
     def __init__(self, nclasses, theta, omega):
