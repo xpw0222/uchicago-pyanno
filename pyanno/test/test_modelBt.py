@@ -10,15 +10,15 @@ class TestModelBt(unittest.TestCase):
         # test simple model, check that we get to global optimum
         nclasses, nitems = 3, 500*8
         # create random model and data (this is our ground truth model)
-        true_model = ModelBt.random_model(nclasses, nitems)
-        labels = true_model.generate_labels()
+        true_model = ModelBt.random_model(nclasses)
+        labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations(labels)
 
         # create a new, empty model and infer back the parameters
-        model = ModelBt.random_model(nclasses, nitems)
-        before_llhood = model.log_likelihood(annotations)
-        model.mle(annotations)
-        after_llhood = model.log_likelihood(annotations)
+        model = ModelBt.random_model(nclasses)
+        before_llhood = model.log_likelihood(annotations, use_prior=True)
+        model.mle(annotations, use_prior=True)
+        after_llhood = model.log_likelihood(annotations, use_prior=True)
 
         testing.assert_allclose(model.gamma, true_model.gamma, atol=1e-1, rtol=0.)
         testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
@@ -29,19 +29,19 @@ class TestModelBt(unittest.TestCase):
         # check that log likelihood is maximal at true parameters
         nclasses, nitems = 3, 1500*8
         # create random model and data (this is our ground truth model)
-        true_model = ModelBt.random_model(nclasses, nitems, use_priors=False)
-        labels = true_model.generate_labels()
+        true_model = ModelBt.random_model(nclasses)
+        labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations(labels)
 
-        max_llhood = true_model.log_likelihood(annotations)
+        max_llhood = true_model.log_likelihood(annotations, use_prior=False)
         # perturb gamma
         for _ in xrange(20):
             theta = true_model.theta
             gamma = np.random.normal(loc=true_model.gamma, scale=0.1)
             gamma = np.clip(gamma, 0., 1.)
             gamma /= gamma.sum()
-            model = ModelBt(nclasses, nitems, gamma, theta)
-            llhood = model.log_likelihood(annotations)
+            model = ModelBt(nclasses, gamma, theta)
+            llhood = model.log_likelihood(annotations, use_prior=False)
             self.assertGreater(max_llhood, llhood)
 
         # perturb theta
@@ -49,8 +49,8 @@ class TestModelBt(unittest.TestCase):
             gamma = true_model.gamma
             theta = np.random.normal(loc=true_model.theta, scale=0.1)
             theta = np.clip(theta, 0., 1.)
-            model = ModelBt(nclasses, nitems, gamma, theta)
-            llhood = model.log_likelihood(annotations)
+            model = ModelBt(nclasses, gamma, theta)
+            llhood = model.log_likelihood(annotations, use_prior=False)
             self.assertGreater(max_llhood, llhood)
 
 
@@ -59,22 +59,23 @@ class TestModelBt(unittest.TestCase):
         nsamples = 1000
 
         # create random model (this is our ground truth model)
-        true_model = ModelBt.random_model(nclasses, nitems)
+        true_model = ModelBt.random_model(nclasses)
         # create random data
-        labels = true_model.generate_labels()
+        labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations(labels)
 
         # create a new model
-        model = ModelBt.random_model(nclasses, nitems)
+        model = ModelBt.random_model(nclasses)
         # get optimal parameters (to make sure we're at the optimum)
-        model.mle(annotations)
+        model.mle(annotations, use_prior=False)
 
         # modify parameters, to give false start to sampler
         real_theta = model.theta.copy()
         model.theta = model._random_theta(model.nannotators)
         # save current parameters
         gamma_before, theta_before = model.gamma.copy(), model.theta.copy()
-        samples = model.sample_posterior_over_theta(annotations, nsamples)
+        samples = model.sample_posterior_over_theta(annotations, nsamples,
+                                                    use_prior=False)
         # test: the mean of the sampled parameters is the same as the MLE one
         # (up to 3 standard deviations of the estimate sample distribution)
         testing.assert_array_less(np.absolute(samples.mean(0)-real_theta),
@@ -92,9 +93,9 @@ class TestModelBt(unittest.TestCase):
         # create random model (this is our ground truth model)
         gamma = np.ones((nclasses,)) / float(nclasses)
         theta = np.ones((8,)) * 0.999
-        true_model = ModelBt(nclasses, nitems, gamma, theta)
+        true_model = ModelBt(nclasses, gamma, theta)
         # create random data
-        labels = true_model.generate_labels()
+        labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations(labels)
 
         posterior = true_model.infer_labels(annotations)
@@ -107,7 +108,7 @@ class TestModelBt(unittest.TestCase):
         # at chance annotation, disagreeing annotators: get back prior
         gamma = ModelBt._random_gamma(nclasses)
         theta = np.ones((8,)) / float(nclasses)
-        model = ModelBt(nclasses, nitems, gamma, theta)
+        model = ModelBt(nclasses, gamma, theta)
 
         data = np.array([[-1, 0, 1, 2, -1, -1, -1, -1,]])
         testing.assert_almost_equal(np.squeeze(model.infer_labels(data)),

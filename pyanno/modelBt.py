@@ -26,31 +26,24 @@ class ModelBt(object):
     item is annotated by 3 annotators.
     """
 
-    def __init__(self, nclasses, nitems, gamma, theta,
-                 use_priors=True, use_omegas=True):
+    def __init__(self, nclasses, gamma, theta):
         self.nclasses = nclasses
         self.nannotators = 8
-        self.nitems = nitems
         # number of annotators rating each item in the loop design
         self.annotators_per_item = 3
         self.gamma = gamma
         self.theta = theta
-        self.use_priors = use_priors
-        self.use_omegas = use_omegas
 
 
     # ---- model and data generation methods
 
     # TODO rename random_model to something more meaningful
     @staticmethod
-    def random_model(nclasses, nitems,
-                     gamma=None, theta=None,
-                     use_priors=True, use_omegas=True):
+    def random_model(nclasses, gamma=None, theta=None):
         """Factory method returning a random model.
 
         Input:
         nclasses -- number of categories
-        nitems -- number of items being annotated
         gamma -- probability of each annotation value
         theta -- the parameters of P( v_i | psi ) (one for each annotator)
         """
@@ -62,7 +55,7 @@ class ModelBt(object):
             nannotators = 8
             theta = ModelBt._random_theta(nannotators)
 
-        model = ModelBt(nclasses, nitems, gamma, theta, use_priors, use_omegas)
+        model = ModelBt(nclasses, gamma, theta)
         return model
 
 
@@ -78,9 +71,9 @@ class ModelBt(object):
                                  size=(nannotators,))
 
 
-    def generate_labels(self):
+    def generate_labels(self, nitems):
         """Generate random labels from the model."""
-        return random_categorical(self.gamma, self.nitems)
+        return random_categorical(self.gamma, nitems)
 
 
     # FIXME: different conventions on orientation of annotations here and in ModelB
@@ -88,11 +81,12 @@ class ModelBt(object):
         """Generate random annotations given labels."""
         theta = self.theta
         nannotators = self.nannotators
-        nitems_per_loop = self.nitems // nannotators
+        nitems = labels.shape[0]
+        nitems_per_loop = nitems // nannotators
 
-        annotations = np.empty((self.nitems, nannotators), dtype=int)
+        annotations = np.empty((nitems, nannotators), dtype=int)
         for j in xrange(nannotators):
-            for i in xrange(self.nitems):
+            for i in xrange(nitems):
                 distr = self._theta_to_categorical(theta[j], labels[i])
                 annotations[i,j]  = random_categorical(distr, 1)
 
@@ -115,16 +109,17 @@ class ModelBt(object):
 
     # ---- Parameters estimation methods
 
-    def mle(self, annotations):
+    def mle(self, annotations, estimate_gamma=True, use_prior=False):
         counts = compute_counts(annotations, self.nclasses)
-        params_start = self._random_initial_parameters(annotations)
+        params_start = self._random_initial_parameters(annotations,
+                                                       estimate_gamma)
 
         # wrap log likelihood function to give it to optimize.fmin
         _llhood_counts = self._log_likelihood_counts
         def _wrap_llhood(params):
             self.gamma, self.theta = self._vector_to_params(params)
             # minimize *negative* likelihood
-            return - _llhood_counts(counts)
+            return - _llhood_counts(counts, use_prior=False)
 
         # TODO: use gradient, constrained optimization
         params_best = scipy.optimize.fmin(_wrap_llhood, params_start,
@@ -136,10 +131,11 @@ class ModelBt(object):
         self.gamma, self.theta = self._vector_to_params(params_best)
 
 
-    def _random_initial_parameters(self, annotations):
-        if self.use_omegas:
+    def _random_initial_parameters(self, annotations, estimate_gamma):
+        if estimate_gamma:
             # estimate gamma from observed annotations
-            gamma = np.bincount(annotations[annotations!=-1]) / (3.*self.nitems)
+            gamma = (np.bincount(annotations[annotations!=-1])
+                          / (3.*annotations.shape[0]))
         else:
             gamma = ModelBt._random_gamma(self.nclasses)
 
@@ -170,13 +166,14 @@ class ModelBt(object):
 
     # ---- model likelihood
 
-    def log_likelihood(self, annotations):
+    def log_likelihood(self, annotations, use_prior=False):
         """Compute the log likelihood of annotations given the model."""
         return self._log_likelihood_counts(compute_counts(annotations,
-                                                          self.nclasses))
+                                                          self.nclasses),
+                                           use_prior=use_prior)
 
 
-    def _log_likelihood_counts(self, counts):
+    def _log_likelihood_counts(self, counts, use_prior=False):
         """Compute the log likelihood of annotations given the model.
 
         This method assumes the data is in counts format.
@@ -191,12 +188,14 @@ class ModelBt(object):
 
             # compute the likelihood for the triplet
             llhood += self._log_likelihood_triplet(counts[:,i],
-                                                   theta_triplet)
+                                                   theta_triplet,
+                                                   use_prior=use_prior)
 
         return llhood
 
 
-    def _log_likelihood_triplet(self, counts_triplet, theta_triplet):
+    def _log_likelihood_triplet(self, counts_triplet, theta_triplet,
+                                use_prior=False):
         """Compute the log likelihood of data for one triplet of annotators.
 
         Input:
@@ -213,7 +212,7 @@ class ModelBt(object):
             #return np.inf
             return -1e20
 
-        if self.use_priors:
+        if use_prior:
             # if requested, add prior over theta to log likelihood
             l = log_beta_pdf(theta_triplet, 2., 1.).sum()
         else:
@@ -262,7 +261,8 @@ class ModelBt(object):
                                     target_rejection_rate = 0.3,
                                     rejection_rate_tolerance = 0.05,
                                     step_optimization_nsamples = 500,
-                                    adjust_step_every = 100):
+                                    adjust_step_every = 100,
+                                    use_prior=False):
         """Return samples from posterior distribution over theta given data.
         """
         # optimize step size
@@ -274,7 +274,7 @@ class ModelBt(object):
         def _wrap_llhood(params, counts):
             self.theta = params
             # minimize *negative* likelihood
-            return _llhood_counts(counts)
+            return _llhood_counts(counts, use_prior=use_prior)
 
         # TODO this save-reset is rather ugly, refactor: create copy of
         #      model and sample over it
