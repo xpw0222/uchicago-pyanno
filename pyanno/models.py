@@ -6,6 +6,8 @@ from pyanno.multinom import dirichlet_llhood
 
 # TODO generalize beta prior: different items could have different priors
 # TODO arguments checking
+# TODO MLE estimation
+# TODO compute log likelihood
 
 class ModelB(object):
     """See Model.txt for a description of the model."""
