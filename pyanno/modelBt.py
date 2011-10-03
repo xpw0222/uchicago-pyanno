@@ -1,5 +1,6 @@
 """Definition of model B-with-theta."""
 
+from traits.api import HasStrictTraits, Int, Array, Bool
 import numpy as np
 import scipy.optimize
 from pyanno.sampling import optimum_jump, sample_distribution
@@ -20,17 +21,24 @@ def _get_triplet_combinations(n):
 # ??? use_priors = True switches optimization from ML to MAP -> refactor
 # idea: have mle(annotations) optimize self.log_likelihood, and
 # map(annotations) optimize self.log_likelihood + log P(theta | beta prior)
-class ModelBt(object):
+class ModelBt(HasStrictTraits):
     """
     At the moment the model assumes 1) a total of 8 annotators, and 2) each
     item is annotated by 3 annotators.
     """
 
+    nclasses = Int
+    nitems = Int
+    nannotators = Int(8)
+    # number of annotators rating each item in the loop design
+    annotators_per_item = Int(3)
+    gamma = Array(dtype=float, shape=(None,))
+    theta = Array(dtype=float, shape=(None,))
+    use_priors = Bool(True)
+    use_omegas = Bool(True)
+
     def __init__(self, nclasses, gamma, theta):
         self.nclasses = nclasses
-        self.nannotators = 8
-        # number of annotators rating each item in the loop design
-        self.annotators_per_item = 3
         self.gamma = gamma
         self.theta = theta
 
