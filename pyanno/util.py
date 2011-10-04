@@ -123,7 +123,8 @@ def normalize(x, dtype=float):
     z = x.sum()
     if z <= 0:
         x = np.ones_like(x)
-    return x / x.sum()
+        z = float(len(x))
+    return x / z
 
 
 def create_band_matrix(shape, diagonal_elements):
