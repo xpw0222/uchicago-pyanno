@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.special
+import time
 
 def random_categorical(distr, nsamples):
     """Return an array of samples from a categorical distribution."""
@@ -219,3 +220,16 @@ def string_wrap(st, mode):
     else:
         st = st + ' '
     return st
+
+
+class benchmark(object):
+    def __init__(self,name):
+        self.name = name
+    def __enter__(self):
+        print '---- start ----'
+        self.start = time.time()
+    def __exit__(self,ty,val,tb):
+        end = time.time()
+        print '---- stop ----'
+        print("%s : %0.3f seconds" % (self.name, end-self.start))
+        return False
