@@ -1,10 +1,9 @@
 """This file contains the classes defining the models."""
-import scipy as sp
+import numpy as np
 from pyanno.util import (random_categorical, create_band_matrix,
-                         warn_missing_vals, normalize)
-from pyanno.multinom import dirichlet_llhood
+                         warn_missing_vals, normalize, benchmark)
+from pyanno.multinom import dirichlet_llhood, map_em
 
-# TODO generalize beta prior: different items could have different priors
 # TODO arguments checking
 # TODO MLE estimation
 # TODO compute log likelihood
@@ -19,12 +18,12 @@ class ModelB(object):
         self.nannotators = nannotators
 
         if pi is None:
-            self.pi = sp.ones((nclasses,)) / nclasses
+            self.pi = np.ones((nclasses,)) / nclasses
         else:
             self.pi = pi.copy()
         # theta[j,k,:] is P(annotator j chooses : | real label = k)
         if theta is None:
-            self.theta = sp.ones((nannotators, nclasses, nclasses)) / nclasses
+            self.theta = np.ones((nannotators, nclasses, nclasses)) / nclasses
         else:
             self.theta = theta.copy()
 
@@ -34,7 +33,7 @@ class ModelB(object):
         else:
             self.alpha = alpha
         if beta is None:
-            self.beta = sp.ones((nclasses,))
+            self.beta = np.ones((nclasses,))
         else:
             self.beta = beta
 
@@ -55,7 +54,7 @@ class ModelB(object):
 
         # TODO more meaningful choice for priors
         if alpha is None:
-            alpha = sp.empty((nclasses, nclasses))
+            alpha = np.empty((nclasses, nclasses))
             for k1 in xrange(nclasses):
                 for k2 in xrange(nclasses):
                     # using Bob Carpenter's choice as a prior
@@ -63,14 +62,14 @@ class ModelB(object):
                                            - abs(k1 - k2)) ** 4)
 
         if beta is None:
-            beta = 2.*sp.ones(shape=(nclasses,))
+            beta = 2.*np.ones(shape=(nclasses,))
 
         # generate random distributions of prevalence and accuracy
-        pi = sp.random.dirichlet(beta)
-        theta = sp.empty((nannotators, nclasses, nclasses))
+        pi = np.random.dirichlet(beta)
+        theta = np.empty((nannotators, nclasses, nclasses))
         for j in xrange(nannotators):
             for k in xrange(nclasses):
-                theta[j,k,:] = sp.random.dirichlet(alpha[k,:])
+                theta[j,k,:] = np.random.dirichlet(alpha[k,:])
 
         return ModelB(nclasses, nannotators, pi, theta, alpha, beta)
 
@@ -81,7 +80,7 @@ class ModelB(object):
     def generate_annotations(self, labels):
         """Generate random annotations given labels."""
         nitems = labels.shape[0]
-        annotations = sp.empty((self.nannotators, nitems), dtype=int)
+        annotations = np.empty((self.nannotators, nitems), dtype=int)
         for j in xrange(self.nannotators):
             for i in xrange(nitems):
                 annotations[j,i]  = (
@@ -119,8 +118,15 @@ class ModelB(object):
 
         llp_curve = []
         epoch = 0
-        diff = sp.inf
-        map_em_generator = self._map_em_step(annotations, init_accuracy)
+        diff = np.inf
+
+        # FIXME temporary code to interface legacy code
+        nitems = annotations.shape[1]
+        item = np.repeat(np.arange(nitems), self.nannotators)
+        anno = np.tile(np.arange(self.nannotators), nitems)
+        label = np.ravel(annotations.T)
+
+        map_em_generator = self._map_em_step(item, anno, label, nitems, init_accuracy)
         for lp, ll, prev_map, cat_map, accuracy_map in map_em_generator:
             print "  epoch={0:6d}  log lik={1:+10.4f}  log prior={2:+10.4f}  llp={3:+10.4f}   diff={4:10.4f}".\
             format(epoch, ll, lp, ll + lp, diff)
@@ -140,14 +146,7 @@ class ModelB(object):
         return diff, ll, lp, cat_map
 
     # TODO check equations with paper
-    def _map_em_step(self, annotations, init_accuracy=0.6):
-        # FIXME temporary code to interface legacy code
-        nitems = annotations.shape[1]
-
-        item = sp.repeat(sp.arange(nitems), self.nannotators)
-        anno = sp.tile(sp.arange(self.nannotators), nitems)
-        label = sp.ravel(annotations.T)
-
+    def _map_em_step(self, item, anno, label, nitems, init_accuracy=0.6):
         nannotators = self.nannotators
         nclasses = self.nclasses
         alpha = self.alpha
@@ -156,13 +155,13 @@ class ModelB(object):
         Ns = range(N)
 
         # TODO move argument checking to map_estimate
-        if not sp.all(beta > 0.):
+        if not np.all(beta > 0.):
             raise ValueError("beta should be larger than 0")
-        if not sp.all(alpha > 0.):
+        if not np.all(alpha > 0.):
             raise ValueError("alpha should be larger than 0")
 
-        if annotations.shape != (nannotators, nitems):
-            raise ValueError("size of `annotations` should be nannotators x nitems")
+        #if annotations.shape != (nannotators, nitems):
+        #    raise ValueError("size of `annotations` should be nannotators x nitems")
         if init_accuracy < 0.0 or init_accuracy > 1.0:
             raise ValueError("init_accuracy not in [0,1]")
         for n in xrange(N):
@@ -193,45 +192,50 @@ class ModelB(object):
         prevalence = normalize(beta_prior_count)
 
         # category is P(category[i] | model, data)
-        category = sp.zeros((nitems, nclasses))
+        category = np.empty((nitems, nclasses), dtype=float)
 
-        # ??? shouldn't this be normalized?
-        accuracy = sp.zeros((nannotators, nclasses, nclasses))
-        accuracy += init_accuracy
+        accuracy = np.zeros((nannotators, nclasses, nclasses))
+        accuracy += (1.-init_accuracy) / (nclasses-1.)
+        for k in xrange(nclasses):
+            accuracy[:,k,k] = init_accuracy
 
+        item2idx = np.squeeze(np.array([np.nonzero(item==i)
+                                        for i in range(nitems)]))
         while True:
             # -------------------------
             # Expectation step (E-step)
             # compute marginal likelihood P(category[i] | model, data)
-            for i in xrange(nitems):
-                category[i,:] = prevalence.copy()
 
-            for n in Ns:
-                for k in xrange(nclasses):
-                    category[item[n]][k] *= accuracy[anno[n]][k][label[n]]
+            category = np.tile(prevalence, (nitems, 1))
+            category *= accuracy[anno[item2idx],:,label[item2idx]].prod(1)
+
+            # ??? this is the old, non-vectorized code to compute `category`
+            # I keep this around because it may be difficult to use the
+            # vectorized version once I re-introduce the non-observed
+            # annotations
+            # Note that the access to anno and label as numpy array is very
+            # slow compared to Python lists in this case
+#            anno = anno.tolist()
+#            label = label.tolist()
+#            item = item.tolist()
+#            for i in xrange(nitems):
+#                category[i,:] = prevalence
+#            for n in Ns:
+#                for k in xrange(nclasses):
+#                    category[item[n],k] *= accuracy[anno[n],k,label[n]]
 
             # need log p(prev|beta) + SUM_k log p(acc[k]|alpha[k])
             # log likelihood here to reuse intermediate category calc
-            log_likelihood = 0.0
-            for i in xrange(nitems):
-                likelihood_i = 0.0
-                for k in xrange(nclasses):
-                    likelihood_i += category[i][k]
-                if likelihood_i < 0.0:
-                    print "likelihood_i=", likelihood_i, "cat[i]=", category[i]
-                log_likelihood_i = sp.log(likelihood_i)
-                log_likelihood += log_likelihood_i
+            log_likelihood = np.log(category.sum(1)).sum()
 
-            log_prior = 0.0
-            log_prior += dirichlet_llhood(prevalence, beta)
+            log_prior = dirichlet_llhood(prevalence, beta)
             for j in xrange(nannotators):
                 for k in xrange(nclasses):
                     log_prior += dirichlet_llhood(accuracy[j,k,:], alpha[k])
-            if sp.isnan(log_prior) or sp.isinf(log_prior):
+            if np.isnan(log_prior) or np.isinf(log_prior):
                 log_prior = 0.0
 
-            for i in xrange(nitems):
-                category[i,:] = normalize(category[i,:])
+            category /= category.sum(1)[:,None]
 
             # return here with E[cat|prev,acc] and LL(prev,acc;y)
             yield (log_prior, log_likelihood, prevalence, category, accuracy)
@@ -239,16 +243,9 @@ class ModelB(object):
             # Maximization step (M-step)
             # update parameters to maximize likelihood
             # M: prevalence* + accuracy*
-            prevalence = beta_prior_count.copy()
-            for i in xrange(nitems):
-                prevalence += category[i,:]
-            prevalence = normalize(prevalence)
+            prevalence = normalize(beta_prior_count + category.sum(0))
 
-            for j in xrange(nannotators):
-                accuracy[j,:] = alpha_prior_count.copy()
-            for n in xrange(N):
-                for k in xrange(nclasses):
-                    accuracy[anno[n]][k][label[n]] += category[item[n]][k]
-            for j in xrange(nannotators):
-                for k in xrange(nclasses):
-                    accuracy[j][k] = normalize(accuracy[j][k])
+            accuracy = np.tile(alpha_prior_count, (nannotators, 1, 1))
+            for i in range(nitems):
+                accuracy[anno[item2idx[i]],:,label[item2idx[i]]] += category[i,:]
+            accuracy /= accuracy.sum(2)[:,:,None]
