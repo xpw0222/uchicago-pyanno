@@ -80,10 +80,10 @@ class ModelB(object):
     def generate_annotations(self, labels):
         """Generate random annotations given labels."""
         nitems = labels.shape[0]
-        annotations = np.empty((self.nannotators, nitems), dtype=int)
+        annotations = np.empty((nitems, self.nannotators), dtype=int)
         for j in xrange(self.nannotators):
             for i in xrange(nitems):
-                annotations[j,i]  = (
+                annotations[i,j]  = (
                     random_categorical(self.theta[j,labels[i],:], 1))
         return annotations
 
@@ -100,7 +100,7 @@ class ModelB(object):
         a description of all but the following inputs:
 
         Input:
-        annotations -- annotations[j,i] is the annotation of annotator `j`
+        annotations -- annotations[i,j] is the annotation of annotator `j`
                        for item `i`
 
         Output:
@@ -121,12 +121,12 @@ class ModelB(object):
         diff = np.inf
 
         # FIXME temporary code to interface legacy code
-        nitems = annotations.shape[1]
-        item = np.repeat(np.arange(nitems), self.nannotators)
-        anno = np.tile(np.arange(self.nannotators), nitems)
-        label = np.ravel(annotations.T)
+        #nitems = annotations.shape[1]
+        #item = np.repeat(np.arange(nitems), self.nannotators)
+        #anno = np.tile(np.arange(self.nannotators), nitems)
+        #label = np.ravel(annotations.T)
 
-        map_em_generator = self._map_em_step(item, anno, label, nitems, init_accuracy)
+        map_em_generator = self._map_em_step(annotations, init_accuracy)
         for lp, ll, prev_map, cat_map, accuracy_map in map_em_generator:
             print "  epoch={0:6d}  log lik={1:+10.4f}  log prior={2:+10.4f}  llp={3:+10.4f}   diff={4:10.4f}".\
             format(epoch, ll, lp, ll + lp, diff)
@@ -146,13 +146,12 @@ class ModelB(object):
         return diff, ll, lp, cat_map
 
     # TODO check equations with paper
-    def _map_em_step(self, item, anno, label, nitems, init_accuracy=0.6):
+    def _map_em_step(self, annotations, init_accuracy=0.6):
         nannotators = self.nannotators
         nclasses = self.nclasses
+        nitems = annotations.shape[0]
         alpha = self.alpha
         beta = self.beta
-        N = len(item)
-        Ns = range(N)
 
         # TODO move argument checking to map_estimate
         if not np.all(beta > 0.):
@@ -160,17 +159,10 @@ class ModelB(object):
         if not np.all(alpha > 0.):
             raise ValueError("alpha should be larger than 0")
 
-        #if annotations.shape != (nannotators, nitems):
-        #    raise ValueError("size of `annotations` should be nannotators x nitems")
+        if annotations.shape != (nitems, nannotators):
+            raise ValueError("size of `annotations` should be nitems x nannotators")
         if init_accuracy < 0.0 or init_accuracy > 1.0:
             raise ValueError("init_accuracy not in [0,1]")
-        for n in xrange(N):
-            if item[n] < 0:
-                raise ValueError("item[n] < 0")
-            if anno[n] < 0:
-                raise ValueError("anno[n] < 0")
-            if label[n] < 0:
-                raise ValueError("label[n] < 0")
         if len(alpha) != nclasses:
             raise ValueError("len(alpha) != K")
         for k in xrange(nclasses):
@@ -179,9 +171,8 @@ class ModelB(object):
         if len(beta) != nclasses:
             raise ValueError("len(beta) != K")
 
-        warn_missing_vals("item", item)
-        warn_missing_vals("anno", anno)
-        warn_missing_vals("label", label)
+        # FIXME: at the moment, this check is rather poitnless
+        warn_missing_vals("anno", annotations.flatten())
 
         # initialize params
         alpha_prior_count = alpha - 1.
@@ -189,25 +180,26 @@ class ModelB(object):
 
         # ??? I think this is wrong, it should rather be initialize at the mean
         # of the dirichlet, i.e., beta / beta.sum()
+        # prevalence is P( category )
         prevalence = normalize(beta_prior_count)
 
-        # category is P(category[i] | model, data)
+        # category[i,k] is P(category[i] = k | model, data)
         category = np.empty((nitems, nclasses), dtype=float)
 
-        accuracy = np.zeros((nannotators, nclasses, nclasses))
-        accuracy += (1.-init_accuracy) / (nclasses-1.)
+        # accuracy[j,k,k'] is P(annotation_j = k' | category=k)
+        accuracy = np.empty((nannotators, nclasses, nclasses))
+        accuracy.fill((1.-init_accuracy) / (nclasses-1.))
         for k in xrange(nclasses):
             accuracy[:,k,k] = init_accuracy
 
-        item2idx = np.squeeze(np.array([np.nonzero(item==i)
-                                        for i in range(nitems)]))
+        annotators = np.arange(nannotators)[None,:]
         while True:
             # -------------------------
             # Expectation step (E-step)
             # compute marginal likelihood P(category[i] | model, data)
 
             category = np.tile(prevalence, (nitems, 1))
-            category *= accuracy[anno[item2idx],:,label[item2idx]].prod(1)
+            category *= accuracy[annotators,:,annotations].prod(1)
 
             # ??? this is the old, non-vectorized code to compute `category`
             # I keep this around because it may be difficult to use the
@@ -246,6 +238,7 @@ class ModelB(object):
             prevalence = normalize(beta_prior_count + category.sum(0))
 
             accuracy = np.tile(alpha_prior_count, (nannotators, 1, 1))
-            for i in range(nitems):
-                accuracy[anno[item2idx[i]],:,label[item2idx[i]]] += category[i,:]
+            for i in xrange(nitems):
+                accuracy[annotators,:,annotations[i,:]] += category[i,:]
             accuracy /= accuracy.sum(2)[:,:,None]
+

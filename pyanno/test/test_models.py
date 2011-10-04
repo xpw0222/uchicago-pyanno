@@ -79,7 +79,7 @@ class TestModelB(unittest.TestCase):
         nsamples = 3000
         labels = sp.arange(nclasses)
 
-        annotations = sp.empty((nsamples, nannotators, nitems), dtype=int)
+        annotations = sp.empty((nsamples, nitems, nannotators), dtype=int)
         for i in xrange(nsamples):
             annotations[i,:,:] = model.generate_annotations(labels)
 
@@ -87,7 +87,7 @@ class TestModelB(unittest.TestCase):
             for i in xrange(nitems):
                 # NOTE here we use the fact the the prior is the same for all
                 # annotators
-                tmp = annotations[:,j,i]
+                tmp = annotations[:,i,j]
                 freq = sp.bincount(tmp, minlength=nclasses) / float(nsamples)
                 testing.assert_almost_equal(freq,
                                             model.theta[j,labels[i],:], 1)
