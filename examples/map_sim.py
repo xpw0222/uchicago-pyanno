@@ -3,7 +3,7 @@ try:
     import pyanno.multinom
     import pyanno.util
     from pyanno.util import normalize, create_band_matrix
-    from pyanno.models import ModelB
+    from pyanno.modelB import ModelB
 except ImportError, e:
     print e
     print ""

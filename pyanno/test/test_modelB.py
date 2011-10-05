@@ -1,7 +1,7 @@
 import unittest
 import scipy as sp
 from numpy import testing
-from pyanno.models import ModelB
+from pyanno.modelB import ModelB
 
 def assert_is_distributions(distr, axis=0):
     """Check that input array represents a collection of distributions.

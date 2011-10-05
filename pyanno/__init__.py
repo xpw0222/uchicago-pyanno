@@ -2,7 +2,6 @@
 import kappa
 import util
 import multinom
-import models
-import modelAB
+import modelB
 import modelBt
 import modelA
