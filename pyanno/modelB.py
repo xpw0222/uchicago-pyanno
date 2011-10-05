@@ -179,14 +179,12 @@ class ModelB(object):
 #        if len(beta) != nclasses:
 #            raise ValueError("len(beta) != K")
 
-        # FIXME: at the moment, this check is rather poitnless
+        # FIXME: at the moment, this check is rather pointless
         warn_missing_vals("anno", annotations.flatten())
 
         # True if annotations is missing
         missing_mask_nclasses = self._missing_mask(annotations)
 
-        # ??? I think this is wrong, it should rather be initialize at the mean
-        # of the dirichlet, i.e., beta / beta.sum()
         # prevalence is P( category )
         prevalence = self._compute_prevalence()
         accuracy = self._initial_accuracy(init_accuracy)
@@ -216,10 +214,45 @@ class ModelB(object):
                                               use_prior=True)
 
 
+    def _mle_em_step(self, annotations, init_accuracy=0.6):
+        # True if annotations is missing
+        missing_mask_nclasses = self._missing_mask(annotations)
+
+        # prevalence is P( category )
+        prevalence = np.empty((self.nclasses,))
+        prevalence.fill(1. / float(self.nclasses))
+        accuracy = self._initial_accuracy(init_accuracy)
+
+        while True:
+            # Expectation step (E-step)
+            # compute marginal likelihood P(category[i] | model, data)
+
+            log_likelihood, unnorm_category = (
+                self._log_likelihood_core(annotations,
+                                          prevalence,
+                                          accuracy,
+                                          missing_mask_nclasses)
+            )
+
+            # category is P(category[i] = k | model, data)
+            category = unnorm_category / unnorm_category.sum(1)[:,None]
+
+            # return here with E[cat|prev,acc] and LL(prev,acc;y)
+            yield (log_likelihood, prevalence, category, accuracy)
+
+            # Maximization step (M-step)
+            # update parameters to maximize likelihood
+            prevalence = normalize(category.sum(0))
+            accuracy = self._compute_accuracy(category, annotations,
+                                              use_prior=False)
+
+
     def _compute_prevalence(self, category=None):
         """Return prevalence, P( category )."""
         beta_prior_count = self.beta - 1.
         if category is None:
+            # ??? I think this is wrong, it should rather be initialize at the mean
+            # of the dirichlet, i.e., beta / beta.sum()
             return normalize(beta_prior_count)
         else:
             return normalize(beta_prior_count + category.sum(0))
@@ -264,39 +297,6 @@ class ModelB(object):
         missing_mask_nclasses = np.tile(missing_mask[:, :, None],
             (1, 1, self.nclasses))
         return missing_mask_nclasses
-
-
-    def _mle_em_step(self, annotations, init_accuracy=0.6):
-        # True if annotations is missing
-        missing_mask_nclasses = self._missing_mask(annotations)
-
-        # prevalence is P( category )
-        prevalence = np.empty((self.nclasses,))
-        prevalence.fill(1. / float(self.nclasses))
-        accuracy = self._initial_accuracy(init_accuracy)
-
-        while True:
-            # Expectation step (E-step)
-            # compute marginal likelihood P(category[i] | model, data)
-
-            log_likelihood, unnorm_category = (
-                self._log_likelihood_core(annotations,
-                                          prevalence,
-                                          accuracy,
-                                          missing_mask_nclasses)
-            )
-
-            # category is P(category[i] = k | model, data)
-            category = unnorm_category / unnorm_category.sum(1)[:,None]
-
-            # return here with E[cat|prev,acc] and LL(prev,acc;y)
-            yield (log_likelihood, prevalence, category, accuracy)
-
-            # Maximization step (M-step)
-            # update parameters to maximize likelihood
-            prevalence = normalize(category.sum(0))
-            accuracy = self._compute_accuracy(category, annotations,
-                                              use_prior=False)
 
 
     ##### Model likelihood methods ############################################
