@@ -122,8 +122,7 @@ class ModelB(object):
 
         map_em_generator = self._map_em_step(annotations, init_accuracy)
         for lp, ll, prev_map, cat_map, accuracy_map in map_em_generator:
-            print "  epoch={0:6d}  log lik={1:+10.4f}  log prior={2:+10.4f}  llp={3:+10.4f}   diff={4:10.4f}".\
-            format(epoch, ll, lp, ll + lp, diff)
+            print "  epoch={0:6d}  log lik={1:+10.4f}  log prior={2:+10.4f}  llp={3:+10.4f}   diff={4:10.4f}".format(epoch, ll, lp, ll + lp, diff)
             llp_curve.append(ll + lp)
             # stopping conditions
             if epoch > max_epochs:
@@ -139,78 +138,50 @@ class ModelB(object):
 
         return diff, ll, lp, cat_map
 
-    # TODO check equations with paper
+
     def _map_em_step(self, annotations, init_accuracy=0.6):
-        nannotators = self.nannotators
-        nclasses = self.nclasses
-        nitems = annotations.shape[0]
-        alpha = self.alpha
-        beta = self.beta
-
-        # True if annotations is missing
-        missing_mask = (annotations==-1)
-        valid_mask = (annotations!=-1)
-        missing_mask_nclasses = np.tile(missing_mask[:,:,None], (1,1,nclasses))
-
-        # TODO move argument checking to map_estimate
-        if not np.all(beta > 0.):
-            raise ValueError("beta should be larger than 0")
-        if not np.all(alpha > 0.):
-            raise ValueError("alpha should be larger than 0")
-
-        if annotations.shape != (nitems, nannotators):
-            raise ValueError("size of `annotations` should be nitems x nannotators")
-        if init_accuracy < 0.0 or init_accuracy > 1.0:
-            raise ValueError("init_accuracy not in [0,1]")
-        if len(alpha) != nclasses:
-            raise ValueError("len(alpha) != K")
-        for k in xrange(nclasses):
-            if len(alpha[k]) != nclasses:
-                raise ValueError("len(alpha[k]) != K")
-        if len(beta) != nclasses:
-            raise ValueError("len(beta) != K")
+       # TODO move argument checking to traits
+#        if not np.all(beta > 0.):
+#            raise ValueError("beta should be larger than 0")
+#        if not np.all(alpha > 0.):
+#            raise ValueError("alpha should be larger than 0")
+#
+#        if annotations.shape != (nitems, nannotators):
+#            raise ValueError("size of `annotations` should be nitems x nannotators")
+#        if init_accuracy < 0.0 or init_accuracy > 1.0:
+#            raise ValueError("init_accuracy not in [0,1]")
+#        if len(alpha) != nclasses:
+#            raise ValueError("len(alpha) != K")
+#        for k in xrange(nclasses):
+#            if len(alpha[k]) != nclasses:
+#                raise ValueError("len(alpha[k]) != K")
+#        if len(beta) != nclasses:
+#            raise ValueError("len(beta) != K")
 
         # FIXME: at the moment, this check is rather poitnless
         warn_missing_vals("anno", annotations.flatten())
 
-        # initialize params
-        alpha_prior_count = alpha - 1.
-        beta_prior_count = beta - 1.
+        # True if annotations is missing
+        missing_mask_nclasses = self._missing_mask(annotations)
 
         # ??? I think this is wrong, it should rather be initialize at the mean
         # of the dirichlet, i.e., beta / beta.sum()
         # prevalence is P( category )
-        prevalence = normalize(beta_prior_count)
+        prevalence = self._compute_prevalence()
+        accuracy = self._initial_accuracy(init_accuracy)
 
-        # accuracy[j,k,k'] is P(annotation_j = k' | category=k)
-        accuracy = np.empty((nannotators, nclasses, nclasses))
-        accuracy.fill((1.-init_accuracy) / (nclasses-1.))
-        for k in xrange(nclasses):
-            accuracy[:,k,k] = init_accuracy
-
-        annotators = np.arange(nannotators)[None,:]
         while True:
             # -------------------------
             # Expectation step (E-step)
             # compute marginal likelihood P(category[i] | model, data)
 
-            # unnorm_category is P(category[i] = k | model, data) (unnormalized)
-            unnorm_category = np.tile(prevalence, (nitems, 1))
-            # mask missing annotations
-            tmp = np.ma.masked_array(accuracy[annotators,:,annotations],
-                                     mask=missing_mask_nclasses)
-            unnorm_category *= tmp.prod(1)
-
-            # need log p(prev|beta) + SUM_k log p(acc[k]|alpha[k])
-            # log likelihood here to reuse intermediate category calc
-            log_likelihood = np.log(unnorm_category.sum(1)).sum()
-
-            log_prior = dirichlet_llhood(prevalence, beta)
-            for j in xrange(nannotators):
-                for k in xrange(nclasses):
-                    log_prior += dirichlet_llhood(accuracy[j,k,:], alpha[k])
-            if np.isnan(log_prior) or np.isinf(log_prior):
-                log_prior = 0.0
+            log_likelihood, unnorm_category = (
+                self._log_likelihood_core(annotations,
+                                          prevalence,
+                                          accuracy,
+                                          missing_mask_nclasses)
+            )
+            log_prior = self._log_prior(prevalence, accuracy)
 
             # category is P(category[i] = k | model, data)
             category = unnorm_category / unnorm_category.sum(1)[:,None]
@@ -220,12 +191,89 @@ class ModelB(object):
 
             # Maximization step (M-step)
             # update parameters to maximize likelihood
-            # M: prevalence* + accuracy*
-            prevalence = normalize(beta_prior_count + category.sum(0))
+            prevalence = self._compute_prevalence(category)
+            accuracy = self._compute_accuracy(category, annotations)
 
-            accuracy = np.tile(alpha_prior_count, (nannotators, 1, 1))
-            for i in xrange(nitems):
-                valid = valid_mask[i,:]
-                accuracy[annotators[:,valid],:,annotations[i,valid]] += category[i,:]
-            accuracy /= accuracy.sum(2)[:,:,None]
 
+    def _compute_prevalence(self, category=None):
+        """Return prevalence, P( category )."""
+        beta_prior_count = self.beta - 1.
+        if category is None:
+            return normalize(beta_prior_count)
+        else:
+            return normalize(beta_prior_count + category.sum(0))
+
+
+    def _initial_accuracy(self, init_accuracy):
+        """Return initial estimation of accuracy."""
+        nannotators = self.nannotators
+        nclasses = self.nclasses
+
+        # accuracy[j,k,k'] is P(annotation_j = k' | category=k)
+        accuracy = np.empty((nannotators, nclasses, nclasses))
+        accuracy.fill((1. - init_accuracy) / (nclasses - 1.))
+        for k in xrange(nclasses):
+            accuracy[:, k, k] = init_accuracy
+        return accuracy
+
+
+    def _compute_accuracy(self, category, annotations):
+        """Return accuracy, P(annotation_j = k' | category=k)
+
+        accuracy[j,k,k'] = P(annotation_j = k' | category=k).
+        """
+        nitems, nannotators = annotations.shape
+        alpha_prior_count = self.alpha - 1.
+        valid_mask = annotations!=-1
+
+        annotators = np.arange(nannotators)[None,:]
+        accuracy = np.tile(alpha_prior_count, (nannotators, 1, 1))
+        for i in xrange(nitems):
+            valid = valid_mask[i,:]
+            accuracy[annotators[:,valid],:,annotations[i,valid]] += category[i,:]
+        accuracy /= accuracy.sum(2)[:, :, None]
+        return accuracy
+
+
+    def _missing_mask(self, annotations):
+        missing_mask = (annotations == -1)
+        missing_mask_nclasses = np.tile(missing_mask[:, :, None],
+            (1, 1, self.nclasses))
+        return missing_mask_nclasses
+
+
+    ##### Model likelihood methods ############################################
+
+
+    def log_likelihood(self, annotations):
+        missing_mask_nclasses = self._missing_mask(annotations)
+        llhood, _ = self._log_likelihood_core(annotations,
+                                              self.pi, self.theta,
+                                              missing_mask_nclasses)
+        return llhood
+
+
+    def _log_likelihood_core(self, annotations,
+                             prevalence, accuracy,
+                             missing_mask_nclasses):
+        nitems, nannotators = annotations.shape
+
+        # unnorm_category is P(category[i] = k | model, data), unnormalized
+        unnorm_category = np.tile(prevalence, (nitems, 1))
+
+        # mask missing annotations
+        annotators = np.arange(nannotators)[None,:]
+        tmp = np.ma.masked_array(accuracy[annotators,:,annotations],
+                                 mask=missing_mask_nclasses)
+        unnorm_category *= tmp.prod(1)
+
+        return np.log(unnorm_category.sum(1)).sum(), unnorm_category
+
+
+    def _log_prior(self, prevalence, accuracy):
+        alpha = self.alpha
+        log_prior = dirichlet_llhood(prevalence, self.beta)
+        for j in xrange(self.nannotators):
+            for k in xrange(self.nclasses):
+                log_prior += dirichlet_llhood(accuracy[j,k,:], alpha[k])
+        return log_prior
