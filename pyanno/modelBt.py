@@ -28,14 +28,11 @@ class ModelBt(HasStrictTraits):
     """
 
     nclasses = Int
-    nitems = Int
     nannotators = Int(8)
     # number of annotators rating each item in the loop design
     annotators_per_item = Int(3)
     gamma = Array(dtype=float, shape=(None,))
     theta = Array(dtype=float, shape=(None,))
-    use_priors = Bool(True)
-    use_omegas = Bool(True)
 
     def __init__(self, nclasses, gamma, theta):
         self.nclasses = nclasses
