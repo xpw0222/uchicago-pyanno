@@ -137,6 +137,26 @@ class TestModelB(unittest.TestCase):
         testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
 
 
+    def test_mle_estimation(self):
+        # test simple model, check that we get to global optimum
+
+        nclasses, nannotators, nitems = 2, 3, 10000
+        # create random model and data (this is our ground truth model)
+        true_model = ModelB.create_initial_state(nclasses, nannotators)
+        labels = true_model.generate_labels(nitems)
+        annotations = true_model.generate_annotations(labels)
+
+        # create a new, empty model and infer back the parameters
+        model = ModelB(nclasses, nannotators)
+        before_llhood = model.log_likelihood(annotations)
+        model.mle(annotations, epsilon=1e-3, max_epochs=1000)
+        after_llhood = model.log_likelihood(annotations)
+
+        testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
+        testing.assert_allclose(model.theta, true_model.theta, atol=1e-2, rtol=0.)
+        self.assertGreater(after_llhood, before_llhood)
+
+
     def test_missing_annotations(self):
         # test simple model, check that we get to global optimum
         # TODO test likelihood is increasing
