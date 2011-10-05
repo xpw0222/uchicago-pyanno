@@ -129,5 +129,28 @@ class TestModelB(unittest.TestCase):
         testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
 
 
+    def test_missing_annotations(self):
+        # test simple model, check that we get to global optimum
+        # TODO test likelihood is increasing
+
+        nclasses, nannotators, nitems = 2, 3, 10000
+        # create random model and data (this is our ground truth model)
+        true_model = ModelB.create_initial_state(nclasses, nannotators)
+        labels = true_model.generate_labels(nitems)
+        annotations = true_model.generate_annotations(labels)
+        # remove about 10% of the annotations
+        for i in range(nitems*nannotators//10):
+            i = np.random.randint(nitems)
+            j = np.random.randint(nannotators)
+            annotations[i,j] = -1
+
+        # create a new, empty model and infer back the parameters
+        model = ModelB(nclasses, nannotators)
+        model.map(annotations, epsilon=1e-3, max_epochs=1000)
+
+        testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
+        testing.assert_allclose(model.theta, true_model.theta, atol=1e-2, rtol=0.)
+
+
 if __name__ == '__main__':
     unittest.main()

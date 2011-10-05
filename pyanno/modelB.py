@@ -120,12 +120,6 @@ class ModelB(object):
         epoch = 0
         diff = np.inf
 
-        # FIXME temporary code to interface legacy code
-        #nitems = annotations.shape[1]
-        #item = np.repeat(np.arange(nitems), self.nannotators)
-        #anno = np.tile(np.arange(self.nannotators), nitems)
-        #label = np.ravel(annotations.T)
-
         map_em_generator = self._map_em_step(annotations, init_accuracy)
         for lp, ll, prev_map, cat_map, accuracy_map in map_em_generator:
             print "  epoch={0:6d}  log lik={1:+10.4f}  log prior={2:+10.4f}  llp={3:+10.4f}   diff={4:10.4f}".\
@@ -152,6 +146,10 @@ class ModelB(object):
         nitems = annotations.shape[0]
         alpha = self.alpha
         beta = self.beta
+
+        # True if annotations is missing
+        missing_mask = (annotations==-1)
+        missing_mask_nclasses = np.tile(missing_mask[:,:,None], (1,1,nclasses))
 
         # TODO move argument checking to map_estimate
         if not np.all(beta > 0.):
@@ -199,22 +197,10 @@ class ModelB(object):
             # compute marginal likelihood P(category[i] | model, data)
 
             category = np.tile(prevalence, (nitems, 1))
-            category *= accuracy[annotators,:,annotations].prod(1)
-
-            # ??? this is the old, non-vectorized code to compute `category`
-            # I keep this around because it may be difficult to use the
-            # vectorized version once I re-introduce the non-observed
-            # annotations
-            # Note that the access to anno and label as numpy array is very
-            # slow compared to Python lists in this case
-#            anno = anno.tolist()
-#            label = label.tolist()
-#            item = item.tolist()
-#            for i in xrange(nitems):
-#                category[i,:] = prevalence
-#            for n in Ns:
-#                for k in xrange(nclasses):
-#                    category[item[n],k] *= accuracy[anno[n],k,label[n]]
+            # mask missing annotations
+            tmp = np.ma.masked_array(accuracy[annotators,:,annotations],
+                                     mask=missing_mask_nclasses)
+            category *= tmp.prod(1)
 
             # need log p(prev|beta) + SUM_k log p(acc[k]|alpha[k])
             # log likelihood here to reuse intermediate category calc
@@ -227,6 +213,7 @@ class ModelB(object):
             if np.isnan(log_prior) or np.isinf(log_prior):
                 log_prior = 0.0
 
+            # ??? shouldn't this be *before* computing the log-lhood?
             category /= category.sum(1)[:,None]
 
             # return here with E[cat|prev,acc] and LL(prev,acc;y)
@@ -239,6 +226,7 @@ class ModelB(object):
 
             accuracy = np.tile(alpha_prior_count, (nannotators, 1, 1))
             for i in xrange(nitems):
-                accuracy[annotators,:,annotations[i,:]] += category[i,:]
+                valid = ~missing_mask[i,:]
+                accuracy[annotators[:,valid],:,annotations[i,valid]] += category[i,:]
             accuracy /= accuracy.sum(2)[:,:,None]
 
