@@ -1,5 +1,5 @@
 import unittest
-import scipy as sp
+import numpy as np
 from numpy import testing
 from pyanno.modelB import ModelB
 
@@ -8,7 +8,7 @@ def assert_is_distributions(distr, axis=0):
     """
     integral = distr.sum(axis=axis)
     testing.assert_allclose(integral,
-                            sp.ones_like(integral), rtol=0., atol=1e-7)
+                            np.ones_like(integral), rtol=0., atol=1e-7)
 
 
 def assert_is_dirichlet(samples, alpha):
@@ -37,12 +37,12 @@ class TestModelB(unittest.TestCase):
         assert_is_distributions(model.theta, axis=2)
 
         # check mean and variance of distribution
-        beta = sp.array([10., 2., 30., 5.])
-        alpha = sp.random.randint(1, 30, size=(nclasses, nclasses)).astype(float)
+        beta = np.array([10., 2., 30., 5.])
+        alpha = np.random.randint(1, 30, size=(nclasses, nclasses)).astype(float)
         # collect random parameters
         nsamples = 1000
-        pis = sp.zeros((nsamples, nclasses))
-        thetas = sp.zeros((nsamples, nannotators, nclasses, nclasses))
+        pis = np.zeros((nsamples, nclasses))
+        thetas = np.zeros((nsamples, nannotators, nclasses, nclasses))
         for n in xrange(nsamples):
             model = ModelB.create_initial_state(nclasses, nannotators,
                                                 alpha, beta)
@@ -60,14 +60,14 @@ class TestModelB(unittest.TestCase):
         model = ModelB.create_initial_state(nclasses, nannotators)
 
         nsamples = 1000
-        labels = sp.empty((nsamples, nitems), dtype=int)
+        labels = np.empty((nsamples, nitems), dtype=int)
         for i in xrange(nsamples):
             labels[i] = model.generate_labels(nitems)
 
         # NOTE here we make use of the fact that the prior is the same for all
         # items
-        freq = (sp.bincount(labels.flat, minlength=nclasses)
-                / float(sp.prod(labels.shape)))
+        freq = (np.bincount(labels.flat, minlength=nclasses)
+                / float(np.prod(labels.shape)))
         testing.assert_almost_equal(freq, model.pi, 2)
 
     def test_generate_annotations(self):
@@ -77,9 +77,9 @@ class TestModelB(unittest.TestCase):
         model = ModelB.create_initial_state(nclasses, nannotators)
 
         nsamples = 3000
-        labels = sp.arange(nclasses)
+        labels = np.arange(nclasses)
 
-        annotations = sp.empty((nsamples, nitems, nannotators), dtype=int)
+        annotations = np.empty((nsamples, nitems, nannotators), dtype=int)
         for i in xrange(nsamples):
             annotations[i,:,:] = model.generate_annotations(labels)
 
@@ -88,7 +88,7 @@ class TestModelB(unittest.TestCase):
                 # NOTE here we use the fact the the prior is the same for all
                 # annotators
                 tmp = annotations[:,i,j]
-                freq = sp.bincount(tmp, minlength=nclasses) / float(nsamples)
+                freq = np.bincount(tmp, minlength=nclasses) / float(nsamples)
                 testing.assert_almost_equal(freq,
                                             model.theta[j,labels[i],:], 1)
 
@@ -118,9 +118,9 @@ class TestModelB(unittest.TestCase):
         annotations = true_model.generate_annotations(labels)
 
         # create a new model with the true parameters, plus noise
-        theta = true_model.theta + sp.random.normal(loc=true_model.theta,
+        theta = true_model.theta + np.random.normal(loc=true_model.theta,
                                                     scale=0.01/nclasses)
-        pi = true_model.pi + sp.random.normal(loc=true_model.pi,
+        pi = true_model.pi + np.random.normal(loc=true_model.pi,
                                               scale=0.01/nclasses)
         model = ModelB(nclasses, nannotators, pi, theta)
         model.map(annotations, epsilon=1e-3, max_epochs=1000)
