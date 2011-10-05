@@ -182,9 +182,6 @@ class ModelB(object):
         # prevalence is P( category )
         prevalence = normalize(beta_prior_count)
 
-        # category[i,k] is P(category[i] = k | model, data)
-        category = np.empty((nitems, nclasses), dtype=float)
-
         # accuracy[j,k,k'] is P(annotation_j = k' | category=k)
         accuracy = np.empty((nannotators, nclasses, nclasses))
         accuracy.fill((1.-init_accuracy) / (nclasses-1.))
@@ -197,15 +194,16 @@ class ModelB(object):
             # Expectation step (E-step)
             # compute marginal likelihood P(category[i] | model, data)
 
-            category = np.tile(prevalence, (nitems, 1))
+            # unnorm_category is P(category[i] = k | model, data) (unnormalized)
+            unnorm_category = np.tile(prevalence, (nitems, 1))
             # mask missing annotations
             tmp = np.ma.masked_array(accuracy[annotators,:,annotations],
                                      mask=missing_mask_nclasses)
-            category *= tmp.prod(1)
+            unnorm_category *= tmp.prod(1)
 
             # need log p(prev|beta) + SUM_k log p(acc[k]|alpha[k])
             # log likelihood here to reuse intermediate category calc
-            log_likelihood = np.log(category.sum(1)).sum()
+            log_likelihood = np.log(unnorm_category.sum(1)).sum()
 
             log_prior = dirichlet_llhood(prevalence, beta)
             for j in xrange(nannotators):
@@ -214,8 +212,8 @@ class ModelB(object):
             if np.isnan(log_prior) or np.isinf(log_prior):
                 log_prior = 0.0
 
-            # ??? shouldn't this be *before* computing the log-lhood?
-            category /= category.sum(1)[:,None]
+            # category is P(category[i] = k | model, data)
+            category = unnorm_category / unnorm_category.sum(1)[:,None]
 
             # return here with E[cat|prev,acc] and LL(prev,acc;y)
             yield (log_prior, log_likelihood, prevalence, category, accuracy)
