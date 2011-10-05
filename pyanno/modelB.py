@@ -111,32 +111,54 @@ class ModelB(object):
         are stored in the class attributes `pi` and `theta`.
         """
 
-        if epsilon < 0.0:
-            raise ValueError("epislon < 0.0")
-        if max_epochs < 0:
-            raise ValueError("max_epochs < 0")
-
-        llp_curve = []
-        epoch = 0
-        diff = np.inf
-
         map_em_generator = self._map_em_step(annotations, init_accuracy)
-        for lp, ll, prev_map, cat_map, accuracy_map in map_em_generator:
-            print "  epoch={0:6d}  log lik={1:+10.4f}  log prior={2:+10.4f}  llp={3:+10.4f}   diff={4:10.4f}".format(epoch, ll, lp, ll + lp, diff)
-            llp_curve.append(ll + lp)
+        return self._parameter_estimation(map_em_generator, epsilon, max_epochs)
+
+
+    def mle(self, annotations,
+            epsilon=0.00001, init_accuracy=0.6, max_epochs=1000):
+        """Computes maximum likelihood estimate (MLE) of parameters.
+
+        Input:
+        annotations -- annotations[i,j] is the annotation of annotator `j`
+                       for item `i`
+
+        Output:
+        Tuple (diff,ll,lp,cat) consisting of final difference, log likelihood,
+        log prior p(acc|alpha) * p(prev|beta), and item category estimates
+
+        The estimates of the label frequency and accuracy parameters,
+        are stored in the class attributes `pi` and `theta`.
+        """
+
+        mle_em_generator = self._mle_em_step(annotations, init_accuracy)
+        return self._parameter_estimation(mle_em_generator, epsilon, max_epochs)
+
+
+    def _parameter_estimation(self, learning_iterator, epsilon, max_epochs):
+
+        if epsilon < 0.0: raise ValueError("epsilon < 0.0")
+        if max_epochs < 0: raise ValueError("max_epochs < 0")
+
+        epoch = 0
+        obj_history = []
+        diff = np.inf
+        for objective, prev_est, cat_est, acc_est in learning_iterator:
+            print "  epoch={0:6d}  obj={1:+10.4f}   diff={2:10.4f}".format(epoch, objective, diff)
+            obj_history.append(objective)
             # stopping conditions
-            if epoch > max_epochs:
-                break
-            if len(llp_curve) > 10:
-                diff = (llp_curve[epoch] - llp_curve[epoch - 10]) / 10.0
+            if epoch > max_epochs: break
+            if epoch > 10:
+                diff = (obj_history[epoch] - obj_history[epoch-10]) / 10.0
                 if abs(diff) < epsilon:
                     break
             epoch += 1
 
-        self.pi = prev_map
-        self.theta = accuracy_map
+        # update internal parameters
+        self.pi = prev_est
+        self.theta = acc_est
 
-        return diff, ll, lp, cat_map
+        return cat_est
 
 
     def _map_em_step(self, annotations, init_accuracy=0.6):
@@ -171,7 +193,6 @@ class ModelB(object):
         accuracy = self._initial_accuracy(init_accuracy)
 
         while True:
-            # -------------------------
             # Expectation step (E-step)
             # compute marginal likelihood P(category[i] | model, data)
 
@@ -187,12 +208,13 @@ class ModelB(object):
             category = unnorm_category / unnorm_category.sum(1)[:,None]
 
             # return here with E[cat|prev,acc] and LL(prev,acc;y)
-            yield (log_prior, log_likelihood, prevalence, category, accuracy)
+            yield (log_prior+log_likelihood, prevalence, category, accuracy)
 
             # Maximization step (M-step)
             # update parameters to maximize likelihood
             prevalence = self._compute_prevalence(category)
-            accuracy = self._compute_accuracy(category, annotations)
+            accuracy = self._compute_accuracy(category, annotations,
+                                              use_prior=True)
 
 
     def _compute_prevalence(self, category=None):
@@ -217,7 +239,7 @@ class ModelB(object):
         return accuracy
 
 
-    def _compute_accuracy(self, category, annotations):
+    def _compute_accuracy(self, category, annotations, use_prior):
         """Return accuracy, P(annotation_j = k' | category=k)
 
         accuracy[j,k,k'] = P(annotation_j = k' | category=k).
@@ -227,7 +249,10 @@ class ModelB(object):
         valid_mask = annotations!=-1
 
         annotators = np.arange(nannotators)[None,:]
-        accuracy = np.tile(alpha_prior_count, (nannotators, 1, 1))
+        if use_prior:
+            accuracy = np.tile(alpha_prior_count, (nannotators, 1, 1))
+        else:
+            accuracy = np.zeros((nannotators, self.nclasses, self.nclasses))
         for i in xrange(nitems):
             valid = valid_mask[i,:]
             accuracy[annotators[:,valid],:,annotations[i,valid]] += category[i,:]
@@ -240,6 +265,39 @@ class ModelB(object):
         missing_mask_nclasses = np.tile(missing_mask[:, :, None],
             (1, 1, self.nclasses))
         return missing_mask_nclasses
+
+
+    def _mle_em_step(self, annotations, init_accuracy=0.6):
+        # True if annotations is missing
+        missing_mask_nclasses = self._missing_mask(annotations)
+
+        # prevalence is P( category )
+        prevalence = np.empty((self.nclasses,))
+        prevalence.fill(1. / float(self.nclasses))
+        accuracy = self._initial_accuracy(init_accuracy)
+
+        while True:
+            # Expectation step (E-step)
+            # compute marginal likelihood P(category[i] | model, data)
+
+            log_likelihood, unnorm_category = (
+                self._log_likelihood_core(annotations,
+                                          prevalence,
+                                          accuracy,
+                                          missing_mask_nclasses)
+            )
+
+            # category is P(category[i] = k | model, data)
+            category = unnorm_category / unnorm_category.sum(1)[:,None]
+
+            # return here with E[cat|prev,acc] and LL(prev,acc;y)
+            yield (log_likelihood, prevalence, category, accuracy)
+
+            # Maximization step (M-step)
+            # update parameters to maximize likelihood
+            prevalence = normalize(category.sum(0))
+            accuracy = self._compute_accuracy(category, annotations,
+                                              use_prior=False)
 
 
     ##### Model likelihood methods ############################################
