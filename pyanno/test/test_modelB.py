@@ -53,6 +53,7 @@ class TestModelB(unittest.TestCase):
             for k in xrange(nclasses):
                 assert_is_dirichlet(thetas[:,j,k,:], alpha[k,:])
 
+
     def test_generate_samples(self):
         nclasses = 4
         nannotators = 6
@@ -69,6 +70,7 @@ class TestModelB(unittest.TestCase):
         freq = (np.bincount(labels.flat, minlength=nclasses)
                 / float(np.prod(labels.shape)))
         testing.assert_almost_equal(freq, model.pi, 2)
+
 
     def test_generate_annotations(self):
         nclasses = 4
@@ -92,9 +94,9 @@ class TestModelB(unittest.TestCase):
                 testing.assert_almost_equal(freq,
                                             model.theta[j,labels[i],:], 1)
 
+
     def test_map_estimation(self):
         # test simple model, check that we get to global optimum
-        # TODO test likelihood is increasing
 
         nclasses, nannotators, nitems = 2, 3, 10000
         # create random model and data (this is our ground truth model)
@@ -104,10 +106,16 @@ class TestModelB(unittest.TestCase):
 
         # create a new, empty model and infer back the parameters
         model = ModelB(nclasses, nannotators)
+        before_llhood = (model.log_likelihood(annotations)
+                         + model._log_prior(model.pi, model.theta))
         model.map(annotations, epsilon=1e-3, max_epochs=1000)
+        after_llhood = (model.log_likelihood(annotations)
+                        + model._log_prior(model.pi, model.theta))
 
         testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
         testing.assert_allclose(model.theta, true_model.theta, atol=1e-2, rtol=0.)
+        self.assertGreater(after_llhood, before_llhood)
+
 
     def test_map_stability(self):
         # test complex model, check that it is stable (converge back to optimum)
@@ -146,10 +154,49 @@ class TestModelB(unittest.TestCase):
 
         # create a new, empty model and infer back the parameters
         model = ModelB(nclasses, nannotators)
+        before_llhood = (model.log_likelihood(annotations)
+                         + model._log_prior(model.pi, model.theta))
         model.map(annotations, epsilon=1e-3, max_epochs=1000)
+        after_llhood = (model.log_likelihood(annotations)
+                        + model._log_prior(model.pi, model.theta))
 
         testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
         testing.assert_allclose(model.theta, true_model.theta, atol=1e-2, rtol=0.)
+        self.assertGreater(after_llhood, before_llhood)
+
+
+    def test_log_likelihood(self):
+        # check that log likelihood is maximal at true parameters
+        nclasses, nannotators, nitems = 3, 5, 1500*8
+        # create random model and data (this is our ground truth model)
+        true_model = ModelB.create_initial_state(nclasses, nannotators)
+        labels = true_model.generate_labels(nitems)
+        annotations = true_model.generate_annotations(labels)
+
+        max_llhood = true_model.log_likelihood(annotations)
+        # perturb pi
+        for _ in xrange(20):
+            theta = true_model.theta
+            pi = np.random.normal(loc=true_model.pi, scale=0.1)
+            pi = np.clip(pi, 0.001, 1.)
+            pi /= pi.sum()
+            model = ModelB(nclasses, nannotators, pi=pi, theta=theta,
+                           alpha=true_model.alpha, beta=true_model.beta)
+            llhood = model.log_likelihood(annotations)
+            self.assertGreater(max_llhood, llhood)
+
+        # perturb theta
+        for _ in xrange(20):
+            pi = true_model.pi
+            theta = np.random.normal(loc=true_model.theta, scale=0.1)
+            theta = np.clip(theta, 0.001, 1.)
+            for j in xrange(nannotators):
+                for k in xrange(nclasses):
+                    theta[j,k,:] /= theta[j,k,:].sum()
+            model = ModelB(nclasses, nannotators, pi=pi, theta=theta,
+                           alpha=true_model.alpha, beta=true_model.beta)
+            llhood = model.log_likelihood(annotations)
+            self.assertGreater(max_llhood, llhood)
 
 
 if __name__ == '__main__':
