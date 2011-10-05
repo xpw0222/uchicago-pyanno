@@ -36,7 +36,7 @@ class TestSampling(unittest.TestCase):
 
         dx = optimum_jump(beta_likelihood, x0.copy(), arguments,
                           x_upper, x_lower,
-                          500, 100, 0.3, 0.05, 'Everything')
+                          1000, 100, 0.3, 0.1, 'Everything')
 
         njumps = 3000
         samples = sample_distribution(beta_likelihood, x0.copy(), arguments,
