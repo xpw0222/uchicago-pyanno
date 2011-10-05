@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.special
+from scipy.special import gammaln
 import time
 
 def random_categorical(distr, nsamples):
@@ -26,8 +26,7 @@ def log0_no_warning(x):
 
 def log_beta_pdf(x, a, b):
     """Return the natural logarithm of the Beta(a,b) distribution at x."""
-    log_gamma = scipy.special.gammaln
-    return (log_gamma(a+b) - log_gamma(a) - log_gamma(b)
+    return (gammaln(a+b) - gammaln(a) - gammaln(b)
             + (a-1.)*log0(x) + (b-1.)*log0(1.-x))
 
 
@@ -47,8 +46,8 @@ def alloc_mat(M,N,x=0.0):
         result.append(alloc_vec(N,x))
         m += 1
     return result
-                   
-    
+
+
 def alloc_tens(M,N,J,x=0.0):
     result = []
     for m in range(M):
@@ -62,7 +61,7 @@ def alloc_tens4(M,N,J,K,x=0.0):
         result.append(alloc_tens(N,J,K,x))
     return result
 
-            
+
 def fill_vec(xs,y):
     i = 0
     while i < len(xs):
@@ -233,3 +232,11 @@ class benchmark(object):
         print '---- stop ----'
         print("%s : %0.3f seconds" % (self.name, end-self.start))
         return False
+
+
+def dirichlet_llhood(theta, alpha):
+    """Compute the log likelihood of theta under Dirichlet(alpha)."""
+    log_theta = log0(theta)
+    return (gammaln(alpha.sum())
+            - (gammaln(alpha)).sum()
+            + ((alpha - 1.) * log_theta).sum())

@@ -1,8 +1,7 @@
 """This file contains the classes defining the models."""
 import numpy as np
 from pyanno.util import (random_categorical, create_band_matrix,
-                         warn_missing_vals, normalize, benchmark)
-from pyanno.multinom import dirichlet_llhood, map_em
+                         warn_missing_vals, normalize, dirichlet_llhood)
 
 # TODO arguments checking
 # TODO MLE estimation
