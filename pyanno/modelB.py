@@ -149,6 +149,7 @@ class ModelB(object):
 
         # True if annotations is missing
         missing_mask = (annotations==-1)
+        valid_mask = (annotations!=-1)
         missing_mask_nclasses = np.tile(missing_mask[:,:,None], (1,1,nclasses))
 
         # TODO move argument checking to map_estimate
@@ -226,7 +227,7 @@ class ModelB(object):
 
             accuracy = np.tile(alpha_prior_count, (nannotators, 1, 1))
             for i in xrange(nitems):
-                valid = ~missing_mask[i,:]
+                valid = valid_mask[i,:]
                 accuracy[annotators[:,valid],:,annotations[i,valid]] += category[i,:]
             accuracy /= accuracy.sum(2)[:,:,None]
 
