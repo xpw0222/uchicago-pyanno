@@ -1,5 +1,5 @@
 """View for model and data pair."""
-from traits.has_traits import HasTraits
+from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_numeric import Array
 from traits.trait_types import Any, File, Instance, Button
 from traitsui.editors.file_editor import FileEditor
@@ -30,35 +30,47 @@ class ModelDataView(HasTraits):
         """Request data file and run ML estimation of parameters."""
         print 'Estimate...'
         model.mle(self.annotations, estimate_gamma=True)
-        #self.update_from_model()
+        self.model_view.update_from_model()
+
+    @on_trait_change('annotations_file')
+    def _update_annotations_file(self):
+        print 'file'
 
 
     ### Views ################################################################
 
     def traits_view(self):
         model_create_group = (
-            Item(label='choose model'),
-            Item(label='new button')
+            HGroup(
+                Item(label='choose model'),
+                Item(label='new button'),
+                label = 'Model creation',
+                show_border=True
+            )
         )
 
         model_group = (
             VGroup (
                 model_create_group,
-                Item('model_view', style='custom'),
-                Spring(),
-                show_border = True
+                Item('model_view', style='custom', show_label=False),
+                show_border = True,
+                label = 'Model view'
             )
         )
 
         data_create_group = VGroup(
-            Item('data_file', style='simple', label='Annotations file', width=400)
+            Item('annotations_file', style='simple', label='Annotations file',
+                 width=400),
+            show_border = True,
+            label = 'Data creation'
         )
 
         data_group = (
             HGroup (
                 data_create_group,
                 Spring(),
-                show_border = True
+                show_border = True,
+                label = 'Data view'
             )
         )
 
@@ -76,8 +88,8 @@ class ModelDataView(HasTraits):
                 ),
                 model_data_group
             ),
-            width = 800,
-            height = 600,
+            width = 1200,
+            height = 800,
             resizable = True
         )
 
@@ -95,13 +107,12 @@ def main():
     model = ModelBt.create_initial_state(5)
     model_data_view = ModelDataView(model=model,
                                     model_view=ModelBtView(model=model),
-                                    annotations=np.random.randint(4,
-                                                                  size=(10,
-                                                                        4)))
+                                    annotations=model.generate_annotations
+                                        (model.generate_labels(50*8)))
     model_data_view.configure_traits(view='traits_view')
 
     return model, model_data_view
 
 
 if __name__ == '__main__':
-    model, model_view = main()
+    model, model_data_view = main()

@@ -185,21 +185,17 @@ class ModelBtView(ModelView):
              label='number of annotators',
              style='readonly'),
         HGroup(
-            vcenter(Item(label='Gamma[k] = P(label=k)')),
             Item('handler.gamma_plot',
                  editor=ComponentEditor(),
-                 resizable=False,
+                 #resizable=False,
                  show_label=False,
-                 height=-200,
-                 width=-500
+                 #height=200,
+                 width=0.3
             ),
             vcenter(Item('handler.edit_gamma', show_label=False)),
             show_border=True
         ),
-        Item('model.theta', label="Theta[j] = P(annotation_j=k | label=k)"),
-        HFlow(
-            Item('handler.ml_estimate', show_label=False)
-        )
+        Item('model.theta', label="Theta[j] = P(annotation_j=k | label=k)")
     )
 
     traits_view = View(body, buttons=[OKButton], resizable=True)
