@@ -1,33 +1,36 @@
 import numpy as np
 
 from traits.api import HasTraits, Property, Array
+from traits.trait_types import List, Int, Bool, Str
 from traitsui.api import View, Item, TabularEditor
 from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import NoButtons
 
 
-def create_array2d_adapter(width, show_index=True, data_format='%f'):
-    _columns = [('%d' % (i+1), i) for i in range(width)]
-    if show_index:
-        _columns.insert(0, ('row\col', 'index'))
+class Array2DAdapter(TabularAdapter):
+    columns = List
+    show_index = Bool(True)
+    ncolumns = Int
+    data_format = Str('%f')
 
-    class Array2DAdapter(TabularAdapter):
-        columns = _columns
-
-        font = 'Courier 10'
-        alignment = 'right'
-        format = data_format
-        index_text = Property
-
-        def _get_index_text(self):
-            return str(self.row)
-
-    return Array2DAdapter()
+    font = 'Courier 10'
+    alignment = 'right'
+    format = data_format
+    index_text = Property
 
 
-def create_array2d_editor(width, show_index=True, data_format='%f'):
-    adapter = create_array2d_adapter(width, show_index, data_format)
-    return TabularEditor(adapter=adapter)
+    def _get_index_text(self):
+        return str(self.row)
+
+
+    def _columns_default(self):
+        columns = [('el%d' % (i+1), i) for i in range(self.ncolumns)]
+        if self.show_index:
+            columns.insert(0, ('row\col', 'index'))
+        return columns
+
+    def _set_text ( self, value ):
+        self.item[ self.column_id ] = float(self.value)
 
 
 #### Testing and debugging ####################################################
