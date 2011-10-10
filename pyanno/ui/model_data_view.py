@@ -76,6 +76,28 @@ class ModelDataView(HasTraits):
     annotations_info_str = Str
 
 
+    @on_trait_change('annotations_file')
+    def _update_annotations_file(self):
+        print 'loading file', self.annotations_file
+        # load file
+        # I don't use np.loadtxt to allow for format 1,2,3,\n
+        # (i.e., last number is followed by comma)
+        # TODO function in util to load arbitrary formats
+        # TODO generalize to load all possible data values (including string annotations)
+        # TODO allow different values for missing annotations
+        annotations = []
+        with open(self.annotations_file) as fh:
+            for n, line in enumerate(fh):
+                line = line.strip().replace(',', '')
+                annotations.append(np.fromstring(line, dtype=int, sep=' '))
+
+        self.annotations = np.asarray(annotations, dtype=int)
+        self.annotations[self.annotations>-1] -= 1
+        self.annotations_are_defined = True
+        self.annotations_updated = True
+
+    @on_trait_change('annotations_updated,model_updated')
+
     @on_trait_change('annotations_updated,model_updated')
     def _update_info_str(self):
         if not self.annotations_are_defined:
