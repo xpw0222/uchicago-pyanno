@@ -112,6 +112,8 @@ class HintonDiagramPlot(HasTraits):
                                  / (range2d.y_range.high - range2d.y_range.low))
 
         polyplot.border_visible = False
+        # some padding right, on the bottom
+        polyplot.padding = [0, 15, 0, 25]
 
         return polyplot
 
@@ -187,15 +189,14 @@ class ModelBtView(ModelView):
         HGroup(
             Item('handler.gamma_plot',
                  editor=ComponentEditor(),
-                 #resizable=False,
+                 resizable=False,
                  show_label=False,
-                 #height=200,
-                 width=0.3
+                 height=-100,
+                 #width=0.3
             ),
             vcenter(Item('handler.edit_gamma', show_label=False)),
-            show_border=True
         ),
-        Item('model.theta', label="Theta[j] = P(annotation_j=k | label=k)")
+        Item('model.theta', label="Theta[j] = P(annotation_j=k | label=k)"),
     )
 
     traits_view = View(body, buttons=[OKButton], resizable=True)
