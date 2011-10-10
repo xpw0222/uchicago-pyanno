@@ -118,7 +118,7 @@ class ModelBt(object):
         def _wrap_llhood(params):
             self.gamma, self.theta = self._vector_to_params(params)
             # minimize *negative* likelihood
-            return - _llhood_counts(counts, use_prior=False)
+            return - _llhood_counts(counts, use_prior=use_prior)
 
         # TODO: use gradient, constrained optimization
         params_best = scipy.optimize.fmin(_wrap_llhood, params_start,
