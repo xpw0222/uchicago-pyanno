@@ -1,15 +1,38 @@
 """View for model and data pair."""
 from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_numeric import Array
-from traits.trait_types import Any, File, Instance, Button
+from traits.trait_types import Any, File, Instance, Button, Enum, Str, Range, Bool, Float, Event, List
 from traitsui.editors.file_editor import FileEditor
 from traitsui.editors.instance_editor import InstanceEditor
+from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.group import HGroup, VGroup
 from traitsui.item import Item, Spring
+from traitsui.menu import OKCancelButtons
 from traitsui.view import View
+from pyanno.modelBt import ModelBt
+from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.ui.model_bt_view import ModelBtView
 
 import numpy as np
+
+# TODO fix size, scroll bar on second line
+# TODO remember last setting of parameters
+class NewModelDialog(HasTraits):
+    model_name = Str
+    nclasses = Range(low=3, high=50)
+
+    def traits_view(self):
+        traits_view = View(
+            VGroup(
+                Item(name='nclasses',
+                     label='Number of annotation classes:',
+                     id='test')
+            ),
+            buttons=OKCancelButtons,
+            title='Create new ' + self.model_name,
+            kind='modal'
+        )
+        return traits_view
 
 class ModelDataView(HasTraits):
 
