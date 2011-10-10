@@ -63,6 +63,16 @@ class DataView(HasTraits):
 
 class ModelDataView(HasTraits):
 
+    model_name = Enum('Model B-with-theta',
+                      'Model B (full model) [not ready yet]',
+                      'Model A [not ready yet]')
+    _model_name_to_class = {
+        'Model B-with-theta': ModelBt
+    }
+    _model_name_to_view = {
+        'Model B-with-theta': ModelBtView
+    }
+
     model = Any
     model_view = Instance(ModelBtView)
     model_updated = Event
@@ -75,6 +85,8 @@ class ModelDataView(HasTraits):
 
     annotations_info_str = Str
 
+    info_string = Str
+    log_likelihood = Float
 
     @on_trait_change('annotations_file')
     def _update_annotations_file(self):
@@ -97,6 +109,10 @@ class ModelDataView(HasTraits):
         self.annotations_updated = True
 
     @on_trait_change('annotations_updated,model_updated')
+    def _update_log_likelihood(self):
+        print 'llhood'
+        if self.annotations_are_defined:
+            self.log_likelihood = self.model.log_likelihood(self.annotations)
 
     @on_trait_change('annotations_updated,model_updated')
     def _update_info_str(self):
@@ -106,6 +122,15 @@ class ModelDataView(HasTraits):
             self.info_string = ('Model and annotations are defined.')
 
     @on_trait_change('annotations_updated')
+    def _update_annotations_info_str(self):
+        print 'update string'
+        classes = str(np.unique(self.annotations[self.annotations != -1]))
+        self.annotations_info_str = ANNOTATIONS_INFO_STR.format(
+            self.annotations_file,
+            self.annotations.shape[0],
+            self.annotations.shape[1],
+            classes)
+
     @on_trait_change('model,model:theta,model:gamma')
     def _fire_model_updated(self):
         if not self.model_update_suspended:
@@ -114,30 +139,72 @@ class ModelDataView(HasTraits):
 
     ### Actions ##############################################################
 
-    ml_estimate = Button(label='ML estimate...')
+    ### Model creation actions
+    # FIXME tooltip begins with "specifies..."
+    new_model = Button(label='New model...')
+    get_info_on_model = Button(label='Info...')
+
+    ml_estimate = Button(label='ML estimate...',
+                         desc=('Maximum Likelihood estimate of model '
+                               'parameters'))
     map_estimate = Button(label='MAP estimate...')
-    sample_theta_posterior = Button(label='Sample theta...')
+    sample_theta_posterior = Button(label='Sample parameters...')
     estimate_labels = Button(label='Estimate labels...')
+
+    edit_data = Button(label='Edit annotations...')
+
+    def _new_model_fired(self):
+        """Create new model."""
+        model_name = self.model_name
+
+        # dialog to request basic parameters
+        dialog = NewModelDialog(model_name=model_name)
+        dialog_ui = dialog.edit_traits()
+        if dialog_ui.result:
+            # user pressed 'Ok'
+            # create model and update view
+            model_class = self._model_name_to_class[model_name]
+            self.model = model_class.create_initial_state(dialog.nclasses)
+            self.model_view = self._model_name_to_view[model_name](
+                model=self.model)
 
     def _ml_estimate_fired(self):
         """Request data file and run ML estimation of parameters."""
         print 'Estimate...'
-        model.mle(self.annotations, estimate_gamma=True)
+        self.model_update_suspended = True
+        model.mle(self.annotations, estimate_gamma=True, use_prior=False)
+        self.model_update_suspended = False
+        # TODO change this into event listener (self.model_updated)
+        self._fire_model_updated()
         self.model_view.update_from_model()
 
-    @on_trait_change('annotations_file')
-    def _update_annotations_file(self):
-        print 'file'
+    def _map_estimate_fired(self):
+        """Request data file and run ML estimation of parameters."""
+        print 'Estimate...'
+        self.model_update_suspended = True
+        model.mle(self.annotations, estimate_gamma=True, use_prior=True)
+        self.model_update_suspended = False
+        # TODO change this into event listener (self.model_updated)
+        self._fire_model_updated()
+        self.model_view.update_from_model()
+
+    def _edit_data_fired(self):
+        data_view = DataView(data=self.annotations)
+        data_view.edit_traits(kind='modal')
+        self.annotations_updated = True
 
 
     ### Views ################################################################
 
     def traits_view(self):
+        ## Model view
+
         model_create_group = (
             HGroup(
-                Item(label='choose model'),
-                Item(label='new button'),
-                label = 'Model creation',
+                Item(name='model_name',show_label=False),
+                Item(name='new_model', show_label=False),
+                Item(name='get_info_on_model', show_label=False,
+                     enabled_when='False'),
                 show_border=True
             )
         )
@@ -147,31 +214,68 @@ class ModelDataView(HasTraits):
                 model_create_group,
                 Item('model_view', style='custom', show_label=False),
                 show_border = True,
-                label = 'Model view'
+                label = 'Model view',
             )
         )
+
+        ## Data view
 
         data_create_group = VGroup(
             Item('annotations_file', style='simple', label='Annotations file',
                  width=400),
             show_border = True,
-            label = 'Data creation'
+        )
+
+        data_info_group = VGroup(
+            Item('annotations_info_str',
+                 show_label=False,
+                 style='readonly',
+                 height=80),
+            HGroup(
+                Item('edit_data',
+                     enabled_when='annotations_are_defined',
+                     show_label=False),
+                Spring()
+            ),
         )
 
         data_group = (
-            HGroup (
+            VGroup (
                 data_create_group,
-                Spring(),
+                data_info_group,
                 show_border = True,
-                label = 'Data view'
+                label = 'Data view',
             )
         )
 
+        ## (Model,Data) view
+
         model_data_group = (
-            HGroup(
-                Item('ml_estimate', enabled_when='annotations.shape != (1,1)')
+            VGroup(
+                Item('info_string', show_label=False, style='readonly'),
+                Item('log_likelihood', label='Log likelihood', style='readonly'),
+                HGroup(
+                    Item('ml_estimate',
+                         enabled_when='annotations_are_defined',
+                         show_label=False),
+                    Item('map_estimate',
+                         enabled_when='annotations_are_defined',
+                         show_label=False),
+                    Item('sample_theta_posterior',
+                         enabled_when='annotations_are_defined',
+                         show_label=False),
+                    Item('estimate_labels',
+                         enabled_when='annotations_are_defined',
+                         show_label=False,
+                         enabled_when='False'),
+                ),
+                show_border = True,
+                label = 'Model-data view'
             )
         )
+
+
+        ## Full view
 
         full_view = View(
             VGroup(
@@ -181,6 +285,7 @@ class ModelDataView(HasTraits):
                 ),
                 model_data_group
             ),
+            title='PyAnno - Models of data annotations by multiple curators',
             width = 1200,
             height = 800,
             resizable = True
