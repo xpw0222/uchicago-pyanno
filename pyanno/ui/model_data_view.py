@@ -15,6 +15,12 @@ from pyanno.ui.model_bt_view import ModelBtView
 
 import numpy as np
 
+ANNOTATIONS_INFO_STR = """Annotations file {}
+Number of annotations: {}
+Number of annotators: {}
+Labels: {}"""
+
+
 # TODO fix size, scroll bar on second line
 # TODO remember last setting of parameters
 class NewModelDialog(HasTraits):
@@ -67,6 +73,17 @@ class ModelDataView(HasTraits):
     annotations_updated = Event
     annotations_are_defined = Bool(False)
 
+    annotations_info_str = Str
+
+
+    @on_trait_change('annotations_updated,model_updated')
+    def _update_info_str(self):
+        if not self.annotations_are_defined:
+            self.info_string = ('Please define an annotations list.')
+        else:
+            self.info_string = ('Model and annotations are defined.')
+
+    @on_trait_change('annotations_updated')
     @on_trait_change('model,model:theta,model:gamma')
     def _fire_model_updated(self):
         if not self.model_update_suspended:
