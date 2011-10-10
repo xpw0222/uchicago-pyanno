@@ -133,7 +133,8 @@ class ModelBt(object):
     def _random_initial_parameters(self, annotations, estimate_gamma):
         if estimate_gamma:
             # estimate gamma from observed annotations
-            gamma = (np.bincount(annotations[annotations!=-1])
+            gamma = (np.bincount(annotations[annotations!=-1],
+                                 minlength=self.nclasses)
                           / (3.*annotations.shape[0]))
         else:
             gamma = ModelBt._random_gamma(self.nclasses)
