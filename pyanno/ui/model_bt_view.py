@@ -143,7 +143,7 @@ class ModelBtView(ModelView):
     """
 
     #### Model properties #######
-    gamma = ListFloat
+    gamma = List(CFloat)
 
 
     def update_from_model(self):

@@ -29,9 +29,6 @@ class Array2DAdapter(TabularAdapter):
             columns.insert(0, ('row\col', 'index'))
         return columns
 
-    def _set_text ( self, value ):
-        self.item[ self.column_id ] = float(self.value)
-
 
 #### Testing and debugging ####################################################
 
