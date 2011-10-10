@@ -59,9 +59,19 @@ class ModelDataView(HasTraits):
 
     model = Any
     model_view = Instance(ModelBtView)
+    model_updated = Event
+    model_update_suspended = Bool(False)
 
     annotations = Array(dtype=int, shape=(None, None))
     annotations_file = File
+    annotations_updated = Event
+    annotations_are_defined = Bool(False)
+
+    @on_trait_change('model,model:theta,model:gamma')
+    def _fire_model_updated(self):
+        if not self.model_update_suspended:
+            self.model_updated = True
+
 
     ### Actions ##############################################################
 
