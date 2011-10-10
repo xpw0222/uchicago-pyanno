@@ -123,7 +123,7 @@ class ModelBt(HasStrictTraits):
         def _wrap_llhood(params):
             self.gamma, self.theta = self._vector_to_params(params)
             # minimize *negative* likelihood
-            return - _llhood_counts(counts, use_prior=False)
+            return - _llhood_counts(counts, use_prior=use_prior)
 
         # TODO: use gradient, constrained optimization
         params_best = scipy.optimize.fmin(_wrap_llhood, params_start,
@@ -138,7 +138,8 @@ class ModelBt(HasStrictTraits):
     def _random_initial_parameters(self, annotations, estimate_gamma):
         if estimate_gamma:
             # estimate gamma from observed annotations
-            gamma = (np.bincount(annotations[annotations!=-1])
+            gamma = (np.bincount(annotations[annotations!=-1],
+                                 minlength=self.nclasses)
                           / (3.*annotations.shape[0]))
         else:
             gamma = ModelBt._random_gamma(self.nclasses)

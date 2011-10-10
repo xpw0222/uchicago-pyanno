@@ -1,5 +1,5 @@
 import scipy as sp
-from pyanno.models import ModelB
+from pyanno.modelB import ModelB
 
 DATA_PER_LOOP = 100
 

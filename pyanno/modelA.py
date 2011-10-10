@@ -601,11 +601,8 @@ class ModelA(object):
                     posteriors[j] = p4
 
         # check posteriors: non-negative, sum to 1
-        if sum(posteriors) - 1.0 > 0.0000001 or min(posteriors) < 0:
-            print 'Aberrant posteriors!!!', posteriors
-            print sum(posteriors)
-            print min(posteriors)
-            time.sleep(60)
+        assert np.abs(posteriors.sum()-1.) < 1e-6
+        assert posteriors.min() >= 0.
 
         return posteriors
 
