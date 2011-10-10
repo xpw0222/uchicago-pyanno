@@ -34,6 +34,27 @@ class NewModelDialog(HasTraits):
         )
         return traits_view
 
+
+class DataView(HasTraits):
+    data = Array
+
+    def traits_view(self):
+        return View(
+            VGroup(Item('data',
+                        editor=TabularEditor
+                            (
+                            adapter=Array2DAdapter(ncolumns=len(self.data[0]),
+                                                   format='%d',
+                                                   show_index=False)),
+                        show_label=False)),
+            title='Model B-with-Theta, gamma parameters',
+            width=500,
+            height=800,
+            resizable=True,
+            buttons=OKCancelButtons
+        )
+
+
 class ModelDataView(HasTraits):
 
     model = Any
