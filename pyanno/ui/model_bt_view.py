@@ -1,21 +1,13 @@
-from chaco.data_label import DataLabel
 from chaco.data_range_2d import DataRange2D
 from chaco.label_axis import LabelAxis
 from chaco.scales.scales import FixedScale
 from chaco.scales_tick_generator import ScalesTickGenerator
-from chaco.text_box_overlay import TextBoxOverlay
-from chaco.tooltip import ToolTip
 from traits.has_traits import HasTraits, on_trait_change
-from traits.trait_numeric import Array
-from traits.trait_types import Button, Range, Int, Str, ListFloat, List, CFloat, CList, Float, File
-from traitsui.api import ModelView, View, Item, Group, Tabbed, VGroup, HGroup
-from traitsui.editors.array_editor import ArrayEditor
-from traitsui.editors.instance_editor import InstanceEditor
+from traits.trait_types import Button, Str, ListFloat, List, CFloat
+from traitsui.api import ModelView, View, Item, Group, VGroup, HGroup
 from traitsui.editors.tabular_editor import TabularEditor
-from traitsui.group import HFlow
-from traitsui.item import Heading, Spring
+from traitsui.item import  Spring
 from traitsui.menu import OKButton, OKCancelButtons
-from traitsui.file_dialog import open_file
 from traits.api import Instance
 from enable.component_editor import ComponentEditor
 from chaco.api import ArrayPlotData, Plot
