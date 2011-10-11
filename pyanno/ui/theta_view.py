@@ -24,7 +24,7 @@ class ThetaView(ModelView):
     theta_plot = Instance(Plot)
     theta_plot_data = Instance(ArrayPlotData)
 
-    @on_trait_change('theta_plot_data,theta_samples_valid,redraw,model:theta')
+    @on_trait_change('theta_plot_data,theta_samples_valid,redraw')
     def _update_plot_data(self):
         theta = self.model.theta
 
@@ -55,16 +55,23 @@ class ThetaView(ModelView):
                 plot_data.set_data('avg%d' % idx, [samples.mean()])
                 plot_data.set_data('index%d' % idx, [float(idx)+0.8])
 
-        self.theta_plot = self._theta_plot_default()
+        self._redraw_theta_plot()
 
-    def _theta_plot_default(self):
+    def _redraw_theta_plot(self):
         if not self.theta_plot_data:
             self._update_plot_data()
+        if not self.theta_plot:
+            self.theta_plot = Plot(self.theta_plot_data)
 
         theta = self.model.theta
         theta_len = theta.shape[0]
 
-        theta_plot = Plot(self.theta_plot_data)
+        theta_plot = self.theta_plot
+        # remove current plots
+        while len(theta_plot.components)>0:
+            theta_plot.remove(theta_plot.components[0])
+        theta_plot.plots = {}
+
         if self.theta_samples_valid:
              for idx in range(theta_len):
                  theta_plot.candle_plot(('index%d' % idx,
@@ -124,8 +131,6 @@ class ThetaView(ModelView):
         theta_plot.title = 'Accuracy of annotators (theta)'
         # some padding right, on the bottom
         #theta_plot.padding = [0, 15, 0, 25]
-
-        return theta_plot
 
     traits_view = View(
         Item('theta_plot',

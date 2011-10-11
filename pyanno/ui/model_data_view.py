@@ -136,7 +136,6 @@ class ModelDataView(HasTraits):
         if not self.model_update_suspended:
             self.model_updated = True
 
-
     ### Actions ##############################################################
 
     ### Model creation actions
@@ -169,7 +168,7 @@ class ModelDataView(HasTraits):
                 model=self.model)
 
     def _ml_estimate_fired(self):
-        """Request data file and run ML estimation of parameters."""
+        """Run ML estimation of parameters."""
         print 'Estimate...'
         self.model_update_suspended = True
         model.mle(self.annotations, estimate_gamma=True, use_prior=False)
@@ -179,7 +178,7 @@ class ModelDataView(HasTraits):
         self.model_view.update_from_model()
 
     def _map_estimate_fired(self):
-        """Request data file and run ML estimation of parameters."""
+        """Run ML estimation of parameters."""
         print 'Estimate...'
         self.model_update_suspended = True
         model.mle(self.annotations, estimate_gamma=True, use_prior=True)
@@ -187,6 +186,17 @@ class ModelDataView(HasTraits):
         # TODO change this into event listener (self.model_updated)
         self._fire_model_updated()
         self.model_view.update_from_model()
+
+    def _sample_theta_posterior_fired(self):
+        """Sample the posterior of the parameters `theta`."""
+        print 'Sample...'
+        self.model_update_suspended = True
+        nsamples = 100
+        samples = self.model.sample_posterior_over_theta(self.annotations,
+                                                         nsamples,
+                                                         step_optimization_nsamples=3)
+        self.model_update_suspended = False
+        self.model_view.plot_theta_samples(samples)
 
     def _edit_data_fired(self):
         data_view = DataView(data=self.annotations)
@@ -265,7 +275,7 @@ class ModelDataView(HasTraits):
                          enabled_when='annotations_are_defined',
                          show_label=False),
                     Item('estimate_labels',
-                         enabled_when='annotations_are_defined',
+                         #enabled_when='annotations_are_defined',
                          show_label=False,
                          enabled_when='False'),
                 ),

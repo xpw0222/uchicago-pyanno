@@ -160,6 +160,11 @@ class ModelBtView(ModelView):
         self.gamma_hinton.data = self.gamma
 
 
+    def plot_theta_samples(self, theta_samples):
+        self.theta_view.theta_samples = theta_samples
+        self.theta_view.theta_samples_valid = True
+
+
     #### Traits UI view #########
     gamma_hinton = Instance(HintonDiagramPlot)
     gamma_plot = Instance(Plot)
@@ -213,6 +218,7 @@ class ModelBtView(ModelView):
 
     def _theta_plot_default(self):
         self.theta_view = ThetaView(model=self.model)
+        self.theta_view._update_plot_data()
         return self.theta_view.theta_plot
 
 
