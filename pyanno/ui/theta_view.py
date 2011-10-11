@@ -9,13 +9,16 @@ from enable.component_editor import ComponentEditor
 from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_numeric import Array
 from traits.trait_types import Instance, Bool, Event
+from traitsui.group import VGroup
 from traitsui.handler import ModelView
 from traitsui.item import Item
 from traitsui.view import View
 
 import numpy as np
+from pyanno.ui.debug_model_view import DebugModelView
 
-class ThetaView(ModelView):
+
+class ThetaView(DebugModelView):
 
     theta_samples = Array(dtype=float, shape=(None, None))
     theta_samples_valid = Bool(False)
@@ -132,14 +135,14 @@ class ThetaView(ModelView):
         # some padding right, on the bottom
         #theta_plot.padding = [0, 15, 0, 25]
 
-    traits_view = View(
-        Item('theta_plot',
+    body = VGroup(Item('theta_plot',
              editor=ComponentEditor(),
              resizable=True,
              show_label=False,
              #height=-100,
-            ),
-    )
+            ))
+
+    traits_view = View(body)
 
 #### Testing and debugging ####################################################
 
@@ -157,7 +160,7 @@ def main():
     theta_view = ThetaView(model=model,
                            theta_samples=theta_samples)
     theta_view.theta_samples_valid = True
-    theta_view.configure_traits(view='traits_view')
+    theta_view.configure_traits(view='debug_view')
 
     return model, theta_view
 
