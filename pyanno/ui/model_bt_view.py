@@ -170,7 +170,6 @@ class ModelBtView(ModelView):
     gamma_plot = Instance(Plot)
 
     theta_view = Instance(ThetaView)
-    theta_plot = Instance(Plot)
 
     ## Actions ##
     edit_gamma = Button(label='Edit...')
@@ -201,8 +200,8 @@ class ModelBtView(ModelView):
             vcenter(Item('handler.edit_gamma', show_label=False)),
         ),
         HGroup(
-            Item('handler.theta_plot',
-                 editor=ComponentEditor(),
+            Item('handler.theta_view',
+                 style='custom',
                  resizable=False,
                  show_label=False)
         )
@@ -216,10 +215,10 @@ class ModelBtView(ModelView):
         self.gamma_hinton = HintonDiagramPlot(data = self.gamma)
         return self.gamma_hinton.plot
 
-    def _theta_plot_default(self):
+    def _theta_view_default(self):
         self.theta_view = ThetaView(model=self.model)
         self.theta_view._update_plot_data()
-        return self.theta_view.theta_plot
+        return self.theta_view.theta_view
 
 
 #### Testing and debugging ####################################################
