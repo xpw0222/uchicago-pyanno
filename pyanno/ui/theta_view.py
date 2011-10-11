@@ -68,20 +68,21 @@ class ThetaView(DebugModelView):
 
         for idx in range(theta_len):
             # candle plot summarizing samples over the posterior
-            theta_plot.candle_plot(('index%d' % idx,
-                                    'min%d' % idx,
-                                    'barmin%d' % idx,
-                                    'avg%d' % idx,
-                                    'barmax%d' % idx,
-                                    'max%d' % idx),
-                                     color = "lightgray",
-                                     bar_line_color = "black",
-                                     stem_color = "blue",
-                                     center_color = "red",
-                                     center_width = 2)
+            theta_plot.candle_plot((_w_idx('index', idx),
+                                    _w_idx('min', idx),
+                                    _w_idx('barmin', idx),
+                                    _w_idx('avg', idx),
+                                    _w_idx('barmax', idx),
+                                    _w_idx('max', idx)),
+                                    color = "lightgray",
+                                    bar_line_color = "black",
+                                    stem_color = "blue",
+                                    center_color = "red",
+                                    center_width = 2)
 
             # plot of raw samples
-            theta_plot.plot(('ysamples%d' % idx, 'xsamples%d' % idx),
+            theta_plot.plot((_w_idx('ysamples', idx),
+                             _w_idx('xsamples', idx)),
                             type='scatter',
                             color='red',
                             marker='plus',
@@ -89,7 +90,7 @@ class ThetaView(DebugModelView):
                             marker_size=3)
 
             # plot current parameters
-            theta_plot.plot(('y%d' % idx, 'x%d' % idx),
+            theta_plot.plot((_w_idx('y', idx), _w_idx('x', idx)),
                             type='scatter',
                             color='black',
                             marker='plus',
