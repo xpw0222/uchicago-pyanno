@@ -1,7 +1,3 @@
-from chaco.data_range_2d import DataRange2D
-from chaco.label_axis import LabelAxis
-from chaco.scales.scales import FixedScale
-from chaco.scales_tick_generator import ScalesTickGenerator
 from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_types import Button, Str, ListFloat, List, CFloat
 from traitsui.api import ModelView, View, Item, Group, VGroup, HGroup
@@ -15,100 +11,8 @@ from chaco.base import n_gon
 import numpy as np
 
 from pyanno.ui.arrayview import Array2DAdapter
+from pyanno.ui.hinton_plot import HintonDiagramPlot
 from pyanno.ui.theta_view import ThetaView
-
-
-class HintonDiagramPlot(HasTraits):
-
-    data = ListFloat
-
-    plot_data = Instance(ArrayPlotData)
-    plot = Instance(Plot)
-
-    title = Str
-
-    @on_trait_change('data', post_init=True)
-    def _update_data(self):
-        distr_len = len(self.data)
-        plot_data = self.plot_data
-
-        # centers of the squares
-        centers = [(i, 0.5) for i in xrange(1, distr_len + 1)]
-
-        for idx, center in enumerate(centers):
-            # draw square with area proportional to probability mass
-            r = np.sqrt(self.data[idx] / 2.)
-            npoints = n_gon(center=center, r=r, nsides=4, rot_degrees=45)
-            nxarray, nyarray = np.transpose(npoints)
-            # save in dataarray
-            plot_data.set_data('x%d' % idx, nxarray)
-            plot_data.set_data('y%d' % idx, nyarray)
-
-
-    def _plot_data_default(self):
-        self.plot_data = ArrayPlotData()
-        self._update_data()
-        return self.plot_data
-
-
-    def _plot_default(self):
-        distr_len = len(self.data)
-
-        # PolygonPlot holding the square of the Hinton diagram
-        polyplot = Plot(self.plot_data)
-        for idx in range(distr_len):
-            polyplot.plot(('x%d' % idx, 'y%d' % idx),
-                          type="polygon",
-                          face_color='black',
-                          edge_color='black')
-
-        # remove grids and axes
-        polyplot.underlays = []
-
-        # create x axis for labels
-        ids = range(1, distr_len+1)
-        label_list = [ 'Gamma[{}]'.format(id) for id in ids]
-
-        label_axis = LabelAxis(
-            polyplot,
-            orientation = 'bottom',
-            positions = ids,
-            labels = label_list,
-            label_rotation = 0,
-            small_haxis_style=True
-        )
-        # use a FixedScale tick generator with a resolution of 1
-        label_axis.tick_generator = ScalesTickGenerator(scale=FixedScale(1.))
-
-        polyplot.index_axis = label_axis
-        polyplot.underlays.append(label_axis)
-
-        # create y axis for probability density
-        prob_axis = LabelAxis(
-            polyplot,
-            orientation = 'left',
-            positions = [0.5, 0.5+np.sqrt(0.25)/2., 1.0],
-            labels = ['0', '0.25', '1']
-        )
-        prob_axis.tick_generator = ScalesTickGenerator(scale=FixedScale(0.001))
-
-        #polyplot.value_axis = prob_axis
-        #polyplot.underlays.append(prob_axis)
-
-        # tweak some of the plot properties
-        #polyplot.padding = 50
-        if self.title is not None:
-            polyplot.title = self.title
-        range2d = DataRange2D(low=(0.5, 0.), high=(distr_len+0.5, 1.))
-        polyplot.range2d = range2d
-        polyplot.aspect_ratio = ((range2d.x_range.high - range2d.x_range.low)
-                                 / (range2d.y_range.high - range2d.y_range.low))
-
-        polyplot.border_visible = False
-        # some padding right, on the bottom
-        polyplot.padding = [0, 15, 0, 25]
-
-        return polyplot
 
 
 class GammaView(HasTraits):
@@ -167,7 +71,6 @@ class ModelBtView(ModelView):
 
     #### Traits UI view #########
     gamma_hinton = Instance(HintonDiagramPlot)
-    gamma_plot = Instance(Plot)
 
     theta_view = Instance(ThetaView)
 
@@ -190,12 +93,10 @@ class ModelBtView(ModelView):
              label='number of annotators',
              style='readonly'),
         HGroup(
-            Item('handler.gamma_plot',
-                 editor=ComponentEditor(),
+            Item('handler.gamma_hinton',
+                 style='custom',
                  resizable=False,
                  show_label=False,
-                 height=-100,
-                 #width=0.3
             ),
             vcenter(Item('handler.edit_gamma', show_label=False)),
         ),
@@ -203,7 +104,7 @@ class ModelBtView(ModelView):
             Item('handler.theta_view',
                  style='custom',
                  resizable=False,
-                 show_label=False)
+                 show_label=False),
         )
         #Item('model.theta', label="Theta[j] = P(annotation_j=k | label=k)"),
     )
@@ -211,9 +112,8 @@ class ModelBtView(ModelView):
     traits_view = View(body, buttons=[OKButton], resizable=True)
 
 
-    def _gamma_plot_default(self):
-        self.gamma_hinton = HintonDiagramPlot(data = self.gamma)
-        return self.gamma_hinton.plot
+    def _gamma_hinton_default(self):
+        return HintonDiagramPlot(data = self.gamma)
 
     def _theta_view_default(self):
         self.theta_view = ThetaView(model=self.model)
