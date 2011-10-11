@@ -9,14 +9,14 @@ from enable.component_editor import ComponentEditor
 from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_numeric import Array
 from traits.trait_types import Instance, Bool, Event
+from traitsui.handler import ModelView
 from traitsui.item import Item
 from traitsui.view import View
 
 import numpy as np
 
-class ThetaView(HasTraits):
+class ThetaView(ModelView):
 
-    theta = Array(dtype=float, shape=(1, None))
     theta_samples = Array(dtype=float, shape=(None, None))
     theta_samples_valid = Bool(False)
     redraw = Event
@@ -24,15 +24,16 @@ class ThetaView(HasTraits):
     theta_plot = Instance(Plot)
     theta_plot_data = Instance(ArrayPlotData)
 
-    @on_trait_change('theta_plot_data,theta_samples_valid,redraw')
+    @on_trait_change('theta_plot_data,theta_samples_valid,redraw,model:theta')
     def _update_plot_data(self):
-        print 'udpate'
+        theta = self.model.theta
+
         if not self.theta_plot_data:
             self.theta_plot_data = ArrayPlotData()
 
         plot_data = self.theta_plot_data
 
-        for idx, th in enumerate(self.theta[0,:]):
+        for idx, th in enumerate(theta):
             plot_data.set_data('x%d' % idx, [th])
             plot_data.set_data('y%d' % idx, [idx+1.2])
 
@@ -57,11 +58,11 @@ class ThetaView(HasTraits):
         self.theta_plot = self._theta_plot_default()
 
     def _theta_plot_default(self):
-        print 'theta', self.theta
         if not self.theta_plot_data:
             self._update_plot_data()
 
-        theta_len = self.theta.shape[1]
+        theta = self.model.theta
+        theta_len = theta.shape[0]
 
         theta_plot = Plot(self.theta_plot_data)
         if self.theta_samples_valid:
@@ -93,11 +94,11 @@ class ThetaView(HasTraits):
                             line_width=2)
 
         # adjust axis bounds
-        xlow = min(0.6, self.theta.min()-0.05)
+        xlow = min(0.6, theta.min()-0.05)
         if self.theta_samples_valid:
             xlow = min(xlow, self.theta_samples.min()-0.05)
         range2d = DataRange2D(low=(0., xlow),
-                              high=(self.theta.shape[1]+1, 1.))
+                              high=(theta_len+1, 1.))
         theta_plot.range2d = range2d
 
         # remove horizontal grid and axis
@@ -148,7 +149,7 @@ def main():
     theta_samples = model.sample_posterior_over_theta(annotations, 100,
                                                       step_optimization_nsamples=3)
 
-    theta_view = ThetaView(theta=model.theta[None,:],
+    theta_view = ThetaView(model=model,
                            theta_samples=theta_samples)
     theta_view.theta_samples_valid = True
     theta_view.configure_traits(view='traits_view')
