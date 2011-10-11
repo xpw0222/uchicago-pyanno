@@ -76,6 +76,7 @@ class ModelBtView(ModelView):
 
     ## Actions ##
     edit_gamma = Button(label='Edit...')
+    edit_theta = Button(label='Edit...')
     generate_data = Button(label='Generate annotations...')
 
     def _edit_gamma_fired(self):
@@ -105,6 +106,9 @@ class ModelBtView(ModelView):
                  style='custom',
                  resizable=False,
                  show_label=False),
+            vcenter(Item('handler.edit_theta',
+                         show_label=False,
+                         enabled_when='False')),
         )
         #Item('model.theta', label="Theta[j] = P(annotation_j=k | label=k)"),
     )
