@@ -15,6 +15,7 @@ from chaco.base import n_gon
 import numpy as np
 
 from pyanno.ui.arrayview import Array2DAdapter
+from pyanno.ui.theta_view import ThetaView
 
 
 class HintonDiagramPlot(HasTraits):
@@ -140,10 +141,13 @@ class ModelBtView(ModelView):
     gamma = List(CFloat)
 
 
+    # TODO: make this into Event
     def update_from_model(self):
         """Update view parameters to the ones in the model."""
         print 'update from model'
         self.gamma = self.model.gamma.tolist()
+        self.theta_view.theta_samples_valid = False
+        self.theta_view.redraw = True
 
 
     def _gamma_default(self):
@@ -159,6 +163,9 @@ class ModelBtView(ModelView):
     #### Traits UI view #########
     gamma_hinton = Instance(HintonDiagramPlot)
     gamma_plot = Instance(Plot)
+
+    theta_view = Instance(ThetaView)
+    theta_plot = Instance(Plot)
 
     ## Actions ##
     edit_gamma = Button(label='Edit...')
@@ -188,7 +195,13 @@ class ModelBtView(ModelView):
             ),
             vcenter(Item('handler.edit_gamma', show_label=False)),
         ),
-        Item('model.theta', label="Theta[j] = P(annotation_j=k | label=k)"),
+        HGroup(
+            Item('handler.theta_plot',
+                 editor=ComponentEditor(),
+                 resizable=False,
+                 show_label=False)
+        )
+        #Item('model.theta', label="Theta[j] = P(annotation_j=k | label=k)"),
     )
 
     traits_view = View(body, buttons=[OKButton], resizable=True)
@@ -197,6 +210,10 @@ class ModelBtView(ModelView):
     def _gamma_plot_default(self):
         self.gamma_hinton = HintonDiagramPlot(data = self.gamma)
         return self.gamma_hinton.plot
+
+    def _theta_plot_default(self):
+        self.theta_view = ThetaView(model=self.model)
+        return self.theta_view.theta_plot
 
 
 #### Testing and debugging ####################################################
