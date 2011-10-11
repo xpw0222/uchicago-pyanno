@@ -147,7 +147,7 @@ class ModelBtView(ModelView):
         print 'update from model'
         self.gamma = self.model.gamma.tolist()
         self.theta_view.theta_samples_valid = False
-        self.theta_view.redraw = True
+        #self.theta_view.redraw = True
 
 
     def _gamma_default(self):
@@ -218,7 +218,7 @@ class ModelBtView(ModelView):
     def _theta_view_default(self):
         self.theta_view = ThetaView(model=self.model)
         self.theta_view._update_plot_data()
-        return self.theta_view.theta_view
+        return self.theta_view
 
 
 #### Testing and debugging ####################################################

@@ -6,96 +6,89 @@ from chaco.plot import Plot
 from chaco.scales.scales import FixedScale
 from chaco.scales_tick_generator import ScalesTickGenerator
 from enable.component_editor import ComponentEditor
-from traits.has_traits import HasTraits, on_trait_change
+from traits.has_traits import on_trait_change
 from traits.trait_numeric import Array
 from traits.trait_types import Instance, Bool, Event
 from traitsui.group import VGroup
-from traitsui.handler import ModelView
 from traitsui.item import Item
 from traitsui.view import View
 
 import numpy as np
 from pyanno.ui.debug_model_view import DebugModelView
 
+def _w_idx(str_, idx):
+    """Append number to string. Used to generate PlotData labels"""
+    return str_ + str(idx)
 
 class ThetaView(DebugModelView):
 
     theta_samples = Array(dtype=float, shape=(None, None))
     theta_samples_valid = Bool(False)
-    redraw = Event
 
     theta_plot = Instance(Plot)
     theta_plot_data = Instance(ArrayPlotData)
 
-    @on_trait_change('theta_plot_data,theta_samples_valid,redraw')
-    def _update_plot_data(self):
-        theta = self.model.theta
+    redraw = Event
 
-        if not self.theta_plot_data:
-            self.theta_plot_data = ArrayPlotData()
 
-        plot_data = self.theta_plot_data
+    ### Plot definition #######################################################
 
-        for idx, th in enumerate(theta):
-            plot_data.set_data('x%d' % idx, [th])
-            plot_data.set_data('y%d' % idx, [idx+1.2])
+    def _compute_range2d(self):
+        low = min(0.6, self.model.theta.min()-0.05)
+        if self.theta_samples_valid:
+            low = min(low, self.theta_samples.min()-0.05)
+        range2d = DataRange2D(low=(0., low),
+                              high=(self.model.theta.shape[0]+1, 1.))
+        return range2d
 
-            # add samples if defined
-            if self.theta_samples_valid:
-                samples = np.sort(self.theta_samples[:,idx])
-                nsamples = samples.shape[0]
-                perc5 = samples[int(nsamples*0.05)]
-                perc95 = samples[int(nsamples*0.95)]
-                avg_pstd = samples.mean() + samples.std()
-                avg_mstd = samples.mean() - samples.std()
-                plot_data.set_data('xsamples%d' % idx, samples)
-                plot_data.set_data('ysamples%d' % idx,
-                                   np.zeros((nsamples,)) + idx+1.2)
-                plot_data.set_data('min%d' % idx, [perc5])
-                plot_data.set_data('max%d' % idx, [perc95])
-                plot_data.set_data('barmin%d' % idx, [avg_mstd])
-                plot_data.set_data('barmax%d' % idx, [avg_pstd])
-                plot_data.set_data('avg%d' % idx, [samples.mean()])
-                plot_data.set_data('index%d' % idx, [float(idx)+0.8])
 
-        self._redraw_theta_plot()
+    @on_trait_change('model:theta,theta_samples,theta_samples_valid',
+                     post_init=True)
+    def _update_range2d(self):
+        self.theta_plot.range2d = self._compute_range2d()
 
-    def _redraw_theta_plot(self):
-        if not self.theta_plot_data:
-            self._update_plot_data()
-        if not self.theta_plot:
-            self.theta_plot = Plot(self.theta_plot_data)
+
+    def _theta_plot_default(self):
+        """Create plot of theta parameters."""
+
+        # We plot both the thetas and the samples from the posterior; if the
+        # latter are not defined, the corresponding ArrayPlotData names
+        # should be set to an empty list, so that they are not displayed
 
         theta = self.model.theta
         theta_len = theta.shape[0]
 
-        theta_plot = self.theta_plot
-        # remove current plots
-        while len(theta_plot.components)>0:
-            theta_plot.remove(theta_plot.components[0])
-        theta_plot.plots = {}
+        # create the plot data
+        if not self.theta_plot_data:
+            self.theta_plot_data = ArrayPlotData()
+            self._update_plot_data()
 
-        if self.theta_samples_valid:
-             for idx in range(theta_len):
-                 theta_plot.candle_plot(('index%d' % idx,
-                                         'min%d' % idx,
-                                         'barmin%d' % idx,
-                                         'avg%d' % idx,
-                                         'barmax%d' % idx,
-                                         'max%d' % idx),
-                                          color = "lightgray",
-                                          bar_line_color = "black",
-                                          stem_color = "blue",
-                                          center_color = "red",
-                                          center_width = 2)
+        # create the plot
+        theta_plot = Plot(self.theta_plot_data)
 
-                 theta_plot.plot(('ysamples%d' % idx, 'xsamples%d' % idx),
-                                 type='scatter',
-                                 color='red',
-                                 marker='plus',
-                                 line_width=1,
-                                 marker_size=3)
         for idx in range(theta_len):
+            # candle plot summarizing samples over the posterior
+            theta_plot.candle_plot(('index%d' % idx,
+                                    'min%d' % idx,
+                                    'barmin%d' % idx,
+                                    'avg%d' % idx,
+                                    'barmax%d' % idx,
+                                    'max%d' % idx),
+                                     color = "lightgray",
+                                     bar_line_color = "black",
+                                     stem_color = "blue",
+                                     center_color = "red",
+                                     center_width = 2)
+
+            # plot of raw samples
+            theta_plot.plot(('ysamples%d' % idx, 'xsamples%d' % idx),
+                            type='scatter',
+                            color='red',
+                            marker='plus',
+                            line_width=1,
+                            marker_size=3)
+
+            # plot current parameters
             theta_plot.plot(('y%d' % idx, 'x%d' % idx),
                             type='scatter',
                             color='black',
@@ -104,12 +97,7 @@ class ThetaView(DebugModelView):
                             line_width=2)
 
         # adjust axis bounds
-        xlow = min(0.6, theta.min()-0.05)
-        if self.theta_samples_valid:
-            xlow = min(xlow, self.theta_samples.min()-0.05)
-        range2d = DataRange2D(low=(0., xlow),
-                              high=(theta_len+1, 1.))
-        theta_plot.range2d = range2d
+        theta_plot.range2d = self._compute_range2d()
 
         # remove horizontal grid and axis
         theta_plot.underlays = [theta_plot.x_grid, theta_plot.y_axis]
@@ -135,6 +123,67 @@ class ThetaView(DebugModelView):
         # some padding right, on the bottom
         #theta_plot.padding = [0, 15, 0, 25]
 
+        return theta_plot
+
+
+    ### Handle plot data ######################################################
+
+    def _samples_names_and_values(self, idx):
+        """Return a list of names and values for the samples PlotData."""
+
+        # In the following code, we rely on lazy evaluation of the
+        # X if CONDITION else Y statements to return a default value if the
+        # theta samples are not currently defined, or the real value if they
+        # are.
+
+        invalid = not self.theta_samples_valid
+        samples = [] if invalid else np.sort(self.theta_samples[:,idx])
+        nsamples = None if invalid else samples.shape[0]
+        perc5 = None if invalid else samples[int(nsamples*0.05)]
+        perc95 = None if invalid else samples[int(nsamples*0.95)]
+
+        data_dict = {
+            'xsamples':
+                [] if invalid else samples,
+            'ysamples':
+                [] if invalid else np.zeros((nsamples,)) + idx + 1.2,
+            'min':
+                [] if invalid else [perc5],
+            'max':
+                [] if invalid else [perc95],
+            'barmin':
+                [] if invalid else [samples.mean() - samples.std()],
+            'barmax':
+                [] if invalid else [samples.mean( + samples.std())],
+            'avg':
+                [] if invalid else [samples.mean()],
+            'index':
+                [] if invalid else [idx + 0.8]
+        }
+
+        name_value = [(_w_idx(name, idx), value)
+                      for name, value in data_dict.items()]
+        return name_value
+
+    @on_trait_change('theta_plot_data,theta_samples_valid,redraw')
+    def _update_plot_data(self):
+        """Updates PlotData on changes."""
+        theta = self.model.theta
+
+        plot_data = self.theta_plot_data
+
+        for idx, th in enumerate(theta):
+            #
+            plot_data.set_data('x%d' % idx, [th])
+            plot_data.set_data('y%d' % idx, [idx+1.2])
+
+            for name_value in self._samples_names_and_values(idx):
+                name, value = name_value
+                plot_data.set_data(name, value)
+
+
+    #### View definition #####################################################
+
     body = VGroup(Item('theta_plot',
              editor=ComponentEditor(),
              resizable=True,
@@ -143,6 +192,7 @@ class ThetaView(DebugModelView):
             ))
 
     traits_view = View(body)
+
 
 #### Testing and debugging ####################################################
 
@@ -159,8 +209,8 @@ def main():
 
     theta_view = ThetaView(model=model,
                            theta_samples=theta_samples)
-    theta_view.theta_samples_valid = True
-    theta_view.configure_traits(view='debug_view')
+    #theta_view.theta_samples_valid = True
+    theta_view.configure_traits(view='traits_view')
 
     return model, theta_view
 
