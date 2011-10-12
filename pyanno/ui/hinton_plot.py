@@ -67,8 +67,8 @@ class HintonDiagramPlot(HasTraits):
 
     def _create_label_axis(self, len_, plot):
         """Create plot axis for labels at fixed intervals."""
-        ids = range(len_)
-        label_list = [str(id) for id in ids]
+        ids = range(1, len_+1)
+        label_list = [str(id-1) for id in ids]
         label_axis = LabelAxis(
             plot,
             orientation='bottom',
