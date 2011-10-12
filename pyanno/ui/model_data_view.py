@@ -10,15 +10,11 @@ from traitsui.item import Item, Spring
 from traitsui.menu import OKCancelButtons
 from traitsui.view import View
 from pyanno.modelBt import ModelBt
+from pyanno.ui.annotations_view import AnnotationsView
 from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.ui.model_bt_view import ModelBtView
 
 import numpy as np
-
-ANNOTATIONS_INFO_STR = """Annotations file {}
-Number of annotations: {}
-Number of annotators: {}
-Labels: {}"""
 
 
 # TODO fix size, scroll bar on second line
@@ -41,26 +37,6 @@ class NewModelDialog(HasTraits):
         return traits_view
 
 
-class DataView(HasTraits):
-    data = Array
-
-    def traits_view(self):
-        return View(
-            VGroup(Item('data',
-                        editor=TabularEditor
-                            (
-                            adapter=Array2DAdapter(ncolumns=len(self.data[0]),
-                                                   format='%d',
-                                                   show_index=False)),
-                        show_label=False)),
-            title='Model B-with-Theta, gamma parameters',
-            width=500,
-            height=800,
-            resizable=True,
-            buttons=OKCancelButtons
-        )
-
-
 class ModelDataView(HasTraits):
 
     model_name = Enum('Model B-with-theta',
@@ -80,10 +56,9 @@ class ModelDataView(HasTraits):
 
     annotations = Array(dtype=int, shape=(None, None))
     annotations_file = File
-    annotations_updated = Event
     annotations_are_defined = Bool(False)
-
-    annotations_info_str = Str
+    annotations_updated = Event
+    annotations_view = Instance(AnnotationsView)
 
     info_string = Str
     log_likelihood = Float
@@ -106,6 +81,7 @@ class ModelDataView(HasTraits):
         self.annotations = np.asarray(annotations, dtype=int)
         self.annotations[self.annotations>-1] -= 1
         self.annotations_are_defined = True
+        print 'trigger'
         self.annotations_updated = True
 
     @on_trait_change('annotations_updated,model_updated')
@@ -114,27 +90,27 @@ class ModelDataView(HasTraits):
         if self.annotations_are_defined:
             self.log_likelihood = self.model.log_likelihood(self.annotations)
 
-    @on_trait_change('annotations_updated,model_updated')
-    def _update_info_str(self):
-        if not self.annotations_are_defined:
-            self.info_string = ('Please define an annotations list.')
-        else:
-            self.info_string = ('Model and annotations are defined.')
-
-    @on_trait_change('annotations_updated')
-    def _update_annotations_info_str(self):
-        print 'update string'
-        classes = str(np.unique(self.annotations[self.annotations != -1]))
-        self.annotations_info_str = ANNOTATIONS_INFO_STR.format(
-            self.annotations_file,
-            self.annotations.shape[0],
-            self.annotations.shape[1],
-            classes)
-
     @on_trait_change('model,model:theta,model:gamma')
     def _fire_model_updated(self):
         if not self.model_update_suspended:
             self.model_updated = True
+
+    def _annotations_view_default(self):
+        return AnnotationsView(
+            annotations = np.zeros((1, 1), dtype=int),
+            nclasses = 3,
+            annotations_name = '<undefined>'
+        )
+
+    @on_trait_change('annotations_updated,model.nclasses')
+    def _create_annotations_view(self):
+        if self.annotations_are_defined:
+            print 'creat_new', self.model.nclasses
+            self.annotations_view = AnnotationsView(
+                annotations = self.annotations,
+                nclasses = self.model.nclasses,
+                annotations_name = self.annotations_file
+            )
 
     ### Actions ##############################################################
 
@@ -149,8 +125,6 @@ class ModelDataView(HasTraits):
     map_estimate = Button(label='MAP estimate...')
     sample_theta_posterior = Button(label='Sample parameters...')
     estimate_labels = Button(label='Estimate labels...')
-
-    edit_data = Button(label='Edit annotations...')
 
     def _new_model_fired(self):
         """Create new model."""
@@ -171,7 +145,7 @@ class ModelDataView(HasTraits):
         """Run ML estimation of parameters."""
         print 'Estimate...'
         self.model_update_suspended = True
-        model.mle(self.annotations, estimate_gamma=True, use_prior=False)
+        self.model.mle(self.annotations, estimate_gamma=True, use_prior=False)
         self.model_update_suspended = False
         # TODO change this into event listener (self.model_updated)
         self._fire_model_updated()
@@ -181,7 +155,7 @@ class ModelDataView(HasTraits):
         """Run ML estimation of parameters."""
         print 'Estimate...'
         self.model_update_suspended = True
-        model.mle(self.annotations, estimate_gamma=True, use_prior=True)
+        self.model.mle(self.annotations, estimate_gamma=True, use_prior=True)
         self.model_update_suspended = False
         # TODO change this into event listener (self.model_updated)
         self._fire_model_updated()
@@ -197,11 +171,6 @@ class ModelDataView(HasTraits):
                                                          step_optimization_nsamples=3)
         self.model_update_suspended = False
         self.model_view.plot_theta_samples(samples)
-
-    def _edit_data_fired(self):
-        data_view = DataView(data=self.annotations)
-        data_view.edit_traits(kind='modal')
-        self.annotations_updated = True
 
 
     ### Views ################################################################
@@ -237,16 +206,10 @@ class ModelDataView(HasTraits):
         )
 
         data_info_group = VGroup(
-            Item('annotations_info_str',
+            Item('annotations_view',
+                 style='custom',
                  show_label=False,
-                 style='readonly',
-                 height=80),
-            HGroup(
-                Item('edit_data',
-                     enabled_when='annotations_are_defined',
-                     show_label=False),
-                Spring()
-            ),
+                 visible_when='annotations_are_defined')
         )
 
         data_group = (
@@ -323,4 +286,4 @@ def main():
 
 
 if __name__ == '__main__':
-    model, model_data_view = main()
+    m, mdv = main()
