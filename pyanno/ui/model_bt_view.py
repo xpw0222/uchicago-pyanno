@@ -117,7 +117,8 @@ class ModelBtView(ModelView):
 
 
     def _gamma_hinton_default(self):
-        return HintonDiagramPlot(data = self.gamma)
+        return HintonDiagramPlot(data = self.gamma,
+                                 title='Gamma parameters, P(label=k)')
 
     def _theta_view_default(self):
         self.theta_view = ThetaView(model=self.model)
