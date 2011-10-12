@@ -138,10 +138,7 @@ class ModelBt(HasStrictTraits):
     def _random_initial_parameters(self, annotations, estimate_gamma):
         if estimate_gamma:
             # estimate gamma from observed annotations
-            gamma = (np.bincount(annotations[annotations!=-1],
-                                 minlength=self.nclasses)
-                          / (3.*annotations.shape[0]))
-            print gamma, annotations_frequency(annotations, self.nclasses)
+            gamma = annotations_frequency(annotations, self.nclasses)
         else:
             gamma = ModelBt._random_gamma(self.nclasses)
 
