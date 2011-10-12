@@ -4,7 +4,7 @@ from traits.api import HasStrictTraits, Int, Array, Bool
 import numpy as np
 import scipy.optimize
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import random_categorical, log_beta_pdf, compute_counts
+from pyanno.util import random_categorical, log_beta_pdf, compute_counts, annotations_frequency
 
 
 # map of `n` to list of all possible triplets of `n` elements
@@ -141,6 +141,7 @@ class ModelBt(HasStrictTraits):
             gamma = (np.bincount(annotations[annotations!=-1],
                                  minlength=self.nclasses)
                           / (3.*annotations.shape[0]))
+            print gamma, annotations_frequency(annotations, self.nclasses)
         else:
             gamma = ModelBt._random_gamma(self.nclasses)
 

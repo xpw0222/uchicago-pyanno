@@ -9,7 +9,7 @@ from collections import defaultdict
 import numpy as np
 import scipy.optimize
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import compute_counts, random_categorical, log_beta_pdf
+from pyanno.util import compute_counts, random_categorical, log_beta_pdf, annotations_frequency
 
 
 _compatibility_tables_cache = {}
@@ -251,8 +251,7 @@ class ModelA(object):
         # TODO duplication w/ ModelBt
         if estimate_omega:
             # estimate omega from observed annotations
-            omega = (np.bincount(annotations[annotations!=-1])
-                          / (3.*annotations.shape[0]))
+            omega = annotations_frequency(annotations, self.nclasses)
         else:
             omega = self.omega
 

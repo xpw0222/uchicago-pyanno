@@ -201,6 +201,13 @@ def compute_counts(annotations, nclasses):
     return data
 
 
+def annotations_frequency(annotations, nclasses, missing_val=-1):
+    valid = annotations!=missing_val
+    nobservations = valid.sum()
+    return (np.bincount(annotations[valid], minlength=nclasses)
+            / float(nobservations))
+
+
 def string_wrap(st, mode):
     st = str(st)
 
