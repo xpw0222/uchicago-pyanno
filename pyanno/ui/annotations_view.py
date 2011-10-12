@@ -1,38 +1,115 @@
-from traits.has_traits import HasTraits, HasStrictTraits
+from traits.has_traits import HasTraits, HasStrictTraits, on_trait_change
 from traits.trait_numeric import Array
-from traits.trait_types import Instance, Int, List, ListFloat
+from traits.trait_types import Instance, Int, List, ListFloat, Str, Button, Event
 from traits.traits import Property
 from traitsui.api import ModelView, View, VGroup
-from traitsui.item import Item
+from traitsui.editors.tabular_editor import TabularEditor
+from traitsui.group import HGroup
+from traitsui.item import Item, Spring
+from traitsui.menu import OKCancelButtons
+from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.ui.hinton_plot import HintonDiagramPlot
 from pyanno.util import annotations_frequency
+
+import numpy as np
+
+
+ANNOTATIONS_INFO_STR = """Annotations file {}
+Number of annotations: {}
+Number of annotators: {}
+Labels: {}"""
+
+
+class DataView(HasTraits):
+    data = Array
+
+    def traits_view(self):
+        return View(
+            VGroup(Item('data',
+                        editor=TabularEditor
+                            (
+                            adapter=Array2DAdapter(ncolumns=len(self.data[0]),
+                                                   format='%d',
+                                                   show_index=False)),
+                        show_label=False)),
+            title='Model B-with-Theta, gamma parameters',
+            width=500,
+            height=800,
+            resizable=True,
+            buttons=OKCancelButtons
+        )
 
 
 class AnnotationsView(HasStrictTraits):
     """ Traits UI Model/View for annotations."""
 
     ### Model-related traits ###
+
     annotations = Array
     nclasses = Int
+    annotations_name = Str
 
-    frequency = Property(ListFloat, depends_on='annotations,nclasses')
+    frequency = ListFloat
 
-    def _get_frequency(self):
-        return annotations_frequency(self.annotations, self.nclasses).tolist()
+    @on_trait_change('annotations,annotations_updated')
+    def _update_frequency(self):
+        nclasses = max(self.nclasses, self.annotations.max())
+        self.frequency =  annotations_frequency(self.annotations,
+                                                nclasses).tolist()
+        self.frequency_plot.data = self.frequency
+
 
     ### Traits UI definitions ###
+
+    # event raised when annotations are updates
+    annotations_updated = Event
+
+    ## annotations info string definition
+    annotations_info_str = Str
+
+    @on_trait_change('annotations,annotations_updated')
+    def _update_annotations_info_str(self):
+        classes = str(np.unique(self.annotations[self.annotations!=-1]))
+        self.annotations_info_str = ANNOTATIONS_INFO_STR.format(
+            self.annotations_name,
+            self.annotations.shape[0],
+            self.annotations.shape[1],
+            classes)
+
+    ## frequency plot definition
     frequency_plot = Instance(HintonDiagramPlot)
 
     def _frequency_plot_default(self):
-        return HintonDiagramPlot(data = self.frequency)
+        return HintonDiagramPlot(data=self.frequency,
+                                 title='Observed label frequencies')
+
+    ## edit data button opens annotations editor
+    edit_data = Button(label='Edit annotations...')
+
+    def _edit_data_fired(self):
+        data_view = DataView(data=self.annotations)
+        data_view.edit_traits(kind='modal')
+        self.annotations_updated = True
+
 
     ### View definition ###
     body = VGroup(
+        Item('annotations_info_str',
+             show_label=False,
+             style='readonly',
+             height=80
+        ),
         Item('frequency_plot',
              style='custom',
              resizable=False,
              show_label=False
-        )
+        ),
+        HGroup(
+            Item('edit_data',
+                 enabled_when='annotations_are_defined',
+                 show_label=False),
+            Spring()
+        ),
     )
 
     traits_view = View(body)
@@ -46,8 +123,8 @@ def main():
 
     from pyanno.modelBt import ModelBt
     model = ModelBt.create_initial_state(5)
-    annotations = model.generate_annotations(model.generate_labels(100))
-    model_view = AnnotationsView(annotations=annotations, nclasses=5)
+    annotations = model.generate_annotations(model.generate_labels(2))
+    model_view = AnnotationsView(annotations=annotations, annotations_name='blah')
     model_view.configure_traits()
     return model, annotations, model_view
 
