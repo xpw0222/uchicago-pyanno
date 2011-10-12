@@ -32,7 +32,7 @@ class DataView(HasTraits):
                                                    format='%d',
                                                    show_index=False)),
                         show_label=False)),
-            title='Model B-with-Theta, gamma parameters',
+            title='Annotations (-1 is missing value)',
             width=500,
             height=800,
             resizable=True,
