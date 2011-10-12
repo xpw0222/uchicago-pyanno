@@ -46,12 +46,12 @@ class AnnotationsView(HasStrictTraits):
     ### Model-related traits ###
 
     annotations = Array
-    nclasses = Int
+    nclasses = Int(1)
     annotations_name = Str
 
     frequency = ListFloat
 
-    @on_trait_change('annotations,annotations_updated')
+    @on_trait_change('annotations,annotations_updated,nclasses')
     def _update_frequency(self):
         nclasses = max(self.nclasses, self.annotations.max())
         self.frequency =  annotations_frequency(self.annotations,
@@ -61,7 +61,7 @@ class AnnotationsView(HasStrictTraits):
 
     ### Traits UI definitions ###
 
-    # event raised when annotations are updates
+    # event raised when annotations are updated
     annotations_updated = Event
 
     ## annotations info string definition
