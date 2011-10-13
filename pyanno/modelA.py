@@ -263,19 +263,22 @@ class ModelA(object):
 
     ##### Model likelihood methods ############################################
 
+    def log_likelihood(self, annotations):
+        counts = compute_counts(annotations, self.nclasses)
+        return self._log_likelihood_counts(counts)
+
     # TODO code duplication with ModelBt -> refactor
-    def log_likelihood(self, annotations, use_prior=False):
-        """Compute the log likelihood of annotations given the model."""
-        return self._log_likelihood_counts(compute_counts(annotations,
-                                                          self.nclasses),
-                                           use_prior)
-
-
-    def _log_likelihood_counts(self, counts, use_prior=False):
+    def _log_likelihood_counts(self, counts):
         """Compute the log likelihood of annotations given the model.
 
         This method assumes the data is in counts format.
         """
+
+        # TODO: check if it's possible to replace these constraints with bounded optimization
+        # check bounds of parameters (for likelihood optimization)
+        if np.amin(self.theta) <= 0 or np.amax(self.theta) > 1:
+            # return np.inf
+            return -1e20
 
         # compute alpha and beta (they do not depend on theta)
         alpha = self._compute_alpha()
@@ -297,13 +300,13 @@ class ModelA(object):
             # compute the likelihood for the triplet
             llhood += self._log_likelihood_triplet(counts[:,i],
                                                    theta_triplet,
-                                                   alpha, beta, use_prior)
+                                                   alpha, beta)
 
         return llhood
 
 
     def _log_likelihood_triplet(self, counts_triplet, theta_triplet,
-                                alpha, beta, use_prior):
+                                alpha, beta):
         """Compute the log likelihood of data for one triplet of annotators.
 
         Input:
@@ -312,18 +315,7 @@ class ModelA(object):
         """
 
         nclasses = self.nclasses
-        omega = self.omega
         llhood = 0.
-
-        # TODO: check if it's possible to replace these constraints with bounded optimization
-        # TODO: this check can be done in _log_likelihood_counts
-        if np.amin(theta_triplet) <= 0 or np.amax(theta_triplet) > 1:
-            # return np.inf
-            return -1e20
-
-        # prior on *thetas*
-        if use_prior:
-            llhood += log_beta_pdf(theta_triplet, 2., 1.).sum()
 
         # loop over all possible agreement patterns
         # 0=aaa, 1=aaA, 2=aAa, 3=Aaa, 4=Aa@
@@ -343,6 +335,12 @@ class ModelA(object):
             llhood += (counts_triplet[count_indices] * np.log(prob)).sum()
 
         return llhood
+
+
+    def _log_prior(self):
+        """Compute log probability of prior on the theta parameters."""
+        log_prob = log_beta_pdf(self.theta, 2., 1.).sum()
+        return log_prob
 
 
     def _prob_a_and_t(self, pattern, theta_triplet, alpha):
@@ -387,7 +385,6 @@ class ModelA(object):
 
     ##### Sampling posterior over parameters ##################################
 
-    # TODO duplicated functionality w/ ModelBt, refactor
     # TODO arguments for burn-in, thinning
     def sample_posterior_over_theta(self, annotations, nsamples,
                                     target_rejection_rate = 0.3,
