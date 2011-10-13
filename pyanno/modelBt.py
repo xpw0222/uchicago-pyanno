@@ -1,9 +1,10 @@
 """Definition of model B-with-theta."""
 
+from traits.api import HasStrictTraits, Int, Array, Bool
 import numpy as np
 import scipy.optimize
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import random_categorical, log_beta_pdf, compute_counts
+from pyanno.util import random_categorical, log_beta_pdf, compute_counts, annotations_frequency
 
 
 # map of `n` to list of all possible triplets of `n` elements
@@ -20,17 +21,21 @@ def _get_triplet_combinations(n):
 # ??? use_priors = True switches optimization from ML to MAP -> refactor
 # idea: have mle(annotations) optimize self.log_likelihood, and
 # map(annotations) optimize self.log_likelihood + log P(theta | beta prior)
-class ModelBt(object):
+class ModelBt(HasStrictTraits):
     """
     At the moment the model assumes 1) a total of 8 annotators, and 2) each
     item is annotated by 3 annotators.
     """
 
+    nclasses = Int
+    nannotators = Int(8)
+    # number of annotators rating each item in the loop design
+    annotators_per_item = Int(3)
+    gamma = Array(dtype=float, shape=(None,))
+    theta = Array(dtype=float, shape=(None,))
+
     def __init__(self, nclasses, gamma, theta):
         self.nclasses = nclasses
-        self.nannotators = 8
-        # number of annotators rating each item in the loop design
-        self.annotators_per_item = 3
         self.gamma = gamma
         self.theta = theta
 
@@ -133,9 +138,7 @@ class ModelBt(object):
     def _random_initial_parameters(self, annotations, estimate_gamma):
         if estimate_gamma:
             # estimate gamma from observed annotations
-            gamma = (np.bincount(annotations[annotations!=-1],
-                                 minlength=self.nclasses)
-                          / (3.*annotations.shape[0]))
+            gamma = annotations_frequency(annotations, self.nclasses)
         else:
             gamma = ModelBt._random_gamma(self.nclasses)
 
