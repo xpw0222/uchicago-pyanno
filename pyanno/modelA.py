@@ -438,28 +438,28 @@ class ModelA(object):
 
     # TODO ideally, one would infer the posterior over correctness (T_ijk)
     #   first, and then return the probability of each value
-#    def infer_correctness(self, annotations):
-#        """Infer posterior distribution over correctness patterns."""
-#        nitems = annotations.shape[0]
-#        nclasses = self.nclasses
-#
-#        posterior = np.zeros((nitems, self.annotators_per_item**2))
-#        alpha = self._compute_alpha()
-#        for i, row in enumerate(annotations):
-#            valid_idx = np.where(row >= 0)
-#            vijk = row[valid_idx]
-#            tijk = self.theta[valid_idx]
-#            p = self._compute_posterior_T_triplet(vijk, tijk, alpha)
-#            posteriors[i, :] = p
-#
-#        return posteriors
-#
-#
-#    def _compute_posterior_T_triplet(self, v, t, alpha):
-#        # switch over agreement pattern
-#        # 0=aaa, 1=aaA, 2=aAa, 3=Aaa, 4=Aa@
-#        if v[0] == v[1] == v[2]:  # aaa pattern
-#            pass
+    #    def infer_correctness(self, annotations):
+    #        """Infer posterior distribution over correctness patterns."""
+    #        nitems = annotations.shape[0]
+    #        nclasses = self.nclasses
+    #
+    #        posterior = np.zeros((nitems, self.annotators_per_item**2))
+    #        alpha = self._compute_alpha()
+    #        for i, row in enumerate(annotations):
+    #            valid_idx = np.where(row >= 0)
+    #            vijk = row[valid_idx]
+    #            tijk = self.theta[valid_idx]
+    #            p = self._compute_posterior_T_triplet(vijk, tijk, alpha)
+    #            posteriors[i, :] = p
+    #
+    #        return posteriors
+    #
+    #
+    #    def _compute_posterior_T_triplet(self, v, t, alpha):
+    #        # switch over agreement pattern
+    #        # 0=aaa, 1=aaA, 2=aAa, 3=Aaa, 4=Aa@
+    #        if v[0] == v[1] == v[2]:  # aaa pattern
+    #            pass
 
 
     def infer_labels(self, annotations):
@@ -498,8 +498,9 @@ class ModelA(object):
                     posteriors[j] = p1
                 else:
                     posteriors[j] = p2
-                #-----------------------------------------------
-                # aaA
+
+        #-----------------------------------------------
+        # aaA
         elif vijk[0] == vijk[1] and vijk[1] != vijk[2]:
             x1 = tijk[0] * tijk[1] * (1 - tijk[2])
             x2 = (1 - tijk[0]) * (1 - tijk[1]) * tijk[2]
@@ -521,8 +522,9 @@ class ModelA(object):
                     posteriors[j] = p2
                 else:
                     posteriors[j] = p3
-                #-----------------------------------------------
-                # aAa
+
+        #-----------------------------------------------
+        # aAa
         elif vijk[0] == vijk[2] and vijk[1] != vijk[2]:
             x1 = tijk[0] * (1 - tijk[1]) * tijk[2]
             x2 = (1 - tijk[0]) * tijk[1] * (1 - tijk[2])
@@ -544,8 +546,9 @@ class ModelA(object):
                     posteriors[j] = p2
                 else:
                     posteriors[j] = p3
-                #-----------------------------------------------
-                # Aaa
+
+        #-----------------------------------------------
+        # Aaa
         elif vijk[1] == vijk[2] and vijk[0] != vijk[2]:
             x1 = (1 - tijk[0]) * tijk[1] * tijk[2]
             x2 = tijk[0] * (1 - tijk[1]) * (1 - tijk[2])
@@ -567,8 +570,9 @@ class ModelA(object):
                     posteriors[j] = p1
                 else:
                     posteriors[j] = p3
-                #-----------------------------------------------
-                # aAb
+
+        #-----------------------------------------------
+        # aAb
         elif vijk[0] != vijk[1] and vijk[1] != vijk[2]:
             x1 = tijk[0] * (1 - tijk[1]) * (1 - tijk[2])
             x2 = (1 - tijk[0]) * tijk[1] * (1 - tijk[2])
@@ -576,8 +580,8 @@ class ModelA(object):
             x4 = (1 - tijk[0]) * (1 - tijk[1]) * (1 - tijk[2])
 
             summa1 = 1 - alpha[3] - alpha[4] - alpha[5] - alpha[6]
-            summa2 = (1 - alpha[0]) * x1 + (1 - alpha[1]) * x2 + (1 - alpha[
-                                                                        2]) * x3 + summa1 * x4
+            summa2 = ((1 - alpha[0]) * x1 + (1 - alpha[1]) * x2 +
+                      (1 - alpha[2]) * x3 + summa1 * x4)
 
             # a is correct
             p1 = (1 - alpha[0]) * x1 / summa2
@@ -634,7 +638,7 @@ class ModelA(object):
                                   - 2*outer_omega[:,k].sum()
                                   + outer_omega[k,k])
             sum_wi2_not_k[k] = (outer_omega.diagonal().sum()
-                                  - outer_omega[k,k])
+                                - outer_omega[k,k])
 
         a1 = (omega * sum_wi2_not_k / sum_wi_wj_not_k).sum()
         alpha[0:3] = a1
