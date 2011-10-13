@@ -4,8 +4,6 @@ from pyanno.util import (random_categorical, create_band_matrix,
                          warn_missing_vals, normalize, dirichlet_llhood)
 
 # TODO arguments checking
-# TODO MLE estimation
-# TODO compute log likelihood
 
 class ModelB(object):
     """See Model.txt for a description of the model."""
@@ -251,8 +249,8 @@ class ModelB(object):
         """Return prevalence, P( category )."""
         beta_prior_count = self.beta - 1.
         if category is None:
-            # ??? I think this is wrong, it should rather be initialize at the mean
-            # of the dirichlet, i.e., beta / beta.sum()
+            # ??? this may be wrong, it should rather be initialize at the mean
+            #     of the dirichlet, i.e., beta / beta.sum()
             return normalize(beta_prior_count)
         else:
             return normalize(beta_prior_count + category.sum(0))
