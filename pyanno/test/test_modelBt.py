@@ -16,13 +16,32 @@ class TestModelBt(unittest.TestCase):
 
         # create a new, empty model and infer back the parameters
         model = ModelBt.create_initial_state(nclasses)
-        before_llhood = model.log_likelihood(annotations, use_prior=True)
-        model.mle(annotations, use_prior=True)
-        after_llhood = model.log_likelihood(annotations, use_prior=True)
+        before_llhood = model.log_likelihood(annotations)
+        model.mle(annotations)
+        after_llhood = model.log_likelihood(annotations)
 
         testing.assert_allclose(model.gamma, true_model.gamma, atol=1e-1, rtol=0.)
         testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
         self.assertGreater(after_llhood, before_llhood)
+
+
+    def test_map_estimation(self):
+        # test simple model, check that we get to global optimum
+        nclasses, nitems = 3, 500*8
+        # create random model and data (this is our ground truth model)
+        true_model = ModelBt.create_initial_state(nclasses)
+        labels = true_model.generate_labels(nitems)
+        annotations = true_model.generate_annotations(labels)
+
+        # create a new, empty model and infer back the parameters
+        model = ModelBt.create_initial_state(nclasses)
+        before_obj = model.log_likelihood(annotations) + model._log_prior()
+        model.map(annotations)
+        after_obj = model.log_likelihood(annotations) + model._log_prior()
+
+        testing.assert_allclose(model.gamma, true_model.gamma, atol=1e-1, rtol=0.)
+        testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
+        self.assertGreater(after_obj, before_obj)
 
 
     def test_log_likelihood(self):
@@ -67,15 +86,14 @@ class TestModelBt(unittest.TestCase):
         # create a new model
         model = ModelBt.create_initial_state(nclasses)
         # get optimal parameters (to make sure we're at the optimum)
-        model.mle(annotations, use_prior=False)
+        model.mle(annotations)
 
         # modify parameters, to give false start to sampler
         real_theta = model.theta.copy()
         model.theta = model._random_theta(model.nannotators)
         # save current parameters
         gamma_before, theta_before = model.gamma.copy(), model.theta.copy()
-        samples = model.sample_posterior_over_theta(annotations, nsamples,
-                                                    use_prior=False)
+        samples = model.sample_posterior_over_theta(annotations, nsamples)
         # test: the mean of the sampled parameters is the same as the MLE one
         # (up to 3 standard deviations of the estimate sample distribution)
         testing.assert_array_less(np.absolute(samples.mean(0)-real_theta),

@@ -112,20 +112,44 @@ class ModelBt(HasStrictTraits):
 
     ##### Parameters estimation methods #######################################
 
-    def mle(self, annotations, estimate_gamma=True, use_prior=False):
-        counts = compute_counts(annotations, self.nclasses)
-        params_start = self._random_initial_parameters(annotations,
-                                                       estimate_gamma)
+    def mle(self, annotations, estimate_gamma=True):
 
         # wrap log likelihood function to give it to optimize.fmin
         _llhood_counts = self._log_likelihood_counts
-        def _wrap_llhood(params):
+        def _wrap_llhood(params, counts):
             self.gamma, self.theta = self._vector_to_params(params)
             # minimize *negative* likelihood
-            return - _llhood_counts(counts, use_prior=use_prior)
+            return - _llhood_counts(counts)
+
+        self._parameter_estimation(_wrap_llhood, annotations,
+                                   estimate_gamma=estimate_gamma)
+
+
+    def map(self, annotations, estimate_gamma=True):
+
+        # wrap log likelihood function to give it to optimize.fmin
+        _llhood_counts = self._log_likelihood_counts
+        _log_prior = self._log_prior
+        def _wrap_llhood(params, counts):
+            self.gamma, self.theta = self._vector_to_params(params)
+            # minimize *negative* posterior probability of parameters
+            return - (_llhood_counts(counts) + _log_prior())
+
+        self._parameter_estimation(_wrap_llhood, annotations,
+                                   estimate_gamma=estimate_gamma)
+
+
+    def _parameter_estimation(self, objective, annotations,
+                              estimate_gamma=True):
+        counts = compute_counts(annotations, self.nclasses)
+
+        params_start = self._random_initial_parameters(annotations,
+                                                       estimate_gamma)
 
         # TODO: use gradient, constrained optimization
-        params_best = scipy.optimize.fmin(_wrap_llhood, params_start,
+        params_best = scipy.optimize.fmin(objective,
+                                          params_start,
+                                          args=(counts,),
                                           xtol=1e-4, ftol=1e-4,
                                           disp=True, maxiter=1e+10,
                                           maxfun=1e+30)
@@ -259,8 +283,7 @@ class ModelBt(HasStrictTraits):
                                     target_rejection_rate = 0.3,
                                     rejection_rate_tolerance = 0.05,
                                     step_optimization_nsamples = 500,
-                                    adjust_step_every = 100,
-                                    use_prior=False):
+                                    adjust_step_every = 100):
         """Return samples from posterior distribution over theta given data.
         """
         # optimize step size
@@ -272,7 +295,7 @@ class ModelBt(HasStrictTraits):
         def _wrap_llhood(params, counts):
             self.theta = params
             # minimize *negative* likelihood
-            return _llhood_counts(counts, use_prior=use_prior)
+            return _llhood_counts(counts)
 
         # TODO this save-reset is rather ugly, refactor: create copy of
         #      model and sample over it
