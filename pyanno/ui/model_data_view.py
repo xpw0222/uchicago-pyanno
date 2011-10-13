@@ -145,7 +145,7 @@ class ModelDataView(HasTraits):
         """Run ML estimation of parameters."""
         print 'Estimate...'
         self.model_update_suspended = True
-        self.model.mle(self.annotations, estimate_gamma=True, use_prior=False)
+        self.model.mle(self.annotations, estimate_gamma=True)
         self.model_update_suspended = False
         # TODO change this into event listener (self.model_updated)
         self._fire_model_updated()
@@ -155,7 +155,7 @@ class ModelDataView(HasTraits):
         """Run ML estimation of parameters."""
         print 'Estimate...'
         self.model_update_suspended = True
-        self.model.mle(self.annotations, estimate_gamma=True, use_prior=True)
+        self.model.map(self.annotations, estimate_gamma=True)
         self.model_update_suspended = False
         # TODO change this into event listener (self.model_updated)
         self._fire_model_updated()
