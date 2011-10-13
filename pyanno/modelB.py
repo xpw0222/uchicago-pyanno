@@ -343,11 +343,15 @@ class ModelB(object):
                              missing_mask_nclasses):
 
         unnorm_category = self._compute_category(annotations,
-                                                   prevalence, accuracy,
-                                                   missing_mask_nclasses,
-                                                   normalize=False)
+                                                 prevalence, accuracy,
+                                                 missing_mask_nclasses,
+                                                 normalize=False)
 
-        return np.log(unnorm_category.sum(1)).sum(), unnorm_category
+        llhood = np.log(unnorm_category.sum(1)).sum()
+        if np.isnan(llhood):
+            llhood = -1e20
+
+        return llhood, unnorm_category
 
 
     def _log_prior(self, prevalence, accuracy):
