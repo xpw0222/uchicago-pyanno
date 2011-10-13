@@ -253,5 +253,13 @@ class TestModelB(unittest.TestCase):
                                     model.pi, 6)
 
 
+    def test_theta_to_param_and_back(self):
+        model = ModelB.create_initial_state(5, 10)
+        param = model._theta_to_params(model.theta)
+        theta = model._params_to_theta(param)
+        testing.assert_allclose(theta, model.theta)
+        testing.assert_allclose(theta.sum(2), 1.)
+
+
 if __name__ == '__main__':
     unittest.main()

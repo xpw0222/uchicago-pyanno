@@ -1,5 +1,6 @@
 """This file contains the classes defining the models."""
 import numpy as np
+from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import (random_categorical, create_band_matrix,
                          warn_missing_vals, normalize, dirichlet_llhood)
 
@@ -359,6 +360,65 @@ class ModelB(object):
 
 
     ##### Sampling posterior over parameters ##################################
+
+    def not_sample_posterior_over_theta(self, annotations, nsamples,
+                                    target_rejection_rate = 0.3,
+                                    rejection_rate_tolerance = 0.05,
+                                    step_optimization_nsamples = 500,
+                                    adjust_step_every = 100):
+        """Return samples from posterior distribution over theta given data.
+        """
+
+        # wrap log likelihood function to give it to optimum_jump and
+        # sample_distribution
+        missing_mask_nclasses = self._missing_mask(annotations)
+        prevalence = self.pi
+
+        _llhood = self._log_likelihood_core
+        def _wrap_llhood(params, _):
+            theta = self._params_to_theta(params)
+            lhood, _ =  _llhood(annotations, prevalence, theta,
+                                missing_mask_nclasses)
+            return lhood
+
+        # compute optimal step size for given target rejection rate
+        params_start = self._theta_to_params(self.theta.copy())
+        params_upper = np.ones_like(params_start)
+        params_lower = np.zeros_like(params_start)
+        step = optimum_jump(_wrap_llhood, params_start, None,
+                            params_upper, params_lower,
+                            step_optimization_nsamples,
+                            adjust_step_every,
+                            target_rejection_rate,
+                            rejection_rate_tolerance, 'Everything')
+
+        # draw samples from posterior distribution over theta
+        samples = sample_distribution(_wrap_llhood, params_start, None,
+                                      step, nsamples,
+                                      params_lower, params_upper,
+                                      'Everything')
+        theta_samples = np.empty((nsamples, self.nannotators,
+                                  self.nclasses, self.nclasses))
+        for i in xrange(nsamples):
+            theta_samples[i,:] = self._params_to_theta(samples[i,:])
+        return theta_samples
+
+
+    # functions to flatten and unflatten theta parameter
+    def _theta_to_params(self, theta):
+        theta_part = theta[:,:,:-1]
+        return theta_part.flatten()
+
+
+    def _params_to_theta(self, params):
+        nclasses = self.nclasses
+        theta = np.empty((self.nannotators, nclasses, nclasses))
+        theta_part = params.reshape((self.nannotators,
+                                     nclasses, nclasses-1))
+        theta[:,:,:-1] = theta_part
+        theta[:,:,-1] = 1. - theta_part.sum(2)
+
+        return theta
 
 
     ##### Posterior distributions #############################################
