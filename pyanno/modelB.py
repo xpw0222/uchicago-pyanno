@@ -290,6 +290,36 @@ class ModelB(object):
         return accuracy
 
 
+    def _compute_category(self, annotations, prevalence, accuracy,
+                          missing_mask_nclasses=None, normalize=True):
+        """Compute P(category[i] = k | model, annotations).
+
+        Input:
+        accuracy -- the theta parameters
+        prevalence -- the pi parameters
+        normalize -- if False, do not normalize the posterior
+        """
+
+        nitems, nannotators = annotations.shape
+
+        # compute mask of invalid entries in annotations if necessary
+        if missing_mask_nclasses is None:
+            missing_mask_nclasses = self._missing_mask(annotations)
+
+        # unnorm_category is P(category[i] = k | model, data), unnormalized
+        unnorm_category = np.tile(prevalence.copy(), (nitems, 1))
+        # mask missing annotations
+        annotators = np.arange(nannotators)[None, :]
+        tmp = np.ma.masked_array(accuracy[annotators, :, annotations],
+                                 mask=missing_mask_nclasses)
+        unnorm_category *= tmp.prod(1)
+
+        if normalize:
+            return unnorm_category / unnorm_category.sum(1)[:,None]
+
+        return unnorm_category
+
+
     def _missing_mask(self, annotations):
         missing_mask = (annotations == -1)
         missing_mask_nclasses = np.tile(missing_mask[:, :, None],
@@ -310,16 +340,11 @@ class ModelB(object):
     def _log_likelihood_core(self, annotations,
                              prevalence, accuracy,
                              missing_mask_nclasses):
-        nitems, nannotators = annotations.shape
 
-        # unnorm_category is P(category[i] = k | model, data), unnormalized
-        unnorm_category = np.tile(prevalence.copy(), (nitems, 1))
-
-        # mask missing annotations
-        annotators = np.arange(nannotators)[None,:]
-        tmp = np.ma.masked_array(accuracy[annotators,:,annotations],
-                                 mask=missing_mask_nclasses)
-        unnorm_category *= tmp.prod(1)
+        unnorm_category = self._compute_category(annotations,
+                                                   prevalence, accuracy,
+                                                   missing_mask_nclasses,
+                                                   normalize=False)
 
         return np.log(unnorm_category.sum(1)).sum(), unnorm_category
 
@@ -345,11 +370,8 @@ class ModelB(object):
         current point estimate of the parameters pi and theta.
         """
 
-        missing_mask_nclasses = self._missing_mask(annotations)
-        _, unnorm_category = self._log_likelihood_core(
-            annotations,
-            self.pi, self.theta,
-            missing_mask_nclasses
-        )
-        category = unnorm_category / unnorm_category.sum(1)[:,None]
+        category = self._compute_category(annotations,
+                                            self.pi,
+                                            self.theta)
+
         return category
