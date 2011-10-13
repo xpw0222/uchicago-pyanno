@@ -33,7 +33,7 @@ class TestModelBt(unittest.TestCase):
         labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations(labels)
 
-        max_llhood = true_model.log_likelihood(annotations, use_prior=False)
+        max_llhood = true_model.log_likelihood(annotations)
         # perturb gamma
         for _ in xrange(20):
             theta = true_model.theta
@@ -41,7 +41,7 @@ class TestModelBt(unittest.TestCase):
             gamma = np.clip(gamma, 0., 1.)
             gamma /= gamma.sum()
             model = ModelBt(nclasses, gamma, theta)
-            llhood = model.log_likelihood(annotations, use_prior=False)
+            llhood = model.log_likelihood(annotations)
             self.assertGreater(max_llhood, llhood)
 
         # perturb theta
@@ -50,7 +50,7 @@ class TestModelBt(unittest.TestCase):
             theta = np.random.normal(loc=true_model.theta, scale=0.1)
             theta = np.clip(theta, 0., 1.)
             model = ModelBt(nclasses, gamma, theta)
-            llhood = model.log_likelihood(annotations, use_prior=False)
+            llhood = model.log_likelihood(annotations)
             self.assertGreater(max_llhood, llhood)
 
 

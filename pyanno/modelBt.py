@@ -168,18 +168,25 @@ class ModelBt(HasStrictTraits):
 
     ##### Model likelihood methods ############################################
 
-    def log_likelihood(self, annotations, use_prior=False):
+    def log_likelihood(self, annotations):
         """Compute the log likelihood of annotations given the model."""
-        return self._log_likelihood_counts(compute_counts(annotations,
-                                                          self.nclasses),
-                                           use_prior=use_prior)
+        counts = compute_counts(annotations, self.nclasses)
+        return self._log_likelihood_counts(counts)
 
 
-    def _log_likelihood_counts(self, counts, use_prior=False):
+    def _log_likelihood_counts(self, counts):
         """Compute the log likelihood of annotations given the model.
 
         This method assumes the data is in counts format.
         """
+
+        # TODO: check if it's possible to replace these constraints with bounded optimization
+        # check boundary conditions
+        if (min(min(self.gamma), min(self.theta)) < 0.
+            or max(max(self.gamma), max(self.theta)) > 1.):
+            #return np.inf
+            return -1e20
+
         llhood = 0.
         # loop over the 8 combinations of annotators
         for i in range(8):
@@ -190,35 +197,18 @@ class ModelBt(HasStrictTraits):
 
             # compute the likelihood for the triplet
             llhood += self._log_likelihood_triplet(counts[:,i],
-                                                   theta_triplet,
-                                                   use_prior=use_prior)
+                                                   theta_triplet)
 
         return llhood
 
 
-    def _log_likelihood_triplet(self, counts_triplet, theta_triplet,
-                                use_prior=False):
+    def _log_likelihood_triplet(self, counts_triplet, theta_triplet):
         """Compute the log likelihood of data for one triplet of annotators.
 
         Input:
         counts_triplet -- count data for one combination of annotators
         theta_triplet -- theta parameters of the current triplet
         """
-
-        gamma = self.gamma
-
-        # TODO: check if it's possible to replace these constraints with bounded optimization
-        # TODO: this check can be done in _log_likelihood_counts
-        if (min(min(gamma), min(theta_triplet)) < 0.
-            or max(max(gamma), max(theta_triplet)) > 1.):
-            #return np.inf
-            return -1e20
-
-        if use_prior:
-            # if requested, add prior over theta to log likelihood
-            l = log_beta_pdf(theta_triplet, 2., 1.).sum()
-        else:
-            l = 0.
 
         # log \prod_n P(v_{ijk}^{n} | params)
         # = \sum_n log P(v_{ijk}^{n} | params)
@@ -228,7 +218,7 @@ class ModelBt(HasStrictTraits):
 
         # compute P( v_{ijk} | params )
         pf = self._pattern_frequencies(theta_triplet)
-        l += (counts_triplet * np.log(pf)).sum()
+        l = (counts_triplet * np.log(pf)).sum()
 
         return l
 
@@ -254,6 +244,12 @@ class ModelBt(HasStrictTraits):
                                                   not_theta[j])
             pf += p_v_ijk_given_psi.prod(1) * gamma[psi]
         return pf
+
+
+    def _log_prior(self):
+        """Compute log probability of prior on the theta parameters."""
+        log_prob = log_beta_pdf(self.theta, 2., 1.).sum()
+        return log_prob
 
 
     ##### Sampling posterior over parameters ##################################
