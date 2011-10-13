@@ -113,7 +113,7 @@ class TestModelA(unittest.TestCase):
         # create a new, empty model and infer back the parameters
         model = ModelA.create_initial_state(nclasses, omega=true_model.omega)
         before_obj = model.log_likelihood(annotations) + model._log_prior()
-        model.mle(annotations, estimate_omega=False)
+        model.map(annotations, estimate_omega=False)
         after_obj = model.log_likelihood(annotations) + model._log_prior()
 
         testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
