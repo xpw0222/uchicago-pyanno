@@ -299,7 +299,6 @@ class ModelB(object):
 
     ##### Model likelihood methods ############################################
 
-
     def log_likelihood(self, annotations):
         missing_mask_nclasses = self._missing_mask(annotations)
         llhood, _ = self._log_likelihood_core(annotations,
@@ -332,3 +331,25 @@ class ModelB(object):
             for k in xrange(self.nclasses):
                 log_prior += dirichlet_llhood(accuracy[j,k,:], alpha[k])
         return log_prior
+
+
+    ##### Sampling posterior over parameters ##################################
+
+
+    ##### Posterior distributions #############################################
+
+    def infer_labels(self, annotations):
+        """Infer posterior distribution over true labels.
+
+        Returns P( label | annotations, parameters), where parameters is the
+        current point estimate of the parameters pi and theta.
+        """
+
+        missing_mask_nclasses = self._missing_mask(annotations)
+        _, unnorm_category = self._log_likelihood_core(
+            annotations,
+            self.pi, self.theta,
+            missing_mask_nclasses
+        )
+        category = unnorm_category / unnorm_category.sum(1)[:,None]
+        return category

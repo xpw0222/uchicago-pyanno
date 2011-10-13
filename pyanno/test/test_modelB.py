@@ -219,5 +219,39 @@ class TestModelB(unittest.TestCase):
             self.assertGreater(max_llhood, llhood)
 
 
+    def test_inference(self):
+        # perfect annotation, check that inferred label is correct
+        nclasses, nitems = 3, 50*8
+        nannotators = 12
+
+        # create random model (this is our ground truth model)
+        alpha = np.eye(nclasses)
+        beta = np.ones((nclasses,)) * 1e10
+        true_model = ModelB.create_initial_state(nclasses, nannotators,
+                                                 alpha, beta)
+
+        # create random data
+        labels = true_model.generate_labels(nitems)
+        annotations = true_model.generate_annotations(labels)
+
+        posterior = true_model.infer_labels(annotations)
+        testing.assert_allclose(posterior.sum(1), 1., atol=1e-6, rtol=0.)
+
+        print posterior
+        inferred = posterior.argmax(1)
+        testing.assert_equal(inferred, labels)
+        self.assertTrue(np.all(posterior[np.arange(nitems),inferred] > 0.999))
+
+        # at chance annotation, disagreeing annotators: get back prior
+        pi = np.random.dirichlet(np.random.random(nclasses)*3)
+        theta = np.ones((nannotators, nclasses, nclasses)) / nclasses
+        model = ModelB(nclasses, nannotators, pi=pi, theta=theta)
+
+        data = np.array([[-1, 0, 1, 2, -1, -1, -1, -1, -1, -1, -1, -1]])
+        posterior = model.infer_labels(data)
+        testing.assert_almost_equal(np.squeeze(posterior),
+                                    model.pi, 6)
+
+
 if __name__ == '__main__':
     unittest.main()
