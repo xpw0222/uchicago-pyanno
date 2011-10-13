@@ -128,7 +128,7 @@ class ModelA(object):
         """Generate random annotations given labels."""
         theta = self.theta
         nannotators = self.nannotators
-        nitems_per_loop = nitems // nannotators
+        nitems_per_loop = np.ceil(float(nitems) / nannotators)
 
         annotations = np.empty((nitems, nannotators), dtype=int)
         annotations.fill(-1)
@@ -136,12 +136,15 @@ class ModelA(object):
         # loop over annotator triplets (loop design)
         for j in range(nannotators):
             triplet_indices = np.arange(j, j+3) % self.nannotators
+            start_idx = j*nitems_per_loop
+            stop_idx = min(nitems, (j+1)*nitems_per_loop)
+            nitems_this_loop = stop_idx - start_idx
 
             # -- step 1: generate correct / incorrect labels
 
             # parameters for this triplet
             theta_triplet = self.theta[triplet_indices]
-            incorrect = self._generate_incorrectness(nitems_per_loop,
+            incorrect = self._generate_incorrectness(nitems_this_loop,
                                                      theta_triplet)
 
             # -- step 2: generate agreement patterns given correctness
@@ -150,8 +153,7 @@ class ModelA(object):
             agreement = self._generate_agreement(incorrect)
 
             # -- step 3: generate annotations
-            annotations[j*nitems_per_loop:(j+1)*nitems_per_loop,
-            triplet_indices] = (
+            annotations[start_idx:stop_idx,triplet_indices] = (
                 self._generate_annotations(agreement)
                 )
 

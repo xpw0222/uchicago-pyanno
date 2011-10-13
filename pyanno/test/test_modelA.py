@@ -198,5 +198,19 @@ class TestModelA(unittest.TestCase):
                         > posterior[2] > posterior[3])
 
 
+    def test_generate_annotations(self):
+        # test to check that annotations are masked correctly when the number
+        # of items is not divisible by the number of annotators
+        nclasses, nitems = 5, 8*30+3
+
+        model = ModelA.create_initial_state(nclasses)
+        annotations = model.generate_annotations(nitems)
+        print annotations
+
+        valid = annotations != -1
+        # check that on every row there are exactly 3 annotations
+        self.assertTrue(np.all(valid.sum(1) == 3))
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -80,13 +80,12 @@ class ModelBt(HasStrictTraits):
         return random_categorical(self.gamma, nitems)
 
 
-    # FIXME: different conventions on orientation of annotations here and in ModelB
     def generate_annotations(self, labels):
         """Generate random annotations given labels."""
         theta = self.theta
         nannotators = self.nannotators
         nitems = labels.shape[0]
-        nitems_per_loop = nitems // nannotators
+        nitems_per_loop = np.ceil(float(nitems) / nannotators)
 
         annotations = np.empty((nitems, nannotators), dtype=int)
         for j in xrange(nannotators):
