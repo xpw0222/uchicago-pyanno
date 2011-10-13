@@ -226,27 +226,43 @@ class ModelA(object):
 
     ##### Parameters estimation methods #######################################
 
-    def mle(self, annotations, estimate_alpha=False, estimate_omega=True,
-            use_prior=False):
-        counts = compute_counts(annotations, self.nclasses)
+    def mle(self, annotations, estimate_omega=True):
 
-        def _wrap_lhood(params):
+        def _wrap_lhood(params, counts):
             self.theta = params
-            return - self._log_likelihood_counts(counts, use_prior=use_prior)
+            return - self._log_likelihood_counts(counts)
+
+        self._parameter_estimation(_wrap_lhood, annotations,
+                                   estimate_omega=estimate_omega)
+
+
+    def map(self, annotations, estimate_omega=True):
+
+        def _wrap_lhood(params, counts):
+            self.theta = params
+            return - (self._log_likelihood_counts(counts)
+                      + self._log_prior())
+
+        self._parameter_estimation(_wrap_lhood, annotations,
+                                   estimate_omega=estimate_omega)
+
+
+    def _parameter_estimation(self, objective, annotations,
+                              estimate_omega=True):
+
+        counts = compute_counts(annotations, self.nclasses)
 
         params_start, omega = self._random_initial_parameters(annotations,
                                                               estimate_omega)
         self.omega = omega
-        params_best = scipy.optimize.fmin(_wrap_lhood,
+
+        params_best = scipy.optimize.fmin(objective,
                                           params_start,
+                                          args=(counts,),
                                           xtol=1e-4, ftol=1e-4, disp=True,
                                           maxiter=1e+10, maxfun=1e+30)
 
-        if estimate_alpha:
-            self.alpha[:3] = params_best[8]
-            self.alpha[3] = params_best[9]
-            self.alpha[4:] = params_best[10]
-        self.theta = params_best[:8]
+        self.theta = params_best
 
 
     def _random_initial_parameters(self, annotations, estimate_omega):

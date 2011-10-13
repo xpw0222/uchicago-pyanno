@@ -84,7 +84,7 @@ class TestModelA(unittest.TestCase):
         testing.assert_allclose(model.omega, freqs, atol=1e-1, rtol=0.)
 
 
-    def test_ml_estimation_theta_only(self):
+    def test_ml_estimation(self):
         # test simple model, check that we get to global optimum
         nclasses, nitems = 3, 1000*8
         # create random model and data (this is our ground truth model)
@@ -95,16 +95,29 @@ class TestModelA(unittest.TestCase):
         # create a new, empty model and infer back the parameters
         model = ModelA.create_initial_state(nclasses, omega=true_model.omega)
         before_llhood = model.log_likelihood(annotations)
-        model.mle(annotations, estimate_alpha=False, estimate_omega=False)
+        model.mle(annotations, estimate_omega=False)
         after_llhood = model.log_likelihood(annotations)
 
         testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
         self.assertGreater(after_llhood, before_llhood)
 
 
-    def test_ml_estimation(self):
-        pass
-        #testing.assert_allclose(model.alpha, true_model.alpha, atol=1e-1, rtol=0.)
+    def test_map_estimation(self):
+        # test simple model, check that we get to global optimum
+        nclasses, nitems = 3, 1000*8
+        # create random model and data (this is our ground truth model)
+        theta = np.array([0.5, 0.9, 0.6, 0.65, 0.87, 0.54, 0.9, 0.78])
+        true_model = ModelA.create_initial_state(nclasses, theta=theta)
+        annotations = true_model.generate_annotations(nitems)
+
+        # create a new, empty model and infer back the parameters
+        model = ModelA.create_initial_state(nclasses, omega=true_model.omega)
+        before_obj = model.log_likelihood(annotations) + model._log_prior()
+        model.mle(annotations, estimate_omega=False)
+        after_obj = model.log_likelihood(annotations) + model._log_prior()
+
+        testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
+        self.assertGreater(after_obj, before_obj)
 
 
     def test_log_likelihood(self):
