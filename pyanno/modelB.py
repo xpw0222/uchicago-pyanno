@@ -314,7 +314,7 @@ class ModelB(object):
         nitems, nannotators = annotations.shape
 
         # unnorm_category is P(category[i] = k | model, data), unnormalized
-        unnorm_category = np.tile(prevalence, (nitems, 1))
+        unnorm_category = np.tile(prevalence.copy(), (nitems, 1))
 
         # mask missing annotations
         annotators = np.arange(nannotators)[None,:]
