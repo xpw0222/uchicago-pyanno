@@ -159,7 +159,6 @@ class TestModelB(unittest.TestCase):
 
     def test_missing_annotations(self):
         # test simple model, check that we get to global optimum
-        # TODO test likelihood is increasing
 
         nclasses, nannotators, nitems = 2, 3, 10000
         # create random model and data (this is our ground truth model)
@@ -253,7 +252,39 @@ class TestModelB(unittest.TestCase):
                                     model.pi, 6)
 
 
+    def test_sampling_theta(self):
+        nclasses, nitems = 3, 8*500
+        nannotators = 5
+        nsamples = 100
 
+        # create random model (this is our ground truth model)
+        true_model = ModelB.create_initial_state(nclasses, nannotators)
+        # create random data
+        labels = true_model.generate_labels(nitems)
+        annotations = true_model.generate_annotations(labels)
+
+        # create a new model
+        model = ModelB.create_initial_state(nclasses, nannotators)
+        # get optimal parameters (to make sure we're at the optimum)
+        model.mle(annotations)
+
+        # modify parameters, to give false start to sampler
+        real_theta = model.theta.copy()
+        model.theta = model._random_theta(nclasses, nannotators, model.alpha)
+        # save current parameters
+        pi_before, theta_before = model.pi.copy(), model.theta.copy()
+        samples = model.sample_posterior_over_theta(annotations, nsamples)
+        # eliminate bootstrap samples
+        samples = samples[5:]
+
+        # test: the mean of the sampled parameters is the same as the MLE one
+        # (up to 3 standard deviations of the estimate sample distribution)
+        testing.assert_array_less(np.absolute(samples.mean(0)-real_theta),
+                                  3.*samples.std(0))
+
+        # check that original parameters are intact
+        testing.assert_equal(model.pi, pi_before)
+        testing.assert_equal(model.theta, theta_before)
 
 if __name__ == '__main__':
     unittest.main()
