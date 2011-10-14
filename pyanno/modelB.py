@@ -385,12 +385,19 @@ class ModelB(object):
 
         for sidx in xrange(nsamples):
             if (sidx % 10) == 1: print sidx
+
             # sample categories given theta
             category_distr = self._compute_category(annotations,
                                                     self.pi,
                                                     theta_curr)
+            # sample from the categorical distribution
+            # precomupte cumulative distributions
+            cum_distr = category_distr.cumsum(1)
+            # precompute random values
+            rand = np.random.random(nitems)
             for i in xrange(nitems):
-                label_curr[i] = random_categorical(category_distr[i,:], 1)
+                # samples from i-th categorical distribution
+                label_curr[i] = cum_distr[i,:].searchsorted(rand[i])
 
             # sample theta given categories
             alpha_post = np.tile(alpha_prior, (nannotators, 1, 1))
