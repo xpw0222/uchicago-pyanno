@@ -63,12 +63,19 @@ class ModelB(object):
 
         # generate random distributions of prevalence and accuracy
         pi = np.random.dirichlet(beta)
+        theta = ModelB._random_theta(nclasses, nannotators, alpha)
+
+        return ModelB(nclasses, nannotators, pi, theta, alpha, beta)
+
+
+    @staticmethod
+    def _random_theta(nclasses, nannotators, alpha):
         theta = np.empty((nannotators, nclasses, nclasses))
         for j in xrange(nannotators):
             for k in xrange(nclasses):
-                theta[j,k,:] = np.random.dirichlet(alpha[k,:])
+                theta[j, k, :] = np.random.dirichlet(alpha[k, :])
+        return theta
 
-        return ModelB(nclasses, nannotators, pi, theta, alpha, beta)
 
     def generate_labels(self, nitems):
         """Generate random labels from the model."""
