@@ -166,7 +166,7 @@ class TestModelB(unittest.TestCase):
         labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations(labels)
         # remove about 10% of the annotations
-        for i in range(nitems*nannotators//10):
+        for _ in range(nitems*nannotators//10):
             i = np.random.randint(nitems)
             j = np.random.randint(nannotators)
             annotations[i,j] = -1
@@ -262,6 +262,11 @@ class TestModelB(unittest.TestCase):
         # create random data
         labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations(labels)
+        # remove about 1/3 of the annotations
+        for _ in range(nitems*nannotators//3):
+            i = np.random.randint(nitems)
+            j = np.random.randint(nannotators)
+            annotations[i,j] = -1
 
         # create a new model
         model = ModelB.create_initial_state(nclasses, nannotators)
