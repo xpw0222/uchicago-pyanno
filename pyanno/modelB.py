@@ -371,7 +371,6 @@ class ModelB(object):
 
     ##### Sampling posterior over parameters ##################################
 
-    # TODO test with missing annotations
     def sample_posterior_over_theta(self, annotations, nsamples):
         # use Gibbs sampling
         nitems, nannotators = annotations.shape
@@ -386,35 +385,31 @@ class ModelB(object):
         for sidx in xrange(nsamples):
             if (sidx % 10) == 1: print sidx
 
-            # sample categories given theta
+            ### sample categories given theta
+            # get posterior over labels
             category_distr = self._compute_category(annotations,
                                                     self.pi,
                                                     theta_curr)
-            # sample from the categorical distribution
-            # precomupte cumulative distributions
+
+            # sample from the categorical distribution over labels
+            # 1) precompute cumulative distributions
             cum_distr = category_distr.cumsum(1)
-            # precompute random values
+            # 2) precompute random values
             rand = np.random.random(nitems)
             for i in xrange(nitems):
-                # samples from i-th categorical distribution
+                # 3) samples from i-th categorical distribution
                 label_curr[i] = cum_distr[i,:].searchsorted(rand[i])
 
-            # sample theta given categories
+            ### sample theta given categories
+            # 1) compute alpha parameters of Dirichlet posterior
             alpha_post = np.tile(alpha_prior, (nannotators, 1, 1))
-
             for l in range(nannotators):
                 for k in range(nclasses):
                     for i in range(nclasses):
                         alpha_post[l,k,i] += ((label_curr==k)
                                               & (annotations[:,l]==i)).sum()
 
-            # to be vectorized, taking validity into account:
-            #valid_mask = annotations!=-1
-            #annotators = np.arange(nannotators)[None,:]
-            #for t in xrange(nitems):
-            #    for l in range(nannotators):
-            #        alpha_post2[l,label_curr[t],annotations[t,l]] += 1
-
+            # 2) sample thetas
             for l in range(nannotators):
                 for k in range(nclasses):
                     theta_curr[l,k,:] = np.random.dirichlet(alpha_post[l,k,:])
