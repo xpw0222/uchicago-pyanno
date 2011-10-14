@@ -417,7 +417,6 @@ class ModelA(object):
         _llhood_counts = self._log_likelihood_counts
         def _wrap_llhood(params, counts):
             self.theta = params
-            # minimize *negative* likelihood
             return _llhood_counts(counts)
 
         # TODO this save-reset is rather ugly, refactor: create copy of
