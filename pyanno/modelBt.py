@@ -3,8 +3,9 @@
 from traits.api import HasStrictTraits, Int, Array, Bool
 import numpy as np
 import scipy.optimize
+import scipy.stats
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import random_categorical, log_beta_pdf, compute_counts, annotations_frequency
+from pyanno.util import random_categorical, compute_counts, annotations_frequency
 
 
 # map of `n` to list of all possible triplets of `n` elements
@@ -272,7 +273,7 @@ class ModelBt(HasStrictTraits):
 
     def _log_prior(self):
         """Compute log probability of prior on the theta parameters."""
-        log_prob = log_beta_pdf(self.theta, 2., 1.).sum()
+        log_prob = scipy.stats.beta._logpdf(self.theta, 2., 1.).sum()
         return log_prob
 
 

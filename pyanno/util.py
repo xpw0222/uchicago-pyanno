@@ -24,12 +24,6 @@ def log0_no_warning(x):
     return res
 
 
-def log_beta_pdf(x, a, b):
-    """Return the natural logarithm of the Beta(a,b) distribution at x."""
-    return (gammaln(a+b) - gammaln(a) - gammaln(b)
-            + (a-1.)*log0(x) + (b-1.)*log0(1.-x))
-
-
 def alloc_vec(N,x=0.0):
     result = []
     n = 0

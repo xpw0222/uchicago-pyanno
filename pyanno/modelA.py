@@ -8,8 +8,9 @@ your curation effort", PLoS Computational Biology, 5(5).
 from collections import defaultdict
 import numpy as np
 import scipy.optimize
+import scipy.stats
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import compute_counts, random_categorical, log_beta_pdf, annotations_frequency
+from pyanno.util import compute_counts, random_categorical, annotations_frequency
 
 
 _compatibility_tables_cache = {}
@@ -355,7 +356,7 @@ class ModelA(object):
 
     def _log_prior(self):
         """Compute log probability of prior on the theta parameters."""
-        log_prob = log_beta_pdf(self.theta, 2., 1.).sum()
+        log_prob = scipy.stats.beta._logpdf(self.theta, 2., 1.).sum()
         return log_prob
 
 
