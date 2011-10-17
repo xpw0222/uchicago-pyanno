@@ -9,21 +9,6 @@ def random_categorical(distr, nsamples):
     return cumulative.searchsorted(np.random.random(nsamples))
 
 
-def log0(x):
-    """Robust 'entropy' logarithm: log(0.) = 0."""
-    return np.where(x==0., 0., np.log(x))
-
-
-def log0_no_warning(x):
-    """Robust 'entropy' logarithm: log(0.) = 0.
-
-    This version does not raise any warning when values of x=0. are first
-    encountered. However, it is slightly more inefficient."""
-    with np.errstate(divide='ignore'):
-        res = np.where(x==0., 0., np.log(x))
-    return res
-
-
 def alloc_vec(N,x=0.0):
     result = []
     n = 0
@@ -237,7 +222,7 @@ class benchmark(object):
 
 def dirichlet_llhood(theta, alpha):
     """Compute the log likelihood of theta under Dirichlet(alpha)."""
-    log_theta = log0(theta)
+    log_theta = np.log(theta)
     return (gammaln(alpha.sum())
             - (gammaln(alpha)).sum()
             + ((alpha - 1.) * log_theta).sum())
