@@ -23,8 +23,21 @@ class TestUtil(unittest.TestCase):
         )
         nclasses = 5
         expected = np.array([0., 3., 1., 3., 0.]) / 7.
-        result = labels_frequency(annotations, nclasses,
-                                       missing_val=-2)
+        result = labels_frequency(annotations, nclasses, missing_val=-2)
+        np.testing.assert_equal(result, expected)
+
+    def test_labels_count(self):
+        annotations = np.array(
+            [
+                [ 1,  2, -2, -2],
+                [-2, -2,  3,  3],
+                [-2,  1,  3,  1],
+                [-2, -2, -2, -2]
+            ]
+        )
+        nclasses = 5
+        expected = np.array([0., 3., 1., 3., 0.])
+        result = labels_count(annotations, nclasses, missing_val=-2)
         np.testing.assert_equal(result, expected)
 
     def test_vec_copy(self):

@@ -180,8 +180,14 @@ def compute_counts(annotations, nclasses):
     return data
 
 
-def annotations_frequency(annotations, nclasses, missing_val=-1):
+def labels_count(annotations, nclasses, missing_val=-1):
+    """Compute the total count of labels in observed annotations."""
+    valid = annotations!=missing_val
+    return np.bincount(annotations[valid], minlength=nclasses)
+
+
 def labels_frequency(annotations, nclasses, missing_val=-1):
+    """Compute the total frequency of labels in observed annotations."""
     valid = annotations!=missing_val
     nobservations = valid.sum()
     return (np.bincount(annotations[valid], minlength=nclasses)
