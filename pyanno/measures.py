@@ -59,6 +59,7 @@ def chance_agreement_frequency(annotations1, annotations2, nclasses):
     Assumes that the annotators draw random annotations with the same
     frequency as the observed combined annotations.
     """
+
     count1 = labels_count(annotations1, nclasses)
     count2 = labels_count(annotations2, nclasses)
 
@@ -93,7 +94,7 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
     """
 
     if nclasses is None:
-        nclasses = max(annotations1.max(), annotations2.max())
+        nclasses = max(annotations1.max(), annotations2.max()) + 1
 
     chance_agreement = chance_agreement_frequency(annotations1,
                                                   annotations2,
@@ -103,4 +104,5 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
                                                       annotations2,
                                                       nclasses)
 
-    return _chance_adjusted_agreement(observed_agreement, chance_agreement)
+    return _chance_adjusted_agreement(observed_agreement.sum(),
+                                      chance_agreement.sum())
