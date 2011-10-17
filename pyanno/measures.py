@@ -85,6 +85,10 @@ def observed_agreement_frequency(annotations1, annotations2, nclasses):
     return observed_agreement
 
 
+def _compute_nclasses(annotations):
+    return annotations.max() + 1
+
+
 def scotts_pi(annotations1, annotations2, nclasses=None):
     """Return Scott's pi statistic for two annotators.
 
@@ -94,7 +98,8 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
     """
 
     if nclasses is None:
-        nclasses = max(annotations1.max(), annotations2.max()) + 1
+        nclasses = max(_compute_nclasses(annotations1),
+                       _compute_nclasses(annotations2))
 
     chance_agreement = chance_agreement_frequency(annotations1,
                                                   annotations2,
