@@ -111,3 +111,44 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
 
     return _chance_adjusted_agreement(observed_agreement.sum(),
                                       chance_agreement.sum())
+
+
+def fleiss_kappa(annotations, nclasses=None):
+    """Compute Fleiss' kappa.
+
+    http://en.wikipedia.org/wiki/Fleiss%27_kappa
+    """
+
+    if nclasses is None:
+        nclasses = _compute_nclasses(annotations)
+
+    # compute number of annotations per class for each item
+    nitems = annotations.shape[0]
+    nannotations = np.zeros((nitems, nclasses))
+    for k in range(nclasses):
+        nannotations[:,k] = (annotations==k).sum(1)
+
+    return _fleiss_kappa_nannotations(nannotations)
+
+
+def _fleiss_kappa_nannotations(nannotations):
+    # testable sub-part of fleiss_kappa
+
+    nitems = nannotations.shape[0]
+
+    # check that all rows are annotated by the same number of annotators
+    _nanno_sum = nannotations.sum(1)
+    nannotations_per_item = _nanno_sum[0]
+    if not np.all(_nanno_sum == nannotations_per_item):
+        raise ValueError('Number of annotations per item should be constant.')
+
+    # empirical frequency of categories
+    freqs = nannotations.sum(0) / (nitems*nannotations_per_item)
+    chance_agreement = (freqs**2.).sum()
+
+    # annotator agreement for i-th item, relative to possible annotators pairs
+    agreement_rate = (((nannotations**2.).sum(1) - nannotations_per_item)
+                      / (nannotations_per_item*(nannotations_per_item-1.)))
+    observed_agreement = agreement_rate.mean()
+
+    return _chance_adjusted_agreement(observed_agreement, chance_agreement)
