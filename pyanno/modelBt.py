@@ -5,7 +5,7 @@ import numpy as np
 import scipy.optimize
 import scipy.stats
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import random_categorical, compute_counts, annotations_frequency
+from pyanno.util import random_categorical, compute_counts, labels_frequency
 
 
 # map of `n` to list of all possible triplets of `n` elements
@@ -162,7 +162,7 @@ class ModelBt(HasStrictTraits):
     def _random_initial_parameters(self, annotations, estimate_gamma):
         if estimate_gamma:
             # estimate gamma from observed annotations
-            gamma = annotations_frequency(annotations, self.nclasses)
+            gamma = labels_frequency(annotations, self.nclasses)
         else:
             gamma = ModelBt._random_gamma(self.nclasses)
 

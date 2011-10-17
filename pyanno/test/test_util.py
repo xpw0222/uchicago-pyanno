@@ -12,7 +12,7 @@ class TestUtil(unittest.TestCase):
         freq = np.bincount(samples) / float(nsamples)
         np.testing.assert_almost_equal(freq, distr, 2)
 
-    def test_annotations_frequency(self):
+    def test_labels_frequency(self):
         annotations = np.array(
             [
                 [ 1,  2, -2, -2],
@@ -23,7 +23,7 @@ class TestUtil(unittest.TestCase):
         )
         nclasses = 5
         expected = np.array([0., 3., 1., 3., 0.]) / 7.
-        result = annotations_frequency(annotations, nclasses,
+        result = labels_frequency(annotations, nclasses,
                                        missing_val=-2)
         np.testing.assert_equal(result, expected)
 

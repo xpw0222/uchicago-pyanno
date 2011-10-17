@@ -10,7 +10,7 @@ import numpy as np
 import scipy.optimize
 import scipy.stats
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import compute_counts, random_categorical, annotations_frequency
+from pyanno.util import compute_counts, random_categorical, labels_frequency
 
 
 _compatibility_tables_cache = {}
@@ -270,7 +270,7 @@ class ModelA(object):
         # TODO duplication w/ ModelBt
         if estimate_omega:
             # estimate omega from observed annotations
-            omega = annotations_frequency(annotations, self.nclasses)
+            omega = labels_frequency(annotations, self.nclasses)
         else:
             omega = self.omega
 

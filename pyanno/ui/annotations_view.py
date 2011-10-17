@@ -9,7 +9,7 @@ from traitsui.item import Item, Spring
 from traitsui.menu import OKCancelButtons
 from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.ui.hinton_plot import HintonDiagramPlot
-from pyanno.util import annotations_frequency
+from pyanno.util import labels_frequency
 
 import numpy as np
 
@@ -54,7 +54,7 @@ class AnnotationsView(HasStrictTraits):
     @on_trait_change('annotations,annotations_updated,nclasses')
     def _update_frequency(self):
         nclasses = max(self.nclasses, self.annotations.max())
-        self.frequency =  annotations_frequency(self.annotations,
+        self.frequency =  labels_frequency(self.annotations,
                                                 nclasses).tolist()
         self.frequency_plot.data = self.frequency
 
