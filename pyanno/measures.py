@@ -69,8 +69,25 @@ def chance_agreement_frequency(annotations1, annotations2, nclasses):
     return chance_agreement
 
 
+def observed_agreement_frequency(annotations1, annotations2, nclasses):
+    """Observed frequency of agreement by two annotators.
+
+    If a category is never observed, the frequency for that category is set
+    to 0.0 .
+
+    Only count entries where both annotators responded toward observed
+    frequency.
+    """
+
+    conf_mat = confusion_matrix(annotations1, annotations2, nclasses)
+    observed_agreement = conf_mat.diagonal() / conf_mat.sum()
+    return observed_agreement
+
+
 def scotts_pi(annotations1, annotations2, nclasses=None):
     """Return Scott's pi statistic for two annotators.
+
+    Allows for missing values.
 
     http://en.wikipedia.org/wiki/Scott%27s_Pi
     """
@@ -78,10 +95,12 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
     if nclasses is None:
         nclasses = max(annotations1.max(), annotations2.max())
 
-    chance_agreement = chance_agreement_frequency(annotations1, annotations2,
+    chance_agreement = chance_agreement_frequency(annotations1,
+                                                  annotations2,
                                                   nclasses)
 
-    conf_mat = confusion_matrix(annotations1, annotations2, nclasses)
-    observed_agreement = conf_mat.diagonal() / conf_mat.sum()
+    observed_agreement = observed_agreement_frequency(annotations1,
+                                                      annotations2,
+                                                      nclasses)
 
     return _chance_adjusted_agreement(observed_agreement, chance_agreement)
