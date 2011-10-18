@@ -6,7 +6,8 @@ import pyanno
 
 from pyanno.measures import (confusion_matrix, chance_agreement_same_frequency,
                              observed_agreement_frequency,
-                             _fleiss_kappa_nannotations, fleiss_kappa)
+                             _fleiss_kappa_nannotations,
+                             fleiss_kappa, chance_agreement_different_frequency)
 
 
 class TestMeasures(unittest.TestCase):
@@ -46,6 +47,18 @@ class TestMeasures(unittest.TestCase):
 
         expected = distr ** 2.
         freqs = chance_agreement_same_frequency(anno1, anno2, len(distr))
+
+        np.testing.assert_allclose(freqs, expected, atol=1e-2, rtol=0.)
+
+
+    def test_chance_agreement_different_frequency(self):
+        distr1 = np.array([0.1, 0.5, 0.4])
+        distr2 = np.array([0.6, 0.2, 0.2])
+        anno1 = pyanno.util.random_categorical(distr1, nsamples=10000)
+        anno2 = pyanno.util.random_categorical(distr2, nsamples=10000)
+
+        expected = distr1 * distr2
+        freqs = chance_agreement_different_frequency(anno1, anno2, len(distr1))
 
         np.testing.assert_allclose(freqs, expected, atol=1e-2, rtol=0.)
 

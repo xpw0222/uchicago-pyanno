@@ -2,7 +2,7 @@
 
 from __future__ import division
 import numpy as np
-from pyanno.util import benchmark, labels_count
+from pyanno.util import benchmark, labels_count, labels_frequency
 
 # TODO: functions to compute confidence interval
 
@@ -54,7 +54,7 @@ def _chance_adjusted_agreement(observed_agreement, chance_agreement):
 
 
 def chance_agreement_same_frequency(annotations1, annotations2, nclasses):
-    """Excepted frequency of agreement by random annotations.
+    """Expected frequency of agreement by random annotations.
 
     Assumes that the annotators draw random annotations with the same
     frequency as the combined observed annotations.
@@ -67,6 +67,20 @@ def chance_agreement_same_frequency(annotations1, annotations2, nclasses):
     total = count_total.sum()
     chance_agreement = (count_total / total) ** 2.
 
+    return chance_agreement
+
+
+def chance_agreement_different_frequency(annotations1, annotations2, nclasses):
+    """Expected frequency of agreement by random annotations.
+
+    Assumes that the annotators draw random annotations with the same
+    frequency as the combined observed annotations.
+    """
+
+    freq1 = labels_frequency(annotations1, nclasses)
+    freq2 = labels_frequency(annotations2, nclasses)
+
+    chance_agreement = freq1 * freq2
     return chance_agreement
 
 
@@ -115,6 +129,31 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
     return _chance_adjusted_agreement(observed_agreement.sum(),
                                       chance_agreement.sum())
 
+
+def cohens_kappa(annotations1, annotations2, nclasses=None):
+    """Compute Cohen's kappa for two annotators.
+
+    Assumes that the annotators draw annotations at random with different but
+     constant frequencies.
+
+    http://en.wikipedia.org/wiki/Cohen%27s_kappa
+    """
+
+    if nclasses is None:
+        nclasses = max(_compute_nclasses(annotations1),
+                       _compute_nclasses(annotations2))
+
+    chance_agreement = chance_agreement_different_frequency(annotations1,
+                                                            annotations2,
+                                                            nclasses)
+
+    observed_agreement = observed_agreement_frequency(annotations1,
+                                                      annotations2,
+                                                      nclasses)
+
+    return _chance_adjusted_agreement(observed_agreement.sum(),
+                                      chance_agreement.sum())
+2
 
 def fleiss_kappa(annotations, nclasses=None):
     """Compute Fleiss' kappa.
