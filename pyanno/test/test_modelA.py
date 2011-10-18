@@ -218,7 +218,6 @@ class TestModelA(unittest.TestCase):
 
         model = ModelA.create_initial_state(nclasses)
         annotations = model.generate_annotations(nitems)
-        print annotations
 
         valid = annotations != -1
         # check that on every row there are exactly 3 annotations

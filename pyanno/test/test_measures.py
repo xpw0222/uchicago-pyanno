@@ -72,6 +72,7 @@ class TestMeasures(unittest.TestCase):
                                           alpha_diagonal = 0.811,
                                           alpha_binary = 0.691)
 
+
     def test_confusion_matrix(self):
         anno1 = np.array([0, 0, 1, 1, 2, 3])
         anno2 = np.array([0, 1, 1, 1, 2, 2])
@@ -222,6 +223,7 @@ class TestMeasures(unittest.TestCase):
         kr = self.krippendorff_example
         coincidence = pm._coincidence_matrix(kr.annotations, kr.nclasses)
         np.testing.assert_allclose(coincidence, kr.coincidence)
+
 
     def test_krippendorffs_alpha2(self):
         # test example from
