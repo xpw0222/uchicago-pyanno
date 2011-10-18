@@ -16,7 +16,7 @@ class TestMeasures(unittest.TestCase):
     def setUp(self):
         """Define fixtures."""
 
-        # ------- annotations for fully agreeing annotators
+        # ---- annotations for fully agreeing annotators
         nitems = 100
         nannotators = 5
         nclasses = 4
@@ -34,6 +34,43 @@ class TestMeasures(unittest.TestCase):
                                     nclasses=nclasses,
                                     annotations=annotations)
 
+        # ---- test example from
+        # http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha#A_computational_example
+        annotations = np.array(
+            [
+                [-1,  1, -1],
+                [-1, -1, -1],
+                [-1,  2,  2],
+                [-1,  1,  1],
+                [-1,  3,  3],
+                [ 3,  3,  4],
+                [ 4,  4,  4],
+                [ 1,  3, -1],
+                [ 2, -1,  2],
+                [ 1, -1,  1],
+                [ 1, -1,  1],
+                [ 3, -1,  3],
+                [ 3, -1,  3],
+                [-1, -1, -1],
+                [ 3, -1,  4]
+            ]
+        )
+        annotations[annotations>=0] -= 1
+        coincidence = np.array(
+            [
+                [6, 0, 1, 0],
+                [0, 4, 0, 0],
+                [1, 0, 7, 2],
+                [0, 0, 2, 3]
+            ]
+        )
+        nc = np.array([7, 4, 10, 5])
+        self.krippendorff_example = Bunch(annotations = annotations,
+                                          coincidence = coincidence,
+                                          nc = nc,
+                                          nclasses = 4,
+                                          alpha_diagonal = 0.811,
+                                          alpha_binary = 0.691)
 
     def test_confusion_matrix(self):
         anno1 = np.array([0, 0, 1, 1, 2, 3])
@@ -168,3 +205,32 @@ class TestMeasures(unittest.TestCase):
         # unequal number of annotators per row
         fa.annotations[0,:] = -1
         self.assertRaises(ValueError, pm.fleiss_kappa, fa.annotations)
+
+
+    def test_krippendorffs_alpha(self):
+        # test basic functionality with full agreement, missing annotations
+        fa = self.full_agreement
+
+        self.assertEqual(pm.krippendorffs_alpha(fa.annotations),
+                         1.0)
+
+
+    def test_coincidence_matrix(self):
+        # test example from
+        # http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha#A_computational_example
+        kr = self.krippendorff_example
+        coincidence = pm._coincidence_matrix(kr.annotations, kr.nclasses)
+        np.testing.assert_allclose(coincidence, kr.coincidence)
+
+    def test_krippendorffs_alpha2(self):
+        # test example from
+        # http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha#A_computational_example
+        kr = self.krippendorff_example
+
+        alpha = pm.krippendorffs_alpha(kr.annotations,
+                                       metric_func=pm.binary_distance)
+        self.assertAlmostEqual(alpha, kr.alpha_binary, 3)
+
+        alpha = pm.krippendorffs_alpha(kr.annotations,
+                                       metric_func=pm.diagonal_distance)
+        self.assertAlmostEqual(alpha, kr.alpha_diagonal, 3)

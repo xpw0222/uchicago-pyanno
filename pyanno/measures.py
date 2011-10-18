@@ -267,3 +267,90 @@ def _fleiss_kappa_nannotations(nannotations):
     observed_agreement = agreement_rate.mean()
 
     return _chance_adjusted_agreement(observed_agreement, chance_agreement)
+
+
+def _coincidence_matrix(annotations, nclasses):
+    """Build coincidence matrix."""
+
+    # total number of annotations in row
+    nannotations = (annotations != -1).sum(1).astype(float)
+    valid = nannotations > 1
+
+    nannotations = nannotations[valid]
+    annotations = annotations[valid,:]
+
+    # number of annotations of class c in row
+    nc_in_row = np.empty((nannotations.shape[0], nclasses), dtype=int)
+    for c in range(nclasses):
+        nc_in_row[:, c] = (annotations == c).sum(1)
+
+    coincidences = np.empty((nclasses, nclasses), dtype=float)
+    for c in range(nclasses):
+        for k in range(nclasses):
+            if c==k:
+                nck_pairs = nc_in_row[:, c] * (nc_in_row[:, c] - 1)
+            else:
+                nck_pairs = nc_in_row[:, c] * nc_in_row[:, k]
+            coincidences[c, k] = (nck_pairs / (nannotations - 1.)).sum()
+
+    return coincidences
+
+
+def krippendorffs_alpha(annotations, metric_func=diagonal_distance,
+                       nclasses=None):
+    """Compute Krippendorff's alpha.
+
+    Input:
+
+    annotations1, annotations2 -- array of annotations; classes are
+        indicated by non-negative integers, -1 indicates missing values
+
+    weights_func -- weights function that receives two matrices of classes
+        i, j and returns the matrix of weights between them.
+        Default is `diagonal_distance`
+
+    nclasses -- number of classes in the annotations. If None, `nclasses` is
+        inferred from the values in the annotations
+
+
+    Output:
+
+    alpha -- Krippendorff's alpha
+
+
+    See also:
+    `diagonal_distance`, `binary_distance`
+
+
+    Klaus Krippendorff (2004). Content Analysis, an Introduction to Its
+    Methodology, 2nd Edition. Thousand Oaks, CA: Sage Publications.
+    In particular,  Chapter 11, pages 219--250.
+
+    http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha
+    """
+
+    if nclasses is None:
+        nclasses = _compute_nclasses(annotations)
+
+    coincidences = _coincidence_matrix(annotations, nclasses)
+
+    nc = coincidences.sum(1)
+    n = coincidences.sum()
+
+    # ---- coincidences expected by chance
+    chance_coincidences = np.empty((nclasses, nclasses), dtype=float)
+    for c in range(nclasses):
+        for k in range(nclasses):
+            if c == k:
+                chance_coincidences[c,k] = nc[c]*(nc[k]-1.) / (n-1.)
+            else:
+                chance_coincidences[c,k] = nc[c]*nc[k] / (n-1.)
+
+    # build weights matrix from weights function
+    weights = np.fromfunction(metric_func, shape=(nclasses, nclasses),
+                              dtype=float) ** 2.
+
+    alpha = 1. - ((weights*coincidences).sum()
+                  / (weights*chance_coincidences).sum())
+
+    return alpha
