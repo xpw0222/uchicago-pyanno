@@ -140,18 +140,18 @@ class TestMeasures(unittest.TestCase):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        self.assertEqual(pm.cohens_kappa(fa.annotations[:,0],
-                                         fa.annotations[:,1]),
-                         1.0)
+        self.assertAlmostEqual(pm.cohens_kappa(fa.annotations[:,0],
+                                               fa.annotations[:,1]),
+                               1.0, 6)
 
 
     def test_cohens_weighted_kappa(self):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        self.assertEqual(pm.cohens_weighted_kappa(fa.annotations[:,0],
-                                                  fa.annotations[:,1]),
-                         1.0)
+        self.assertAlmostEqual(pm.cohens_weighted_kappa(fa.annotations[:,0],
+                                                        fa.annotations[:,1]),
+                               1.0, 6)
 
 
     def test_cohens_weighted_kappa2(self):
@@ -169,9 +169,9 @@ class TestMeasures(unittest.TestCase):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        self.assertEqual(pm.scotts_pi(fa.annotations[:,0],
-                                      fa.annotations[:,1]),
-                         1.0)
+        self.assertAlmostEqual(pm.scotts_pi(fa.annotations[:,0],
+                                            fa.annotations[:,1]),
+                               1.0, 6)
 
 
     def test_fleiss_kappa_nannotations(self):
@@ -200,7 +200,8 @@ class TestMeasures(unittest.TestCase):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        self.assertEqual(pm.fleiss_kappa(fa.annotations, fa.nclasses), 1.0)
+        self.assertAlmostEqual(pm.fleiss_kappa(fa.annotations, fa.nclasses),
+                               1.0, 6)
 
         # unequal number of annotators per row
         fa.annotations[0,:] = -1
@@ -211,8 +212,8 @@ class TestMeasures(unittest.TestCase):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        self.assertEqual(pm.krippendorffs_alpha(fa.annotations),
-                         1.0)
+        self.assertAlmostEqual(pm.krippendorffs_alpha(fa.annotations),
+                               1.0, 6)
 
 
     def test_coincidence_matrix(self):
