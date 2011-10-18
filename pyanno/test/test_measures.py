@@ -108,6 +108,26 @@ class TestMeasures(unittest.TestCase):
                          1.0)
 
 
+    def test_cohens_weighted_kappa(self):
+        # test basic functionality with full agreement, missing annotations
+        fa = self.full_agreement
+
+        self.assertEqual(pm.cohens_weighted_kappa(fa.annotations[:,0],
+                                                  fa.annotations[:,1]),
+                         1.0)
+
+
+    def test_cohens_weighted_kappa2(self):
+        # cohen's weighted kappa is the same as cohen's kappa when
+        # the weights are 0. on the diagonal and 1. elsewhere
+        anno1 = np.array([0, 0, 1, 2, 1, -1, 3])
+        anno2 = np.array([0, -1, 1, 0, 1, -1, 2])
+        weighted_kappa = pm.cohens_weighted_kappa(anno1, anno2,
+                                                  pm.binary_distance)
+        cohens_kappa = pm.cohens_kappa(anno1, anno2)
+        self.assertAlmostEqual(weighted_kappa, cohens_kappa, 6)
+
+
     def test_scotts_pi(self):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement

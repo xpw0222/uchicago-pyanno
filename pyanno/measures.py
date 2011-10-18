@@ -5,7 +5,8 @@ import numpy as np
 from pyanno.util import benchmark, labels_count, labels_frequency
 
 # TODO: functions to compute confidence interval
-
+# TODO: reorganize functions
+# TODO: compare results with nltk
 
 def confusion_matrix(annotations1, annotations2, nclasses):
     """Compute confusion matrix from pairs of annotations.
@@ -154,6 +155,77 @@ def cohens_kappa(annotations1, annotations2, nclasses=None):
 
     return _chance_adjusted_agreement(observed_agreement.sum(),
                                       chance_agreement.sum())
+
+
+def diagonal_distance(i, j):
+    return abs(i-j)
+
+def binary_distance(i, j):
+    return np.asarray(i!=j, dtype=float)
+
+def cohens_weighted_kappa(annotations1, annotations2,
+                          weights_func = diagonal_distance,
+                          nclasses=None):
+    """Compute Cohen's weighted kappa for two annotators.
+
+    Assumes that the annotators draw annotations at random with different but
+    constant frequencies. Disagreements are weighted by a weights
+    w_ij representing the "seriousness" of disagreement. For ordered codes,
+    it is often set to the distance from the diagonal, i.e. w_ij = |i-j| .
+
+    When w_ij is 0.0 on the diagonal and 1.0 elsewhere,
+    Cohen's weighted kappa is equivalent to Cohen's kappa.
+
+
+    Input:
+
+    annotations1, annotations2 -- array of annotations; classes are
+        indicated by non-negative integers, -1 indicates missing values
+
+    weights_func -- weights function that receives two matrices of classes
+        i, j and returns the matrix of weights between them.
+        Default is `diagonal_distance`
+
+    nclasses -- number of classes in the annotations. If None, `nclasses` is
+        inferred from the values in the annotations
+
+
+    Output:
+
+    kappa -- Cohens' weighted kappa
+
+
+    See also:
+    `diagonal_distance`, `binary_distance`, `cohens_kappa`
+
+    Cohen 1968
+    http://en.wikipedia.org/wiki/Cohen%27s_kappa
+    """
+
+    if nclasses is None:
+        nclasses = _compute_nclasses(annotations1, annotations2)
+
+    # observed probability of each combination of annotations
+    observed_freq = confusion_matrix(annotations1, annotations2, nclasses)
+    observed_freq /= observed_freq.sum()
+
+    # expected probability of each combination of annotations if annotators
+    # draw annotations at random with different but constant frequencies
+    freq1 = labels_frequency(annotations1, nclasses)
+    freq2 = labels_frequency(annotations2, nclasses)
+    chance_freq = np.outer(freq1, freq2)
+
+    # build weights matrix from weights function
+    weights = np.fromfunction(weights_func, shape=(nclasses, nclasses),
+                              dtype=float)
+    print weights
+    print observed_freq
+    print chance_freq
+
+    kappa = 1. - (weights*observed_freq).sum() / (weights*chance_freq).sum()
+
+    return kappa
+
 
 def fleiss_kappa(annotations, nclasses=None):
     """Compute Fleiss' kappa.
