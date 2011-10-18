@@ -99,8 +99,9 @@ def observed_agreement_frequency(annotations1, annotations2, nclasses):
     return observed_agreement
 
 
-def _compute_nclasses(annotations):
-    return annotations.max() + 1
+def _compute_nclasses(*annotations):
+    max_ = np.amax(map(np.amax, annotations))
+    return max_ + 1
 
 
 def scotts_pi(annotations1, annotations2, nclasses=None):
@@ -111,16 +112,16 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
 
     Allows for missing values.
 
+    Scott 1955
     http://en.wikipedia.org/wiki/Scott%27s_Pi
     """
 
     if nclasses is None:
-        nclasses = max(_compute_nclasses(annotations1),
-                       _compute_nclasses(annotations2))
+        nclasses = _compute_nclasses(annotations1, annotations2)
 
     chance_agreement = chance_agreement_same_frequency(annotations1,
-                                                  annotations2,
-                                                  nclasses)
+                                                       annotations2,
+                                                       nclasses)
 
     observed_agreement = observed_agreement_frequency(annotations1,
                                                       annotations2,
@@ -136,12 +137,12 @@ def cohens_kappa(annotations1, annotations2, nclasses=None):
     Assumes that the annotators draw annotations at random with different but
      constant frequencies.
 
+    Cohen 1960
     http://en.wikipedia.org/wiki/Cohen%27s_kappa
     """
 
     if nclasses is None:
-        nclasses = max(_compute_nclasses(annotations1),
-                       _compute_nclasses(annotations2))
+        nclasses = _compute_nclasses(annotations1, annotations2)
 
     chance_agreement = chance_agreement_different_frequency(annotations1,
                                                             annotations2,
@@ -153,7 +154,6 @@ def cohens_kappa(annotations1, annotations2, nclasses=None):
 
     return _chance_adjusted_agreement(observed_agreement.sum(),
                                       chance_agreement.sum())
-2
 
 def fleiss_kappa(annotations, nclasses=None):
     """Compute Fleiss' kappa.
