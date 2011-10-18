@@ -30,7 +30,7 @@ def confusion_matrix(annotations1, annotations2, nclasses):
     http://en.wikipedia.org/wiki/Confusion_matrix
     """
 
-    conf_mat = np.empty((nclasses, nclasses), dtype=np.long)
+    conf_mat = np.empty((nclasses, nclasses), dtype=float)
     for i in range(nclasses):
         for j in range(nclasses):
             conf_mat[i, j] = np.sum(np.logical_and(annotations1 == i,
