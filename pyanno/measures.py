@@ -5,6 +5,7 @@ import numpy as np
 from pyanno.util import benchmark, labels_count, labels_frequency
 
 # TODO: functions to compute confidence interval
+# TODO: functions to compute pairwise matrix
 # TODO: reorganize functions
 # TODO: compare results with nltk
 
@@ -74,8 +75,8 @@ def chance_agreement_same_frequency(annotations1, annotations2, nclasses):
 def chance_agreement_different_frequency(annotations1, annotations2, nclasses):
     """Expected frequency of agreement by random annotations.
 
-    Assumes that the annotators draw random annotations with the same
-    frequency as the combined observed annotations.
+    Assumes that the annotators draw annotations at random with different but
+    constant frequencies.
     """
 
     freq1 = labels_frequency(annotations1, nclasses)
@@ -136,7 +137,7 @@ def cohens_kappa(annotations1, annotations2, nclasses=None):
     """Compute Cohen's kappa for two annotators.
 
     Assumes that the annotators draw annotations at random with different but
-     constant frequencies.
+    constant frequencies.
 
     Cohen 1960
     http://en.wikipedia.org/wiki/Cohen%27s_kappa
