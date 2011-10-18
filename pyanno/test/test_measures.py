@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 import pyanno
 
-from pyanno.measures import (confusion_matrix, chance_agreement_frequency,
+from pyanno.measures import (confusion_matrix, chance_agreement_same_frequency,
                              observed_agreement_frequency,
                              _fleiss_kappa_nannotations, fleiss_kappa)
 
@@ -39,13 +39,13 @@ class TestMeasures(unittest.TestCase):
         np.testing.assert_array_equal(cm, expected)
 
 
-    def test_chance_agreement_frequency(self):
+    def test_chance_agreement_same_frequency(self):
         distr = np.array([0.1, 0.5, 0.4])
         anno1 = pyanno.util.random_categorical(distr, nsamples=10000)
         anno2 = pyanno.util.random_categorical(distr, nsamples=10000)
 
         expected = distr ** 2.
-        freqs = chance_agreement_frequency(anno1, anno2, len(distr))
+        freqs = chance_agreement_same_frequency(anno1, anno2, len(distr))
 
         np.testing.assert_allclose(freqs, expected, atol=1e-2, rtol=0.)
 

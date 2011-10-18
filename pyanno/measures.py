@@ -8,7 +8,7 @@ from pyanno.util import benchmark, labels_count
 
 
 def confusion_matrix(annotations1, annotations2, nclasses):
-    """Compute confusion matrix to evaluate the accuracy of a classification.
+    """Compute confusion matrix from pairs of annotations.
 
     Labels are numbers between 0 and `nclasses`. Any other value is
     considered a missing value.
@@ -53,11 +53,11 @@ def _chance_adjusted_agreement(observed_agreement, chance_agreement):
     return (observed_agreement - chance_agreement) / (1. - chance_agreement)
 
 
-def chance_agreement_frequency(annotations1, annotations2, nclasses):
+def chance_agreement_same_frequency(annotations1, annotations2, nclasses):
     """Excepted frequency of agreement by random annotations.
 
     Assumes that the annotators draw random annotations with the same
-    frequency as the observed combined annotations.
+    frequency as the combined observed annotations.
     """
 
     count1 = labels_count(annotations1, nclasses)
@@ -92,6 +92,9 @@ def _compute_nclasses(annotations):
 def scotts_pi(annotations1, annotations2, nclasses=None):
     """Return Scott's pi statistic for two annotators.
 
+    Assumes that the annotators draw random annotations with the same
+    frequency as the combined observed annotations.
+
     Allows for missing values.
 
     http://en.wikipedia.org/wiki/Scott%27s_Pi
@@ -101,7 +104,7 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
         nclasses = max(_compute_nclasses(annotations1),
                        _compute_nclasses(annotations2))
 
-    chance_agreement = chance_agreement_frequency(annotations1,
+    chance_agreement = chance_agreement_same_frequency(annotations1,
                                                   annotations2,
                                                   nclasses)
 
@@ -122,7 +125,8 @@ def fleiss_kappa(annotations, nclasses=None):
     if nclasses is None:
         nclasses = _compute_nclasses(annotations)
 
-    # compute number of annotations per class for each item
+    # transform raw annotations into the number of annotations per class
+    # for each item
     nitems = annotations.shape[0]
     nannotations = np.zeros((nitems, nclasses))
     for k in range(nclasses):
@@ -132,7 +136,10 @@ def fleiss_kappa(annotations, nclasses=None):
 
 
 def _fleiss_kappa_nannotations(nannotations):
-    # testable sub-part of fleiss_kappa
+    """Compute Fleiss' kappa gien number of annotations per class format.
+
+    This is a testable helper for fleiss_kappa.
+    """
 
     nitems = nannotations.shape[0]
 
