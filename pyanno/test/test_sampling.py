@@ -3,7 +3,6 @@ import numpy as np
 from numpy import testing
 import scipy.stats
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import log_beta_pdf
 
 class TestSampling(unittest.TestCase):
 
@@ -27,7 +26,8 @@ class TestSampling(unittest.TestCase):
             b = params[nclasses:].copy()
             llhood = 0.
             for k in range(nclasses):
-                llhood += log_beta_pdf(values[:,k], a[k], b[k]).sum()
+                llhood += scipy.stats.beta._logpdf(values[:,k], a[k],
+                                                   b[k]).sum()
             return llhood
 
         x_lower = np.zeros((nclasses*2,)) + 0.5
