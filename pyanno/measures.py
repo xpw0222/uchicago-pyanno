@@ -269,33 +269,6 @@ def _fleiss_kappa_nannotations(nannotations):
     return _chance_adjusted_agreement(observed_agreement, chance_agreement)
 
 
-def _coincidence_matrix(annotations, nclasses):
-    """Build coincidence matrix."""
-
-    # total number of annotations in row
-    nannotations = (annotations != -1).sum(1).astype(float)
-    valid = nannotations > 1
-
-    nannotations = nannotations[valid]
-    annotations = annotations[valid,:]
-
-    # number of annotations of class c in row
-    nc_in_row = np.empty((nannotations.shape[0], nclasses), dtype=int)
-    for c in range(nclasses):
-        nc_in_row[:, c] = (annotations == c).sum(1)
-
-    coincidences = np.empty((nclasses, nclasses), dtype=float)
-    for c in range(nclasses):
-        for k in range(nclasses):
-            if c==k:
-                nck_pairs = nc_in_row[:, c] * (nc_in_row[:, c] - 1)
-            else:
-                nck_pairs = nc_in_row[:, c] * nc_in_row[:, k]
-            coincidences[c, k] = (nck_pairs / (nannotations - 1.)).sum()
-
-    return coincidences
-
-
 def krippendorffs_alpha(annotations, metric_func=diagonal_distance,
                        nclasses=None):
     """Compute Krippendorff's alpha.
@@ -324,7 +297,7 @@ def krippendorffs_alpha(annotations, metric_func=diagonal_distance,
 
     Klaus Krippendorff (2004). Content Analysis, an Introduction to Its
     Methodology, 2nd Edition. Thousand Oaks, CA: Sage Publications.
-    In particular,  Chapter 11, pages 219--250.
+    In particular, Chapter 11, pages 219--250.
 
     http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha
     """
@@ -354,3 +327,30 @@ def krippendorffs_alpha(annotations, metric_func=diagonal_distance,
                   / (weights*chance_coincidences).sum())
 
     return alpha
+
+
+def _coincidence_matrix(annotations, nclasses):
+    """Build coincidence matrix."""
+
+    # total number of annotations in row
+    nannotations = (annotations != -1).sum(1).astype(float)
+    valid = nannotations > 1
+
+    nannotations = nannotations[valid]
+    annotations = annotations[valid,:]
+
+    # number of annotations of class c in row
+    nc_in_row = np.empty((nannotations.shape[0], nclasses), dtype=int)
+    for c in range(nclasses):
+        nc_in_row[:, c] = (annotations == c).sum(1)
+
+    coincidences = np.empty((nclasses, nclasses), dtype=float)
+    for c in range(nclasses):
+        for k in range(nclasses):
+            if c==k:
+                nck_pairs = nc_in_row[:, c] * (nc_in_row[:, c] - 1)
+            else:
+                nck_pairs = nc_in_row[:, c] * nc_in_row[:, k]
+            coincidences[c, k] = (nck_pairs / (nannotations - 1.)).sum()
+
+    return coincidences
