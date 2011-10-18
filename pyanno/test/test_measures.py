@@ -4,13 +4,37 @@ import unittest
 import numpy as np
 import pyanno
 
-from pyanno.measures import (confusion_matrix, chance_agreement_same_frequency,
-                             observed_agreement_frequency,
-                             _fleiss_kappa_nannotations,
-                             fleiss_kappa, chance_agreement_different_frequency)
+import pyanno.measures as pm
 
+
+class Bunch(object):
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
 class TestMeasures(unittest.TestCase):
+
+    def setUp(self):
+        """Define fixtures."""
+
+        # ------- annotations for fully agreeing annotators
+        nitems = 100
+        nannotators = 5
+        nclasses = 4
+
+        # perfect agreement, 2 missing annotations per row
+        annotations = np.empty((nitems, nannotators), dtype=int)
+
+        for i in xrange(nitems):
+            annotations[i,:] = np.random.randint(nclasses)
+            perm = np.random.permutation(nclasses)
+            annotations[i,perm[0:2]] = -1
+
+        self.full_agreement = Bunch(nitems=nitems,
+                                    nannotators=nannotators,
+                                    nclasses=nclasses,
+                                    annotations=annotations)
+
+
     def test_confusion_matrix(self):
         anno1 = np.array([0, 0, 1, 1, 2, 3])
         anno2 = np.array([0, 1, 1, 1, 2, 2])
@@ -21,7 +45,7 @@ class TestMeasures(unittest.TestCase):
                 [0, 0, 1, 0],
                 [0, 0, 1, 0]
             ])
-        cm = confusion_matrix(anno1, anno2, 4)
+        cm = pm.confusion_matrix(anno1, anno2, 4)
         np.testing.assert_array_equal(cm, expected)
 
 
@@ -36,7 +60,7 @@ class TestMeasures(unittest.TestCase):
                 [0, 0, 0, 0],
                 [0, 0, 1, 0]
             ])
-        cm = confusion_matrix(anno1, anno2, 4)
+        cm = pm.confusion_matrix(anno1, anno2, 4)
         np.testing.assert_array_equal(cm, expected)
 
 
@@ -46,7 +70,7 @@ class TestMeasures(unittest.TestCase):
         anno2 = pyanno.util.random_categorical(distr, nsamples=10000)
 
         expected = distr ** 2.
-        freqs = chance_agreement_same_frequency(anno1, anno2, len(distr))
+        freqs = pm.chance_agreement_same_frequency(anno1, anno2, len(distr))
 
         np.testing.assert_allclose(freqs, expected, atol=1e-2, rtol=0.)
 
@@ -58,7 +82,8 @@ class TestMeasures(unittest.TestCase):
         anno2 = pyanno.util.random_categorical(distr2, nsamples=10000)
 
         expected = distr1 * distr2
-        freqs = chance_agreement_different_frequency(anno1, anno2, len(distr1))
+        freqs = pm.chance_agreement_different_frequency(anno1, anno2,
+                                                        len(distr1))
 
         np.testing.assert_allclose(freqs, expected, atol=1e-2, rtol=0.)
 
@@ -69,9 +94,27 @@ class TestMeasures(unittest.TestCase):
         nvalid = np.sum((anno1!=-1) & (anno2!=-1))
 
         expected = np.array([1., 2., 0., 0.]) / nvalid
-        freqs = observed_agreement_frequency(anno1, anno2, 4)
+        freqs = pm.observed_agreement_frequency(anno1, anno2, 4)
 
         np.testing.assert_array_equal(freqs, expected)
+
+
+    def test_cohens_kappa(self):
+        # test basic functionality with full agreement, missing annotations
+        fa = self.full_agreement
+
+        self.assertEqual(pm.cohens_kappa(fa.annotations[:,0],
+                                         fa.annotations[:,1]),
+                         1.0)
+
+
+    def test_scotts_pi(self):
+        # test basic functionality with full agreement, missing annotations
+        fa = self.full_agreement
+
+        self.assertEqual(pm.scotts_pi(fa.annotations[:,0],
+                                      fa.annotations[:,1]),
+                         1.0)
 
 
     def test_fleiss_kappa_nannotations(self):
@@ -92,24 +135,16 @@ class TestMeasures(unittest.TestCase):
             ]
         )
         expected = 0.21
-        kappa = _fleiss_kappa_nannotations(nannotations)
+        kappa = pm._fleiss_kappa_nannotations(nannotations)
         self.assertAlmostEqual(kappa, expected, 2)
 
 
     def test_fleiss_kappa(self):
-        nitems = 100
-        nannotators = 5
-        nclasses = 4
+        # test basic functionality with full agreement, missing annotations
+        fa = self.full_agreement
 
-        # perfect agreement, 2 missing annotations per row
-        annotations = np.empty((nitems, nannotators), dtype=int)
-        for i in xrange(nitems):
-            annotations[i,:] = np.random.randint(nclasses)
-            perm = np.random.permutation(nclasses)
-            annotations[i,perm[0:2]] = -1
-
-        self.assertEqual(fleiss_kappa(annotations, nclasses), 1.0)
+        self.assertEqual(pm.fleiss_kappa(fa.annotations, fa.nclasses), 1.0)
 
         # unequal number of annotators per row
-        annotations[0,:] = -1
-        self.assertRaises(ValueError, fleiss_kappa, annotations)
+        fa.annotations[0,:] = -1
+        self.assertRaises(ValueError, pm.fleiss_kappa, fa.annotations)
