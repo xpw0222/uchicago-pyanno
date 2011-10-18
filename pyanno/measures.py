@@ -218,9 +218,6 @@ def cohens_weighted_kappa(annotations1, annotations2,
     # build weights matrix from weights function
     weights = np.fromfunction(weights_func, shape=(nclasses, nclasses),
                               dtype=float)
-    print weights
-    print observed_freq
-    print chance_freq
 
     kappa = 1. - (weights*observed_freq).sum() / (weights*chance_freq).sum()
 
