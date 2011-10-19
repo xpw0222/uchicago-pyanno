@@ -8,12 +8,14 @@ import pyanno.measures.agreement as pma
 import pyanno.measures.covariation as pmc
 import pyanno.measures.helpers as pmh
 import pyanno.measures.distances as pmd
+
 from pyanno.util import MISSING_VALUE as MV, is_valid
 
 
 class Bunch(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+
 
 class TestMeasures(unittest.TestCase):
 
@@ -316,3 +318,12 @@ class TestMeasures(unittest.TestCase):
 
         self.assertAlmostEqual(pmc.cronbachs_alpha(ce.annotations),
                                ce.alpha, 6)
+
+
+    def test_matrix(self):
+        ke = self.krippendorff_example
+        mat = pyanno.measures.pairwise_matrix(pma.cohens_kappa,
+                                              ke.annotations, nclasses=4)
+        self.assertAlmostEqual(mat[1,1], 1., 6)
+        kappa = pma.cohens_kappa(ke.annotations[:,2], ke.annotations[:,0])
+        self.assertAlmostEqual(mat[2,0], kappa)

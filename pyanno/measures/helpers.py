@@ -4,6 +4,26 @@ import numpy as np
 from pyanno.util import labels_count, labels_frequency, is_valid
 
 
+def pairwise_matrix(pairwise_statistic, annotations, *args, **kwargs):
+    """Compute the matrix of all combinations of a pairwise statistics.
+
+    This function applies an agreement or covariation statistic that is only
+    defined for pairs of annotators to all combinations of annotators pairs,
+    and returns a matrix of the result.
+    """
+
+    nannotators = annotations.shape[1]
+
+    pairwise = np.empty((nannotators, nannotators), dtype=float)
+    for i in range(nannotators):
+        for j in range(nannotators):
+            pairwise[i,j] = pairwise_statistic(annotations[:,i],
+                                               annotations[:,j],
+                                               *args, **kwargs)
+
+    return pairwise
+
+
 def confusion_matrix(annotations1, annotations2, nclasses):
     """Compute confusion matrix from pairs of annotations.
 
