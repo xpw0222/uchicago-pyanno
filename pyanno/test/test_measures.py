@@ -5,6 +5,7 @@ import numpy as np
 import pyanno
 
 import pyanno.measures as pm
+from pyanno.util import MISSING_VALUE as MV, is_valid
 
 
 class Bunch(object):
@@ -27,7 +28,7 @@ class TestMeasures(unittest.TestCase):
         for i in xrange(nitems):
             annotations[i,:] = np.random.randint(nclasses)
             perm = np.random.permutation(nclasses)
-            annotations[i,perm[0:2]] = -1
+            annotations[i,perm[0:2]] = MV
 
         self.full_agreement = Bunch(nitems=nitems,
                                     nannotators=nannotators,
@@ -38,21 +39,21 @@ class TestMeasures(unittest.TestCase):
         # http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha#A_computational_example
         annotations = np.array(
             [
-                [-1,  1, -1],
-                [-1, -1, -1],
-                [-1,  2,  2],
-                [-1,  1,  1],
-                [-1,  3,  3],
+                [MV,  1, MV],
+                [MV, MV, MV],
+                [MV,  2,  2],
+                [MV,  1,  1],
+                [MV,  3,  3],
                 [ 3,  3,  4],
                 [ 4,  4,  4],
-                [ 1,  3, -1],
-                [ 2, -1,  2],
-                [ 1, -1,  1],
-                [ 1, -1,  1],
-                [ 3, -1,  3],
-                [ 3, -1,  3],
-                [-1, -1, -1],
-                [ 3, -1,  4]
+                [ 1,  3, MV],
+                [ 2, MV,  2],
+                [ 1, MV,  1],
+                [ 1, MV,  1],
+                [ 3, MV,  3],
+                [ 3, MV,  3],
+                [MV, MV, MV],
+                [ 3, MV,  4]
             ]
         )
         annotations[annotations>=0] -= 1
@@ -89,8 +90,8 @@ class TestMeasures(unittest.TestCase):
 
     def test_confusion_matrix_missing(self):
         """Test confusion matrix with missing data."""
-        anno1 = np.array([0, 0, 1, 1, -1, 3])
-        anno2 = np.array([0, -1, 1, 1, 2, 2])
+        anno1 = np.array([0, 0, 1, 1, MV, 3])
+        anno2 = np.array([0, MV, 1, 1, 2, 2])
         expected = np.array(
             [
                 [1, 0, 0, 0],
@@ -127,9 +128,9 @@ class TestMeasures(unittest.TestCase):
 
 
     def test_observed_agreement(self):
-        anno1 = np.array([0, 0, 1, 1, -1, 3])
-        anno2 = np.array([0, -1, 1, 1, -1, 2])
-        nvalid = np.sum((anno1!=-1) & (anno2!=-1))
+        anno1 = np.array([0, 0, 1, 1, MV, 3])
+        anno2 = np.array([0, MV, 1, 1, MV, 2])
+        nvalid = np.sum(is_valid(anno1) & is_valid(anno2))
 
         expected = np.array([1., 2., 0., 0.]) / nvalid
         freqs = pm.observed_agreement_frequency(anno1, anno2, 4)
@@ -158,8 +159,8 @@ class TestMeasures(unittest.TestCase):
     def test_cohens_weighted_kappa2(self):
         # cohen's weighted kappa is the same as cohen's kappa when
         # the weights are 0. on the diagonal and 1. elsewhere
-        anno1 = np.array([0, 0, 1, 2, 1, -1, 3])
-        anno2 = np.array([0, -1, 1, 0, 1, -1, 2])
+        anno1 = np.array([0, 0, 1, 2, 1, MV, 3])
+        anno2 = np.array([0, MV, 1, 0, 1, MV, 2])
         weighted_kappa = pm.cohens_weighted_kappa(anno1, anno2,
                                                   pm.binary_distance)
         cohens_kappa = pm.cohens_kappa(anno1, anno2)
@@ -205,7 +206,7 @@ class TestMeasures(unittest.TestCase):
                                1.0, 6)
 
         # unequal number of annotators per row
-        fa.annotations[0,:] = -1
+        fa.annotations[0,:] = MV
         self.assertRaises(ValueError, pm.fleiss_kappa, fa.annotations)
 
 

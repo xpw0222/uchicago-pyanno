@@ -19,6 +19,9 @@ import numpy as np
 
 # TODO fix size, scroll bar on second line
 # TODO remember last setting of parameters
+from pyanno.util import is_valid
+
+
 class NewModelDialog(HasTraits):
     model_name = Str
     nclasses = Range(low=3, high=50)
@@ -79,7 +82,8 @@ class ModelDataView(HasTraits):
                 annotations.append(np.fromstring(line, dtype=int, sep=' '))
 
         self.annotations = np.asarray(annotations, dtype=int)
-        self.annotations[self.annotations>-1] -= 1
+        valid = is_valid(self.annotations)
+        self.annotations[valid] -= 1
         self.annotations_are_defined = True
         print 'trigger'
         self.annotations_updated = True

@@ -10,7 +10,7 @@ import numpy as np
 import scipy.optimize
 import scipy.stats
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import compute_counts, random_categorical, labels_frequency
+from pyanno.util import compute_counts, random_categorical, labels_frequency, MISSING_VALUE
 
 
 _compatibility_tables_cache = {}
@@ -132,7 +132,7 @@ class ModelA(object):
         nitems_per_loop = np.ceil(float(nitems) / nannotators)
 
         annotations = np.empty((nitems, nannotators), dtype=int)
-        annotations.fill(-1)
+        annotations.fill(MISSING_VALUE)
 
         # loop over annotator triplets (loop design)
         for j in range(nannotators):

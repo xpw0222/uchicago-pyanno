@@ -1,7 +1,7 @@
 """This file contains the classes defining the models."""
 import numpy as np
 from pyanno.util import (random_categorical, create_band_matrix,
-                         warn_missing_vals, normalize, dirichlet_llhood)
+                         warn_missing_vals, normalize, dirichlet_llhood, is_valid)
 
 # TODO arguments checking
 
@@ -283,7 +283,7 @@ class ModelB(object):
         """
         nitems, nannotators = annotations.shape
         alpha_prior_count = self.alpha - 1.
-        valid_mask = annotations!=-1
+        valid_mask = is_valid(annotations)
 
         annotators = np.arange(nannotators)[None,:]
         if use_prior:
@@ -328,7 +328,7 @@ class ModelB(object):
 
 
     def _missing_mask(self, annotations):
-        missing_mask = (annotations == -1)
+        missing_mask = ~ is_valid(annotations)
         missing_mask_nclasses = np.tile(missing_mask[:, :, None],
             (1, 1, self.nclasses))
         return missing_mask_nclasses

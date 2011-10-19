@@ -5,7 +5,7 @@ import numpy as np
 import scipy.optimize
 import scipy.stats
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import random_categorical, compute_counts, labels_frequency
+from pyanno.util import random_categorical, compute_counts, labels_frequency, MISSING_VALUE, is_valid
 
 
 # map of `n` to list of all possible triplets of `n` elements
@@ -97,7 +97,8 @@ class ModelBt(HasStrictTraits):
         # mask annotation value according to loop design
         for l in xrange(nannotators):
             label_idx = np.arange(l+self.annotators_per_item, l+nannotators) % 8
-            annotations[l*nitems_per_loop:(l+1)*nitems_per_loop, label_idx] = -1
+            annotations[l*nitems_per_loop:(l+1)*nitems_per_loop,
+                        label_idx] = MISSING_VALUE
 
         return annotations
 
@@ -333,7 +334,7 @@ class ModelBt(HasStrictTraits):
         nclasses = self.nclasses
 
         # get indices of annotators active in each row
-        valid_entries = (annotations > -1).nonzero()
+        valid_entries = is_valid(annotations).nonzero()
         annotator_indices = np.reshape(valid_entries[1],
             (nitems, self.annotators_per_item))
         valid_annotations = annotations[valid_entries]

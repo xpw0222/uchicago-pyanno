@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 from numpy import testing
 from pyanno.modelBt import ModelBt
+from pyanno.util import MISSING_VALUE as MV, is_valid
 
 
 class TestModelBt(unittest.TestCase):
@@ -128,7 +129,7 @@ class TestModelBt(unittest.TestCase):
         theta = np.ones((8,)) / float(nclasses)
         model = ModelBt(nclasses, gamma, theta)
 
-        data = np.array([[-1, 0, 1, 2, -1, -1, -1, -1,]])
+        data = np.array([[MV, 0, 1, 2, MV, MV, MV, MV,]])
         testing.assert_almost_equal(np.squeeze(model.infer_labels(data)),
                                     model.gamma, 6)
 
@@ -142,7 +143,7 @@ class TestModelBt(unittest.TestCase):
         labels = model.generate_labels(nitems)
         annotations = model.generate_annotations(labels)
 
-        valid = annotations != -1
+        valid = is_valid(annotations)
         # check that on every row there are exactly 3 annotations
         self.assertTrue(np.all(valid.sum(1) == 3))
 

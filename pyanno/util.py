@@ -2,6 +2,9 @@ import numpy as np
 from scipy.special import gammaln
 import time
 
+MISSING_VALUE = -1
+
+
 def random_categorical(distr, nsamples):
     """Return an array of samples from a categorical distribution."""
     assert np.allclose(distr.sum(), 1., atol=1e-8)
@@ -102,19 +105,27 @@ def compute_counts(annotations, nclasses):
     return data
 
 
-def labels_count(annotations, nclasses, missing_val=-1):
+def labels_count(annotations, nclasses, missing_val=MISSING_VALUE):
     """Compute the total count of labels in observed annotations."""
     valid = annotations!=missing_val
     return np.bincount(annotations[valid], minlength=nclasses)
 
 
-def labels_frequency(annotations, nclasses, missing_val=-1):
+def labels_frequency(annotations, nclasses, missing_val=MISSING_VALUE):
     """Compute the total frequency of labels in observed annotations."""
     valid = annotations!=missing_val
     nobservations = valid.sum()
     return (np.bincount(annotations[valid], minlength=nclasses)
             / float(nobservations))
 
+
+def is_valid(annotations):
+    """Return True if annotation is valid.
+
+    An annotation is valid if it is not equal to the missing value,
+    MISSING_VALUE.
+    """
+    return annotations != MISSING_VALUE
 
 def string_wrap(st, mode):
     st = str(st)

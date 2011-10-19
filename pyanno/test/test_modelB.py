@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 from numpy import testing
 from pyanno.modelB import ModelB
+from pyanno.util import MISSING_VALUE as MV
 
 def assert_is_distributions(distr, axis=0):
     """Check that input array represents a collection of distributions.
@@ -169,7 +170,7 @@ class TestModelB(unittest.TestCase):
         for _ in range(nitems*nannotators//10):
             i = np.random.randint(nitems)
             j = np.random.randint(nannotators)
-            annotations[i,j] = -1
+            annotations[i,j] = MV
 
         # create a new, empty model and infer back the parameters
         model = ModelB(nclasses, nannotators)
@@ -245,7 +246,7 @@ class TestModelB(unittest.TestCase):
         theta = np.ones((nannotators, nclasses, nclasses)) / nclasses
         model = ModelB(nclasses, nannotators, pi=pi, theta=theta)
 
-        data = np.array([[-1, 0, 1, 2, -1, -1, -1, -1, -1, -1, -1, -1]])
+        data = np.array([[MV, 0, 1, 2, MV, MV, MV, MV, MV, MV, MV, MV]])
         posterior = model.infer_labels(data)
         testing.assert_almost_equal(np.squeeze(posterior),
                                     model.pi, 6)
@@ -265,7 +266,7 @@ class TestModelB(unittest.TestCase):
         for _ in range(nitems*nannotators//3):
             i = np.random.randint(nitems)
             j = np.random.randint(nannotators)
-            annotations[i,j] = -1
+            annotations[i,j] = MV
 
         # create a new model
         model = ModelB.create_initial_state(nclasses, nannotators)

@@ -2,7 +2,8 @@ import unittest
 import numpy as np
 from numpy import testing
 from pyanno.modelA import ModelA
-
+from pyanno.util import is_valid
+from pyanno.util import MISSING_VALUE as MV
 
 class TestModelA(unittest.TestCase):
 
@@ -77,7 +78,7 @@ class TestModelA(unittest.TestCase):
         annotations = model.generate_annotations(nitems)
 
         self.assertEqual(annotations.shape, (nitems, model.nannotators))
-        self.assertTrue(np.all((annotations!=-1).sum(1) == 3))
+        self.assertTrue(np.all(is_valid(annotations).sum(1) == 3))
 
         freqs = (np.array([(annotations==psi).sum() / float(nitems*3)
                            for psi in range(nclasses)]))
@@ -204,7 +205,7 @@ class TestModelA(unittest.TestCase):
         theta[1:4] = np.array([0.9, 0.6, 0.5])
         model = ModelA(nclasses, theta, omega)
 
-        data = np.array([[-1, 0, 1, 2, -1, -1, -1, -1,]])
+        data = np.array([[MV, 0, 1, 2, MV, MV, MV, MV,]])
         posterior = model.infer_labels(data)
         posterior = posterior[0]
         self.assertTrue(posterior[0] > posterior[1]
@@ -219,7 +220,7 @@ class TestModelA(unittest.TestCase):
         model = ModelA.create_initial_state(nclasses)
         annotations = model.generate_annotations(nitems)
 
-        valid = annotations != -1
+        valid = is_valid(annotations)
         # check that on every row there are exactly 3 annotations
         self.assertTrue(np.all(valid.sum(1) == 3))
 

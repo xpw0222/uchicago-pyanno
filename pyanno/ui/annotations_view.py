@@ -9,7 +9,7 @@ from traitsui.item import Item, Spring
 from traitsui.menu import OKCancelButtons
 from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.ui.hinton_plot import HintonDiagramPlot
-from pyanno.util import labels_frequency
+from pyanno.util import labels_frequency, is_valid
 
 import numpy as np
 
@@ -69,7 +69,8 @@ class AnnotationsView(HasStrictTraits):
 
     @on_trait_change('annotations,annotations_updated')
     def _update_annotations_info_str(self):
-        classes = str(np.unique(self.annotations[self.annotations!=-1]))
+        valid = is_valid(self.annotations)
+        classes = str(np.unique(self.annotations[valid]))
         self.annotations_info_str = ANNOTATIONS_INFO_STR.format(
             self.annotations_name,
             self.annotations.shape[0],

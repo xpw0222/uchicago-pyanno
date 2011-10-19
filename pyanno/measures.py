@@ -3,7 +3,7 @@
 from __future__ import division
 import numpy as np
 import scipy.stats
-from pyanno.util import benchmark, labels_count, labels_frequency
+from pyanno.util import benchmark, labels_count, labels_frequency, is_valid
 
 # TODO: functions to compute confidence interval
 # TODO: functions to compute pairwise matrix
@@ -337,7 +337,7 @@ def _coincidence_matrix(annotations, nclasses):
     """Build coincidence matrix."""
 
     # total number of annotations in row
-    nannotations = (annotations != -1).sum(1).astype(float)
+    nannotations = is_valid(annotations).sum(1).astype(float)
     valid = nannotations > 1
 
     nannotations = nannotations[valid]
@@ -363,6 +363,6 @@ def _coincidence_matrix(annotations, nclasses):
 def pearsons_rho(annotations1, annotations2):
     """Compute Pearson's product-moment correlation coefficient."""
 
-    valid = (annotations1!=-1) & (annotations2!=-1)
+    valid = is_valid(annotations1) & is_valid(annotations2)
     rho, pval = scipy.stats.pearsonr(annotations1[valid], annotations2[valid])
     return rho
