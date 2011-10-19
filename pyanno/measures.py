@@ -2,6 +2,7 @@
 
 from __future__ import division
 import numpy as np
+import scipy.stats
 from pyanno.util import benchmark, labels_count, labels_frequency
 
 # TODO: functions to compute confidence interval
@@ -161,8 +162,10 @@ def cohens_kappa(annotations1, annotations2, nclasses=None):
 def diagonal_distance(i, j):
     return abs(i-j)
 
+
 def binary_distance(i, j):
     return np.asarray(i!=j, dtype=float)
+
 
 def cohens_weighted_kappa(annotations1, annotations2,
                           weights_func = diagonal_distance,
@@ -355,3 +358,11 @@ def _coincidence_matrix(annotations, nclasses):
             coincidences[c, k] = (nck_pairs / (nannotations - 1.)).sum()
 
     return coincidences
+
+
+def pearsons_rho(annotations1, annotations2):
+    """Compute Pearson's product-moment correlation coefficient."""
+
+    valid = (annotations1!=-1) & (annotations2!=-1)
+    rho, pval = scipy.stats.pearsonr(annotations1[valid], annotations2[valid])
+    return rho

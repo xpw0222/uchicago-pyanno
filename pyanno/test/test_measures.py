@@ -237,3 +237,12 @@ class TestMeasures(unittest.TestCase):
         alpha = pm.krippendorffs_alpha(kr.annotations,
                                        metric_func=pm.diagonal_distance)
         self.assertAlmostEqual(alpha, kr.alpha_diagonal, 3)
+
+
+    def test_pearsons_rho(self):
+        # test basic functionality with full agreement, missing annotations
+        fa = self.full_agreement
+
+        self.assertAlmostEqual(pm.pearsons_rho(fa.annotations[:,0],
+                                               fa.annotations[:,1]),
+                               1.0, 6)
