@@ -73,6 +73,37 @@ class TestMeasures(unittest.TestCase):
                                           alpha_diagonal = 0.811,
                                           alpha_binary = 0.691)
 
+        # ---- Cronbach's alpha Excell example
+        annotations = np.array(
+            [
+                [0, 1, 1, 1, 1],
+                [1, 0, 0, 0, 1],
+                [0, 0, 0, 1, 1],
+                [1, 0, 1, 0, 1],
+                [1, 0, 1, 0, 1],
+                [1, 0, 1, 1, 1],
+                [0, 0, 0, 0, 0],
+                [0, 1, 1, 1, 1],
+                [1, 1, 1, 0, 1],
+                [0, 0, 1, 1, 1]
+            ]
+        )
+        self.cronbach_example = Bunch(annotations = annotations,
+                                      nclasses = 2,
+                                      alpha = 0.619658)
+
+        # ---- Cohen's kappa example from
+        # http://r.789695.n4.nabble.com/Cohen-s-Kappa-for-beginners-td2229658.html
+        annotations = np.array(
+            [
+                [1, 2, 3, 1],
+                [1, 3, 3, 1]
+            ]
+        ).T - 1
+        self.cohen_example = Bunch(annotations = annotations,
+                                   nclasses=3,
+                                   kappa = 0.6)
+
 
     def test_confusion_matrix(self):
         anno1 = np.array([0, 0, 1, 1, 2, 3])
@@ -167,6 +198,14 @@ class TestMeasures(unittest.TestCase):
         self.assertAlmostEqual(weighted_kappa, cohens_kappa, 6)
 
 
+    def test_cohens_kappa2(self):
+        ce = self.cohen_example
+
+        kappa = pm.cohens_kappa(ce.annotations[:,0],
+                                ce.annotations[:,1])
+        self.assertAlmostEqual(kappa, ce.kappa, 6)
+
+
     def test_scotts_pi(self):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
@@ -247,3 +286,30 @@ class TestMeasures(unittest.TestCase):
         self.assertAlmostEqual(pm.pearsons_rho(fa.annotations[:,0],
                                                fa.annotations[:,1]),
                                1.0, 6)
+
+
+    def test_spearmans_rho(self):
+        # test basic functionality with full agreement, missing annotations
+        fa = self.full_agreement
+
+        self.assertAlmostEqual(pm.spearmans_rho(fa.annotations[:,0],
+                                                fa.annotations[:,1]),
+                               1.0, 6)
+
+
+    # ??? check that I got this right
+    def test_cronbachs_alpha(self):
+        # test basic functionality with full agreement, missing annotations
+        fa = self.full_agreement
+
+        alpha = pm.cronbachs_alpha(fa.annotations)
+        alpha *= (fa.nitems - 1.) / fa.nitems
+        self.assertAlmostEqual(alpha, 1.0, 6)
+
+
+    def test_cronbachs_alpha2(self):
+        # test basic functionality with full agreement, missing annotations
+        ce = self.cronbach_example
+
+        self.assertAlmostEqual(pm.cronbachs_alpha(ce.annotations),
+                               ce.alpha, 6)
