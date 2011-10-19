@@ -9,7 +9,7 @@ from traitsui.group import HGroup, VGroup
 from traitsui.item import Item, Spring
 from traitsui.menu import OKCancelButtons
 from traitsui.view import View
-from pyanno.modelBt import ModelBt
+from pyanno import ModelBt
 from pyanno.ui.annotations_view import AnnotationsView
 from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.ui.model_bt_view import ModelBtView
@@ -277,7 +277,7 @@ class ModelDataView(HasTraits):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno.modelBt import ModelBt
+    from pyanno import ModelBt
 
     model = ModelBt.create_initial_state(5)
     model_data_view = ModelDataView(model=model,

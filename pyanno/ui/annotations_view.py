@@ -122,7 +122,7 @@ class AnnotationsView(HasStrictTraits):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno.modelBt import ModelBt
+    from pyanno import ModelBt
     model = ModelBt.create_initial_state(5)
     annotations = model.generate_annotations(model.generate_labels(2))
     model_view = AnnotationsView(annotations=annotations, annotations_name='blah')

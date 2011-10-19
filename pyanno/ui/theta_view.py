@@ -200,7 +200,7 @@ class ThetaView(DebugModelView):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno.modelBt import ModelBt
+    from pyanno import ModelBt
     import numpy as np
 
     model = ModelBt.create_initial_state(5)

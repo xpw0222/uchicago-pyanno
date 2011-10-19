@@ -131,7 +131,7 @@ class ModelBtView(ModelView):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno.modelBt import ModelBt
+    from pyanno import ModelBt
 
     model = ModelBt.create_initial_state(5)
     model_view = ModelBtView(model=model)

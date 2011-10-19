@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from numpy import testing
-from pyanno.modelA import ModelA
+from pyanno import ModelA
 from pyanno.util import is_valid
 from pyanno.util import MISSING_VALUE as MV
 

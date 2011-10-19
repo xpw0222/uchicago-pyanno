@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from numpy import testing
-from pyanno.modelB import ModelB
+from pyanno import ModelB
 from pyanno.util import MISSING_VALUE as MV
 
 def assert_is_distributions(distr, axis=0):
