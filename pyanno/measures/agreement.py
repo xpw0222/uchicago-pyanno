@@ -1,110 +1,16 @@
-"""Define standard reliability measures."""
-
 from __future__ import division
+
+from exceptions import ValueError
 import numpy as np
-import scipy.stats
-from pyanno.util import benchmark, labels_count, labels_frequency, is_valid, MISSING_VALUE
 
-# TODO: functions to compute confidence interval
-# TODO: functions to compute pairwise matrix
-# TODO: reorganize functions
-# TODO: compare results with nltk
-
-def confusion_matrix(annotations1, annotations2, nclasses):
-    """Compute confusion matrix from pairs of annotations.
-
-    Labels are numbers between 0 and `nclasses`. Any other value is
-    considered a missing value.
-
-    Parameters
-    ----------
-    annotations1 : array, shape = [n_samples]
-    annotations2 : array, shape = [n_samples]
-    nclasses
-
-    Returns
-    -------
-    conf_mat : array, shape = [nclasses, nclasses]
-        confusion matrix; conf_mat[i,j] = number of observations that was
-        annotated as category `i` by annotator 1 and as `j` by annotator 2
-
-    References
-    ----------
-    http://en.wikipedia.org/wiki/Confusion_matrix
-    """
-
-    conf_mat = np.empty((nclasses, nclasses), dtype=float)
-    for i in range(nclasses):
-        for j in range(nclasses):
-            conf_mat[i, j] = np.sum(np.logical_and(annotations1 == i,
-                                                   annotations2 == j))
-
-    return conf_mat
-
-
-def _chance_adjusted_agreement(observed_agreement, chance_agreement):
-    """Return the chance-adjusted agreement given the specified agreement
-    and expected agreement.
-
-    Defined by (observed_agreement - chance_agreement)/(1.0 - chance_agreement)
-
-    Input:
-    observed_agreement -- agreement
-    chance_agreement -- expected agreement
-    """
-
-    return (observed_agreement - chance_agreement) / (1. - chance_agreement)
-
-
-def chance_agreement_same_frequency(annotations1, annotations2, nclasses):
-    """Expected frequency of agreement by random annotations.
-
-    Assumes that the annotators draw random annotations with the same
-    frequency as the combined observed annotations.
-    """
-
-    count1 = labels_count(annotations1, nclasses)
-    count2 = labels_count(annotations2, nclasses)
-
-    count_total = count1 + count2
-    total = count_total.sum()
-    chance_agreement = (count_total / total) ** 2.
-
-    return chance_agreement
-
-
-def chance_agreement_different_frequency(annotations1, annotations2, nclasses):
-    """Expected frequency of agreement by random annotations.
-
-    Assumes that the annotators draw annotations at random with different but
-    constant frequencies.
-    """
-
-    freq1 = labels_frequency(annotations1, nclasses)
-    freq2 = labels_frequency(annotations2, nclasses)
-
-    chance_agreement = freq1 * freq2
-    return chance_agreement
-
-
-def observed_agreement_frequency(annotations1, annotations2, nclasses):
-    """Observed frequency of agreement by two annotators.
-
-    If a category is never observed, the frequency for that category is set
-    to 0.0 .
-
-    Only count entries where both annotators responded toward observed
-    frequency.
-    """
-
-    conf_mat = confusion_matrix(annotations1, annotations2, nclasses)
-    observed_agreement = conf_mat.diagonal() / conf_mat.sum()
-    return observed_agreement
-
-
-def _compute_nclasses(*annotations):
-    max_ = np.amax(map(np.amax, annotations))
-    return max_ + 1
+from pyanno.measures.distances import diagonal_distance
+from pyanno.measures.helpers import (compute_nclasses,
+                                     chance_agreement_same_frequency,
+                                     observed_agreement_frequency,
+                                     chance_adjusted_agreement,
+                                     chance_agreement_different_frequency,
+                                     confusion_matrix, coincidence_matrix)
+from pyanno.util import labels_frequency, is_valid
 
 
 def scotts_pi(annotations1, annotations2, nclasses=None):
@@ -120,7 +26,7 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
     """
 
     if nclasses is None:
-        nclasses = _compute_nclasses(annotations1, annotations2)
+        nclasses = compute_nclasses(annotations1, annotations2)
 
     chance_agreement = chance_agreement_same_frequency(annotations1,
                                                        annotations2,
@@ -130,7 +36,7 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
                                                       annotations2,
                                                       nclasses)
 
-    return _chance_adjusted_agreement(observed_agreement.sum(),
+    return chance_adjusted_agreement(observed_agreement.sum(),
                                       chance_agreement.sum())
 
 
@@ -147,7 +53,7 @@ def cohens_kappa(annotations1, annotations2, nclasses=None):
     """
 
     if nclasses is None:
-        nclasses = _compute_nclasses(annotations1, annotations2)
+        nclasses = compute_nclasses(annotations1, annotations2)
 
     chance_agreement = chance_agreement_different_frequency(annotations1,
                                                             annotations2,
@@ -157,16 +63,8 @@ def cohens_kappa(annotations1, annotations2, nclasses=None):
                                                       annotations2,
                                                       nclasses)
 
-    return _chance_adjusted_agreement(observed_agreement.sum(),
+    return chance_adjusted_agreement(observed_agreement.sum(),
                                       chance_agreement.sum())
-
-
-def diagonal_distance(i, j):
-    return abs(i-j)
-
-
-def binary_distance(i, j):
-    return np.asarray(i!=j, dtype=float)
 
 
 def cohens_weighted_kappa(annotations1, annotations2,
@@ -209,7 +107,7 @@ def cohens_weighted_kappa(annotations1, annotations2,
     """
 
     if nclasses is None:
-        nclasses = _compute_nclasses(annotations1, annotations2)
+        nclasses = compute_nclasses(annotations1, annotations2)
 
     # observed probability of each combination of annotations
     observed_freq = confusion_matrix(annotations1, annotations2, nclasses)
@@ -237,7 +135,7 @@ def fleiss_kappa(annotations, nclasses=None):
     """
 
     if nclasses is None:
-        nclasses = _compute_nclasses(annotations)
+        nclasses = compute_nclasses(annotations)
 
     # transform raw annotations into the number of annotations per class
     # for each item
@@ -272,7 +170,7 @@ def _fleiss_kappa_nannotations(nannotations):
                       / (nannotations_per_item*(nannotations_per_item-1.)))
     observed_agreement = agreement_rate.mean()
 
-    return _chance_adjusted_agreement(observed_agreement, chance_agreement)
+    return chance_adjusted_agreement(observed_agreement, chance_agreement)
 
 
 def krippendorffs_alpha(annotations, metric_func=diagonal_distance,
@@ -309,9 +207,9 @@ def krippendorffs_alpha(annotations, metric_func=diagonal_distance,
     """
 
     if nclasses is None:
-        nclasses = _compute_nclasses(annotations)
+        nclasses = compute_nclasses(annotations)
 
-    coincidences = _coincidence_matrix(annotations, nclasses)
+    coincidences = coincidence_matrix(annotations, nclasses)
 
     nc = coincidences.sum(1)
     n = coincidences.sum()
@@ -335,56 +233,3 @@ def krippendorffs_alpha(annotations, metric_func=diagonal_distance,
     return alpha
 
 
-def _coincidence_matrix(annotations, nclasses):
-    """Build coincidence matrix."""
-
-    # total number of annotations in row
-    nannotations = is_valid(annotations).sum(1).astype(float)
-    valid = nannotations > 1
-
-    nannotations = nannotations[valid]
-    annotations = annotations[valid,:]
-
-    # number of annotations of class c in row
-    nc_in_row = np.empty((nannotations.shape[0], nclasses), dtype=int)
-    for c in range(nclasses):
-        nc_in_row[:, c] = (annotations == c).sum(1)
-
-    coincidences = np.empty((nclasses, nclasses), dtype=float)
-    for c in range(nclasses):
-        for k in range(nclasses):
-            if c==k:
-                nck_pairs = nc_in_row[:, c] * (nc_in_row[:, c] - 1)
-            else:
-                nck_pairs = nc_in_row[:, c] * nc_in_row[:, k]
-            coincidences[c, k] = (nck_pairs / (nannotations - 1.)).sum()
-
-    return coincidences
-
-
-def pearsons_rho(annotations1, annotations2):
-    """Compute Pearson's product-moment correlation coefficient."""
-
-    valid = is_valid(annotations1) & is_valid(annotations2)
-    rho, pval = scipy.stats.pearsonr(annotations1[valid], annotations2[valid])
-    return rho
-
-
-def spearmans_rho(annotations1, annotations2):
-    """Compute Spearman's rank correlation coefficient."""
-
-    valid = is_valid(annotations1) & is_valid(annotations2)
-    rho, pval = scipy.stats.spearmanr(annotations1[valid], annotations2[valid])
-    return rho
-
-
-def cronbachs_alpha(annotations):
-    """Compute Cronbach's alpha."""
-
-    nitems = annotations.shape[0]
-    valid_anno = np.ma.masked_equal(annotations, MISSING_VALUE)
-
-    item_var = valid_anno.var(1, ddof=1)
-    total_var = valid_anno.sum(0).var(ddof=1)
-
-    return nitems/(nitems - 1.) * (1. - item_var.sum() / total_var)

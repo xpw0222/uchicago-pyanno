@@ -2,9 +2,12 @@ from __future__ import division
 
 import unittest
 import numpy as np
-import pyanno
 
-import pyanno.measures as pm
+import pyanno
+import pyanno.measures.agreement as pma
+import pyanno.measures.covariation as pmc
+import pyanno.measures.helpers as pmh
+import pyanno.measures.distances as pmd
 from pyanno.util import MISSING_VALUE as MV, is_valid
 
 
@@ -115,7 +118,7 @@ class TestMeasures(unittest.TestCase):
                 [0, 0, 1, 0],
                 [0, 0, 1, 0]
             ])
-        cm = pm.confusion_matrix(anno1, anno2, 4)
+        cm = pmh.confusion_matrix(anno1, anno2, 4)
         np.testing.assert_array_equal(cm, expected)
 
 
@@ -130,7 +133,7 @@ class TestMeasures(unittest.TestCase):
                 [0, 0, 0, 0],
                 [0, 0, 1, 0]
             ])
-        cm = pm.confusion_matrix(anno1, anno2, 4)
+        cm = pmh.confusion_matrix(anno1, anno2, 4)
         np.testing.assert_array_equal(cm, expected)
 
 
@@ -140,7 +143,7 @@ class TestMeasures(unittest.TestCase):
         anno2 = pyanno.util.random_categorical(distr, nsamples=10000)
 
         expected = distr ** 2.
-        freqs = pm.chance_agreement_same_frequency(anno1, anno2, len(distr))
+        freqs = pmh.chance_agreement_same_frequency(anno1, anno2, len(distr))
 
         np.testing.assert_allclose(freqs, expected, atol=1e-2, rtol=0.)
 
@@ -152,8 +155,8 @@ class TestMeasures(unittest.TestCase):
         anno2 = pyanno.util.random_categorical(distr2, nsamples=10000)
 
         expected = distr1 * distr2
-        freqs = pm.chance_agreement_different_frequency(anno1, anno2,
-                                                        len(distr1))
+        freqs = pmh.chance_agreement_different_frequency(anno1, anno2,
+                                                         len(distr1))
 
         np.testing.assert_allclose(freqs, expected, atol=1e-2, rtol=0.)
 
@@ -164,7 +167,7 @@ class TestMeasures(unittest.TestCase):
         nvalid = np.sum(is_valid(anno1) & is_valid(anno2))
 
         expected = np.array([1., 2., 0., 0.]) / nvalid
-        freqs = pm.observed_agreement_frequency(anno1, anno2, 4)
+        freqs = pmh.observed_agreement_frequency(anno1, anno2, 4)
 
         np.testing.assert_array_equal(freqs, expected)
 
@@ -173,8 +176,8 @@ class TestMeasures(unittest.TestCase):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        self.assertAlmostEqual(pm.cohens_kappa(fa.annotations[:,0],
-                                               fa.annotations[:,1]),
+        self.assertAlmostEqual(pma.cohens_kappa(fa.annotations[:,0],
+                                                fa.annotations[:,1]),
                                1.0, 6)
 
 
@@ -182,8 +185,8 @@ class TestMeasures(unittest.TestCase):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        self.assertAlmostEqual(pm.cohens_weighted_kappa(fa.annotations[:,0],
-                                                        fa.annotations[:,1]),
+        self.assertAlmostEqual(pma.cohens_weighted_kappa(fa.annotations[:,0],
+                                                         fa.annotations[:,1]),
                                1.0, 6)
 
 
@@ -192,16 +195,16 @@ class TestMeasures(unittest.TestCase):
         # the weights are 0. on the diagonal and 1. elsewhere
         anno1 = np.array([0, 0, 1, 2, 1, MV, 3])
         anno2 = np.array([0, MV, 1, 0, 1, MV, 2])
-        weighted_kappa = pm.cohens_weighted_kappa(anno1, anno2,
-                                                  pm.binary_distance)
-        cohens_kappa = pm.cohens_kappa(anno1, anno2)
+        weighted_kappa = pma.cohens_weighted_kappa(anno1, anno2,
+                                                   pmd.binary_distance)
+        cohens_kappa = pma.cohens_kappa(anno1, anno2)
         self.assertAlmostEqual(weighted_kappa, cohens_kappa, 6)
 
 
     def test_cohens_kappa2(self):
         ce = self.cohen_example
 
-        kappa = pm.cohens_kappa(ce.annotations[:,0],
+        kappa = pma.cohens_kappa(ce.annotations[:,0],
                                 ce.annotations[:,1])
         self.assertAlmostEqual(kappa, ce.kappa, 6)
 
@@ -210,8 +213,8 @@ class TestMeasures(unittest.TestCase):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        self.assertAlmostEqual(pm.scotts_pi(fa.annotations[:,0],
-                                            fa.annotations[:,1]),
+        self.assertAlmostEqual(pma.scotts_pi(fa.annotations[:,0],
+                                             fa.annotations[:,1]),
                                1.0, 6)
 
 
@@ -233,7 +236,7 @@ class TestMeasures(unittest.TestCase):
             ]
         )
         expected = 0.21
-        kappa = pm._fleiss_kappa_nannotations(nannotations)
+        kappa = pma._fleiss_kappa_nannotations(nannotations)
         self.assertAlmostEqual(kappa, expected, 2)
 
 
@@ -241,19 +244,19 @@ class TestMeasures(unittest.TestCase):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        self.assertAlmostEqual(pm.fleiss_kappa(fa.annotations, fa.nclasses),
+        self.assertAlmostEqual(pma.fleiss_kappa(fa.annotations, fa.nclasses),
                                1.0, 6)
 
         # unequal number of annotators per row
         fa.annotations[0,:] = MV
-        self.assertRaises(ValueError, pm.fleiss_kappa, fa.annotations)
+        self.assertRaises(ValueError, pma.fleiss_kappa, fa.annotations)
 
 
     def test_krippendorffs_alpha(self):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        self.assertAlmostEqual(pm.krippendorffs_alpha(fa.annotations),
+        self.assertAlmostEqual(pma.krippendorffs_alpha(fa.annotations),
                                1.0, 6)
 
 
@@ -261,7 +264,7 @@ class TestMeasures(unittest.TestCase):
         # test example from
         # http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha#A_computational_example
         kr = self.krippendorff_example
-        coincidence = pm._coincidence_matrix(kr.annotations, kr.nclasses)
+        coincidence = pmh.coincidence_matrix(kr.annotations, kr.nclasses)
         np.testing.assert_allclose(coincidence, kr.coincidence)
 
 
@@ -270,12 +273,12 @@ class TestMeasures(unittest.TestCase):
         # http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha#A_computational_example
         kr = self.krippendorff_example
 
-        alpha = pm.krippendorffs_alpha(kr.annotations,
-                                       metric_func=pm.binary_distance)
+        alpha = pma.krippendorffs_alpha(kr.annotations,
+                                        metric_func=pmd.binary_distance)
         self.assertAlmostEqual(alpha, kr.alpha_binary, 3)
 
-        alpha = pm.krippendorffs_alpha(kr.annotations,
-                                       metric_func=pm.diagonal_distance)
+        alpha = pma.krippendorffs_alpha(kr.annotations,
+                                        metric_func=pmd.diagonal_distance)
         self.assertAlmostEqual(alpha, kr.alpha_diagonal, 3)
 
 
@@ -283,8 +286,8 @@ class TestMeasures(unittest.TestCase):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        self.assertAlmostEqual(pm.pearsons_rho(fa.annotations[:,0],
-                                               fa.annotations[:,1]),
+        self.assertAlmostEqual(pmc.pearsons_rho(fa.annotations[:,0],
+                                                fa.annotations[:,1]),
                                1.0, 6)
 
 
@@ -292,8 +295,8 @@ class TestMeasures(unittest.TestCase):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        self.assertAlmostEqual(pm.spearmans_rho(fa.annotations[:,0],
-                                                fa.annotations[:,1]),
+        self.assertAlmostEqual(pmc.spearmans_rho(fa.annotations[:,0],
+                                                 fa.annotations[:,1]),
                                1.0, 6)
 
 
@@ -302,7 +305,7 @@ class TestMeasures(unittest.TestCase):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement
 
-        alpha = pm.cronbachs_alpha(fa.annotations)
+        alpha = pmc.cronbachs_alpha(fa.annotations)
         alpha *= (fa.nitems - 1.) / fa.nitems
         self.assertAlmostEqual(alpha, 1.0, 6)
 
@@ -311,5 +314,5 @@ class TestMeasures(unittest.TestCase):
         # test basic functionality with full agreement, missing annotations
         ce = self.cronbach_example
 
-        self.assertAlmostEqual(pm.cronbachs_alpha(ce.annotations),
+        self.assertAlmostEqual(pmc.cronbachs_alpha(ce.annotations),
                                ce.alpha, 6)
