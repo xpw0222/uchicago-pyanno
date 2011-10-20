@@ -327,3 +327,7 @@ class TestMeasures(unittest.TestCase):
         self.assertAlmostEqual(mat[1,1], 1., 6)
         kappa = pma.cohens_kappa(ke.annotations[:,2], ke.annotations[:,0])
         self.assertAlmostEqual(mat[2,0], kappa)
+
+
+if __name__ == '__main__':
+    unittest.main()
