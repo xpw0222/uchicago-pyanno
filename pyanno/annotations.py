@@ -56,7 +56,7 @@ class Annotations(HasStrictTraits):
 
 
     @staticmethod
-    def _from_file_object(fobj, missing_values=None):
+    def _from_file_object(fobj, missing_values=None, name=''):
         """Useful for testing, as it can be called using a StringIO object.
         """
 
@@ -95,7 +95,8 @@ class Annotations(HasStrictTraits):
         anno = Annotations(
             raw_annotations = raw_annotations,
             labels = all_labels,
-            missing_values = missing_values
+            missing_values = missing_values,
+            name = name
         )
 
         return anno
@@ -105,8 +106,8 @@ class Annotations(HasStrictTraits):
     def from_file(filename, missing_values=None):
         """Load annotations from a file.
 
-        The file is a text file with a columns separated by spaces or commas,
-        and rows on different lines.
+        The file is a text file with a columns separated by spaces and/or
+        commas, and rows on different lines.
 
         Input:
         filename -- file name
@@ -120,6 +121,7 @@ class Annotations(HasStrictTraits):
 
         with open(filename) as fh:
             anno = Annotations._from_file_object(fh,
-                                                 missing_values=missing_values)
+                                                 missing_values=missing_values,
+                                                 name=filename)
 
         return anno
