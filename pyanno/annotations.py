@@ -30,6 +30,8 @@ class AnnotationsContainer(HasStrictTraits):
 
     DEFAULT_MISSING_VALUES_STR = ['-1', 'NA', 'None', '*']
     DEFAULT_MISSING_VALUES_NUM = [-1, np.nan, None]
+    DEFAULT_MISSING_VALUES_ALL = (DEFAULT_MISSING_VALUES_STR +
+                                  DEFAULT_MISSING_VALUES_NUM)
 
     # raw annotations, as they are imported from file or array
     raw_annotations = List(List)
@@ -174,18 +176,18 @@ class AnnotationsContainer(HasStrictTraits):
 
     @staticmethod
     def from_array(x, missing_values=None, name=''):
-        """Create an annotations object from a numerical array or list.
+        """Create an annotations object from an array or list-of-lists.
 
         Input:
-        x -- array or list-of-lists containing numerical annotations
-        missing_values -- list of values that are considered missing vaules.
-           Default is [-1, np.nan, None]
+        x -- array or list-of-lists containing numerical or string annotations
+        missing_values -- list of values that are considered missing values.
+           Default is ['-1', 'NA', 'None', '*', -1, np.nan, None]
         name -- name of the annotations (for user interaction)
 
         """
 
         if missing_values is None:
-            missing_values = AnnotationsContainer.DEFAULT_MISSING_VALUES_NUM
+            missing_values = AnnotationsContainer.DEFAULT_MISSING_VALUES_ALL
 
         # generator for array objects
         def array_rows_generator():
