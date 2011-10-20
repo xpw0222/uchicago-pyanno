@@ -26,7 +26,7 @@ def _is_nan_in_list(lst):
     return np.any([_robust_isnan(el) for el in lst])
 
 
-class Annotations(HasStrictTraits):
+class AnnotationsContainer(HasStrictTraits):
 
     DEFAULT_MISSING_VALUES_STR = ['-1', 'NA', 'None', '*']
     DEFAULT_MISSING_VALUES_NUM = [-1, np.nan, None]
@@ -108,7 +108,7 @@ class Annotations(HasStrictTraits):
             missing_values.insert(0, np.nan)
 
         # create annotations object
-        anno = Annotations(
+        anno = AnnotationsContainer(
             raw_annotations = raw_annotations,
             labels = all_labels,
             missing_values = missing_values,
@@ -123,7 +123,7 @@ class Annotations(HasStrictTraits):
         """
 
         if missing_values is None:
-            missing_values = Annotations.DEFAULT_MISSING_VALUES_STR
+            missing_values = AnnotationsContainer.DEFAULT_MISSING_VALUES_STR
 
         # generator for rows of file-like object
         def file_row_generator():
@@ -137,7 +137,7 @@ class Annotations(HasStrictTraits):
                 labels = line.split()
                 yield labels
 
-        return Annotations._from_generator(file_row_generator(),
+        return AnnotationsContainer._from_generator(file_row_generator(),
                                            missing_values,
                                            name=name)
 
@@ -157,10 +157,10 @@ class Annotations(HasStrictTraits):
         """
 
         if missing_values is None:
-            missing_values = Annotations.DEFAULT_MISSING_VALUES_STR
+            missing_values = AnnotationsContainer.DEFAULT_MISSING_VALUES_STR
 
         with open(filename) as fh:
-            anno = Annotations._from_file_object(fh,
+            anno = AnnotationsContainer._from_file_object(fh,
                                                  missing_values=missing_values,
                                                  name=filename)
 
@@ -171,7 +171,6 @@ class Annotations(HasStrictTraits):
     def from_array(x, missing_values=None, name=''):
         """Create an annotations object from a numerical array or list.
 
-
         Input:
         x -- array or list-of-lists containing numerical annotations
         missing_values -- list of values that are considered missing vaules.
@@ -181,12 +180,12 @@ class Annotations(HasStrictTraits):
         """
 
         if missing_values is None:
-            missing_values = Annotations.DEFAULT_MISSING_VALUES_NUM
+            missing_values = AnnotationsContainer.DEFAULT_MISSING_VALUES_NUM
 
         # generator for array objects
         def array_rows_generator():
             for row in x:
                 yield list(row)
 
-        return Annotations._from_generator(array_rows_generator(),
+        return AnnotationsContainer._from_generator(array_rows_generator(),
                                            missing_values, name=name)

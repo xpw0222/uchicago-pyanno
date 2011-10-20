@@ -1,7 +1,7 @@
 from cStringIO import StringIO
 import numpy as np
 import unittest
-from pyanno.annotations import Annotations
+from pyanno.annotations import AnnotationsContainer
 from pyanno.util import MISSING_VALUE as MV
 
 
@@ -15,7 +15,7 @@ class TestAnnotations(unittest.TestCase):
         """
 
         buffer = StringIO(s)
-        anno = Annotations._from_file_object(buffer)
+        anno = AnnotationsContainer._from_file_object(buffer)
 
         self.assertEqual(anno.nclasses, 4)
         self.assertEqual(anno.nannotators, 5)
@@ -39,7 +39,7 @@ class TestAnnotations(unittest.TestCase):
         """
 
         buffer = StringIO(s)
-        anno = Annotations._from_file_object(buffer)
+        anno = AnnotationsContainer._from_file_object(buffer)
 
         expected = np.array([
             [0, MV, 1],
@@ -61,7 +61,7 @@ class TestAnnotations(unittest.TestCase):
         """
 
         buffer = StringIO(s)
-        anno = Annotations._from_file_object(buffer)
+        anno = AnnotationsContainer._from_file_object(buffer)
 
         expected = np.array([
             [0, 1, 2],
@@ -79,7 +79,7 @@ class TestAnnotations(unittest.TestCase):
         """
 
         buffer = StringIO(s)
-        self.assertRaises(ValueError, Annotations._from_file_object, buffer)
+        self.assertRaises(ValueError, AnnotationsContainer._from_file_object, buffer)
 
 
     def test_from_array(self):
@@ -95,7 +95,7 @@ class TestAnnotations(unittest.TestCase):
             [0, 2, 2, 1]
         ])
 
-        anno = Annotations.from_array(x)
+        anno = AnnotationsContainer.from_array(x)
         np.testing.assert_equal(anno.annotations, expected)
 
         self.assertEqual(anno.nclasses, 3)
@@ -104,7 +104,7 @@ class TestAnnotations(unittest.TestCase):
 
         # now using a list-of-lists
         x = x.tolist()
-        anno = Annotations.from_array(x)
+        anno = AnnotationsContainer.from_array(x)
         np.testing.assert_equal(anno.annotations, expected)
 
         self.assertEqual(anno.nclasses, 3)
@@ -113,7 +113,7 @@ class TestAnnotations(unittest.TestCase):
 
         # inconsistent number of elements
         x[1] = [1, 2]
-        self.assertRaises(ValueError, Annotations.from_array, x)
+        self.assertRaises(ValueError, AnnotationsContainer.from_array, x)
 
 
 if __name__ == '__main__':
