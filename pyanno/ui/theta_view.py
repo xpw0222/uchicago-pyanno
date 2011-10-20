@@ -155,7 +155,7 @@ class ThetaView(DebugModelView):
             'barmin':
                 [] if invalid else [samples.mean() - samples.std()],
             'barmax':
-                [] if invalid else [samples.mean( + samples.std())],
+                [] if invalid else [samples.mean() + samples.std()],
             'avg':
                 [] if invalid else [samples.mean()],
             'index':
