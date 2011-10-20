@@ -4,3 +4,4 @@ from modelA import ModelA
 from modelB import ModelB
 from modelBt import ModelBt
 import measures
+from annotations import load_annotations

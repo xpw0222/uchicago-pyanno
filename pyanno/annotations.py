@@ -189,3 +189,20 @@ class AnnotationsContainer(HasStrictTraits):
 
         return AnnotationsContainer._from_generator(array_rows_generator(),
                                            missing_values, name=name)
+
+
+def load_annotations(filename, missing_values=None):
+    """Load annotations from file.
+
+    The file is a text file with a columns separated by spaces and/or
+    commas, and rows on different lines.
+
+    Input:
+    filename -- file name
+    missing_values -- list of labels that are considered missing values.
+       Default is ['-1', 'NA', 'None', '*']
+
+    """
+    anno = AnnotationsContainer.from_file(filename,
+                                          missing_values=missing_values)
+    return anno.annotations
