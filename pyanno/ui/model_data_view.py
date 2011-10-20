@@ -2,6 +2,7 @@
 from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_numeric import Array
 from traits.trait_types import Any, File, Instance, Button, Enum, Str, Range, Bool, Float, Event, List
+from traits.traits import Property
 from traitsui.editors.file_editor import FileEditor
 from traitsui.editors.instance_editor import InstanceEditor
 from traitsui.editors.tabular_editor import TabularEditor
@@ -16,11 +17,10 @@ from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.ui.model_bt_view import ModelBtView
 
 import numpy as np
-
-
-# TODO fix size, scroll bar on second line
-# TODO remember last setting of parameters
 from pyanno.util import is_valid
+
+
+# TODO remember last setting of parameters
 
 
 class NewModelDialog(HasTraits):
@@ -58,11 +58,15 @@ class ModelDataView(HasTraits):
     model_updated = Event
     model_update_suspended = Bool(False)
 
-    annotations_container = Instance(AnnotationsContainer)
+    #annotations_container = Instance(AnnotationsContainer)
     annotations_file = File
     annotations_are_defined = Bool(False)
     annotations_updated = Event
     annotations_view = Instance(AnnotationsView)
+
+    annotations = Property
+    def _get_annotations(self):
+        return self.annotations_view.annotations_container.annotations
 
     info_string = Str
     log_likelihood = Float
@@ -71,7 +75,8 @@ class ModelDataView(HasTraits):
     def _update_annotations_file(self):
         print 'loading file', self.annotations_file
         anno = AnnotationsContainer.from_file(self.annotations_file)
-        self.annotations_container = anno
+        self.annotations_view = AnnotationsView(annotations_container = anno,
+                                                nclasses = self.model.nclasses)
 
         self.annotations_are_defined = True
         self.annotations_updated = True
@@ -80,8 +85,7 @@ class ModelDataView(HasTraits):
     def _update_log_likelihood(self):
         print 'llhood'
         if self.annotations_are_defined:
-            annotations = self.annotations_container.annotations
-            self.log_likelihood = self.model.log_likelihood(annotations)
+            self.log_likelihood = self.model.log_likelihood(self.annotations)
 
     @on_trait_change('model,model:theta,model:gamma')
     def _fire_model_updated(self):
@@ -90,15 +94,21 @@ class ModelDataView(HasTraits):
 
     def _annotations_view_default(self):
         anno = AnnotationsContainer.from_array([[0]], name='<undefined>')
-        return AnnotationsView(annotations_container = anno)
+        return AnnotationsView(annotations_container = anno,
+                               nclasses = self.model.nclasses)
 
-    @on_trait_change('annotations_updated,model.nclasses')
-    def _create_annotations_view(self):
-        if self.annotations_are_defined:
-            self.annotations_view = AnnotationsView(
-                annotations_container = self.annotations_container,
-                nclasses = self.model.nclasses
-            )
+    @on_trait_change('model.nclasses')
+    def _update_nclasses(self):
+        self.annotations_view.nclasses = self.model.nclasses
+        self.annotations_view.annotations_updated = True
+
+    #@on_trait_change('annotations_updated,model.nclasses')
+    #def _create_annotations_view(self):
+    #    if self.annotations_are_defined:
+    #        self.annotations_view = AnnotationsView(
+    #            annotations_container = self.annotations_container,
+    #            nclasses = self.model.nclasses
+    #        )
 
     ### Actions ##############################################################
 
@@ -131,10 +141,9 @@ class ModelDataView(HasTraits):
 
     def _ml_estimate_fired(self):
         """Run ML estimation of parameters."""
-        print 'Estimate...'
+        print 'ML estimate...'
         self.model_update_suspended = True
-        annotations = self.annotations_container.annotations
-        self.model.mle(annotations, estimate_gamma=True)
+        self.model.mle(self.annotations, estimate_gamma=True)
         self.model_update_suspended = False
         # TODO change this into event listener (self.model_updated)
         self._fire_model_updated()
@@ -142,10 +151,9 @@ class ModelDataView(HasTraits):
 
     def _map_estimate_fired(self):
         """Run ML estimation of parameters."""
-        print 'Estimate...'
+        print 'MAP estimate...'
         self.model_update_suspended = True
-        annotations = self.annotations_container.annotations
-        self.model.map(annotations, estimate_gamma=True)
+        self.model.map(self.annotations, estimate_gamma=True)
         self.model_update_suspended = False
         # TODO change this into event listener (self.model_updated)
         self._fire_model_updated()
@@ -156,8 +164,7 @@ class ModelDataView(HasTraits):
         print 'Sample...'
         self.model_update_suspended = True
         nsamples = 100
-        annotations = self.annotations_container.annotations
-        samples = self.model.sample_posterior_over_theta(annotations,
+        samples = self.model.sample_posterior_over_theta(self.annotations,
                                                          nsamples,
                                                          step_optimization_nsamples=3)
         self.model_update_suspended = False
@@ -268,9 +275,7 @@ def main():
 
     model = ModelBt.create_initial_state(5)
     model_data_view = ModelDataView(model=model,
-                                    model_view=ModelBtView(model=model),
-                                    annotations=model.generate_annotations
-                                        (model.generate_labels(50*8)))
+                                    model_view=ModelBtView(model=model))
     model_data_view.configure_traits(view='traits_view')
 
     return model, model_data_view
