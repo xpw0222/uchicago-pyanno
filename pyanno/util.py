@@ -160,3 +160,13 @@ class benchmark(object):
         return False
 
 
+def check_unchanged(func_new, func_old, *args, **kwargs):
+    with benchmark('new'):
+        res_new = func_new(*args, **kwargs)
+        print 'New function returns:', res_new
+
+    with benchmark('old'):
+        res_old = func_old(*args, **kwargs)
+        print 'Old function returns:', res_old
+
+    return res_old
