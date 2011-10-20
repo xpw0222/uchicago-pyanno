@@ -53,6 +53,11 @@ class AnnotationsContainer(HasStrictTraits):
     def _get_nannotators(self):
         return len(self.raw_annotations[0])
 
+    # number of annotations
+    nitems = Property(Int, depends_on='raw_annotations')
+    def _get_nitems(self):
+        return len(self.raw_annotations)
+
     # annotations
     annotations = Property(Array, depends_on='raw_annotations')
     def _get_annotations(self):

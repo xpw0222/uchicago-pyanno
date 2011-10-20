@@ -10,6 +10,7 @@ from traitsui.item import Item, Spring
 from traitsui.menu import OKCancelButtons
 from traitsui.view import View
 from pyanno import ModelBt
+from pyanno.annotations import AnnotationsContainer
 from pyanno.ui.annotations_view import AnnotationsView
 from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.ui.model_bt_view import ModelBtView
@@ -57,7 +58,7 @@ class ModelDataView(HasTraits):
     model_updated = Event
     model_update_suspended = Bool(False)
 
-    annotations = Array(dtype=int, shape=(None, None))
+    annotations_container = Instance(AnnotationsContainer)
     annotations_file = File
     annotations_are_defined = Bool(False)
     annotations_updated = Event
@@ -69,30 +70,18 @@ class ModelDataView(HasTraits):
     @on_trait_change('annotations_file')
     def _update_annotations_file(self):
         print 'loading file', self.annotations_file
-        # load file
-        # I don't use np.loadtxt to allow for format 1,2,3,\n
-        # (i.e., last number is followed by comma)
-        # TODO function in util to load arbitrary formats
-        # TODO generalize to load all possible data values (including string annotations)
-        # TODO allow different values for missing annotations
-        annotations = []
-        with open(self.annotations_file) as fh:
-            for n, line in enumerate(fh):
-                line = line.strip().replace(',', '')
-                annotations.append(np.fromstring(line, dtype=int, sep=' '))
+        anno = AnnotationsContainer.from_file(self.annotations_file)
+        self.annotations_container = anno
 
-        self.annotations = np.asarray(annotations, dtype=int)
-        valid = is_valid(self.annotations)
-        self.annotations[valid] -= 1
         self.annotations_are_defined = True
-        print 'trigger'
         self.annotations_updated = True
 
     @on_trait_change('annotations_updated,model_updated')
     def _update_log_likelihood(self):
         print 'llhood'
         if self.annotations_are_defined:
-            self.log_likelihood = self.model.log_likelihood(self.annotations)
+            annotations = self.annotations_container.annotations
+            self.log_likelihood = self.model.log_likelihood(annotations)
 
     @on_trait_change('model,model:theta,model:gamma')
     def _fire_model_updated(self):
@@ -100,20 +89,15 @@ class ModelDataView(HasTraits):
             self.model_updated = True
 
     def _annotations_view_default(self):
-        return AnnotationsView(
-            annotations = np.zeros((1, 1), dtype=int),
-            nclasses = 3,
-            annotations_name = '<undefined>'
-        )
+        anno = AnnotationsContainer.from_array([[0]], name='<undefined>')
+        return AnnotationsView(annotations_container = anno)
 
     @on_trait_change('annotations_updated,model.nclasses')
     def _create_annotations_view(self):
         if self.annotations_are_defined:
-            print 'creat_new', self.model.nclasses
             self.annotations_view = AnnotationsView(
-                annotations = self.annotations,
-                nclasses = self.model.nclasses,
-                annotations_name = self.annotations_file
+                annotations_container = self.annotations_container,
+                nclasses = self.model.nclasses
             )
 
     ### Actions ##############################################################
@@ -149,7 +133,8 @@ class ModelDataView(HasTraits):
         """Run ML estimation of parameters."""
         print 'Estimate...'
         self.model_update_suspended = True
-        self.model.mle(self.annotations, estimate_gamma=True)
+        annotations = self.annotations_container.annotations
+        self.model.mle(annotations, estimate_gamma=True)
         self.model_update_suspended = False
         # TODO change this into event listener (self.model_updated)
         self._fire_model_updated()
@@ -159,7 +144,8 @@ class ModelDataView(HasTraits):
         """Run ML estimation of parameters."""
         print 'Estimate...'
         self.model_update_suspended = True
-        self.model.map(self.annotations, estimate_gamma=True)
+        annotations = self.annotations_container.annotations
+        self.model.map(annotations, estimate_gamma=True)
         self.model_update_suspended = False
         # TODO change this into event listener (self.model_updated)
         self._fire_model_updated()
@@ -170,7 +156,8 @@ class ModelDataView(HasTraits):
         print 'Sample...'
         self.model_update_suspended = True
         nsamples = 100
-        samples = self.model.sample_posterior_over_theta(self.annotations,
+        annotations = self.annotations_container.annotations
+        samples = self.model.sample_posterior_over_theta(annotations,
                                                          nsamples,
                                                          step_optimization_nsamples=3)
         self.model_update_suspended = False
