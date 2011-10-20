@@ -81,5 +81,40 @@ class TestAnnotations(unittest.TestCase):
         buffer = StringIO(s)
         self.assertRaises(ValueError, Annotations._from_file_object, buffer)
 
+
+    def test_from_array(self):
+        x = np.array([
+            [1, 2, -1, 3],
+            [-1, -1, np.nan, 1],
+            [1, 3, 3, 2]
+        ])
+
+        expected = np.array([
+            [0, 1, MV, 2],
+            [MV, MV, MV, 0],
+            [0, 2, 2, 1]
+        ])
+
+        anno = Annotations.from_array(x)
+        np.testing.assert_equal(anno.annotations, expected)
+
+        self.assertEqual(anno.nclasses, 3)
+        self.assertEqual(anno.labels, [1, 2, 3])
+        self.assertEqual(anno.missing_values, [np.nan, -1])
+
+        # now using a list-of-lists
+        x = x.tolist()
+        anno = Annotations.from_array(x)
+        np.testing.assert_equal(anno.annotations, expected)
+
+        self.assertEqual(anno.nclasses, 3)
+        self.assertEqual(anno.labels, [1, 2, 3])
+        self.assertEqual(anno.missing_values, [np.nan, -1])
+
+        # inconsistent number of elements
+        x[1] = [1, 2]
+        self.assertRaises(ValueError, Annotations.from_array, x)
+
+
 if __name__ == '__main__':
     unittest.main()
