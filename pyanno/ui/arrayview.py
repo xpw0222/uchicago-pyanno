@@ -3,6 +3,7 @@ import numpy as np
 from traits.api import HasTraits, Property, Array
 from traits.trait_types import List, Int, Bool, Str
 from traitsui.api import View, Item, TabularEditor
+from traitsui.group import VGroup
 from traitsui.tabular_adapter import TabularAdapter
 from traitsui.menu import NoButtons
 
@@ -11,7 +12,7 @@ class Array2DAdapter(TabularAdapter):
     columns = List
     show_index = Bool(True)
     ncolumns = Int
-    data_format = Str('%f')
+    data_format = Str('%s')
 
     font = 'Courier 10'
     alignment = 'right'
@@ -37,13 +38,16 @@ def main():
 
     class TestShowArray(HasTraits):
 
-        data = Array(shape=(None, 9))
+        data = Array
 
         view = View(
             Item(
                 'data',
-                editor=create_array2d_editor(9,
-                                             show_index=True),
+                editor=TabularEditor
+                         (
+                         adapter=Array2DAdapter(ncolumns=2,
+                                                format='%s',
+                                                show_index=False)),
                 show_label=False
             ),
             title     = 'Array2D editor',
@@ -53,8 +57,15 @@ def main():
             buttons   = NoButtons
         )
 
+        VGroup(Item('data',
+                     editor=TabularEditor
+                         (
+                         adapter=Array2DAdapter(ncolumns=2,
+                                                format='%d',
+                                                show_index=False)),
+                     show_label=False)),
 
-    data = np.random.rand(100,9)
+    data = [['a', 'b'], [1, 2]]
     blah = TestShowArray(data=data)
     blah.data = data
     print blah.data
