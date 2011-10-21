@@ -54,7 +54,6 @@ class ThetaView(DebugModelView):
         # We plot both the thetas and the samples from the posterior; if the
         # latter are not defined, the corresponding ArrayPlotData names
         # should be set to an empty list, so that they are not displayed
-
         theta = self.model.theta
         theta_len = theta.shape[0]
 
