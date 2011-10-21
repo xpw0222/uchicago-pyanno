@@ -111,7 +111,11 @@ def cohens_weighted_kappa(annotations1, annotations2,
 
     # observed probability of each combination of annotations
     observed_freq = confusion_matrix(annotations1, annotations2, nclasses)
-    observed_freq /= observed_freq.sum()
+    observed_freq_sum = observed_freq.sum()
+    if observed_freq_sum == 0:
+        return np.nan
+
+    observed_freq /= observed_freq_sum
 
     # expected probability of each combination of annotations if annotators
     # draw annotations at random with different but constant frequencies
