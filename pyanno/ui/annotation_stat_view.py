@@ -75,7 +75,11 @@ class _MatrixStatView(HasStrictTraits):
                                  ybounds=(0, width),
                                  colormap=colormap)[0]
 
+        plot.title = self.name
+
         plot.aspect_ratio = 1.
+        # padding [left, right, up, down]
+        plot.padding = [0, 0, 25, 25]
 
         # Create the colorbar, handing in the appropriate range and colormap
         colormap = img_plot.color_mapper
@@ -85,7 +89,7 @@ class _MatrixStatView(HasStrictTraits):
                             orientation='v',
                             resizable='v',
                             width=20,
-                            padding=[0,30,0,0])
+                            padding=[0,20,0,0])
         colorbar.padding_top = plot.padding_top
         colorbar.padding_bottom = plot.padding_bottom
 
@@ -101,12 +105,14 @@ class _MatrixStatView(HasStrictTraits):
         Item('matrix_plot',
              editor=ComponentEditor(),
              resizable=False,
-             show_label=False
+             show_label=False,
+             height=-200,
+             width=-200
         ),
     )
 
 
-class AnnotationStatisticsView(HasTraits):
+class AnnotationsStatisticsView(HasTraits):
 
     statistics_name = Enum(ALL_STATS_NAMES)
 
@@ -121,7 +127,6 @@ class AnnotationStatisticsView(HasTraits):
 
     @on_trait_change('statistics_name')
     def _update_stats_view(self):
-        print "new name", self.statistics_name
         if self.statistics_name in GLOBAL_STATS:
             stat_func = GLOBAL_STATS[self.statistics_name]
             res = stat_func(self.annotations, nclasses=self.nclasses)
@@ -146,7 +151,9 @@ class AnnotationStatisticsView(HasTraits):
                     Item("statistics_name", show_label=False),
                     Item("info_button", show_label=False, enabled_when="False")
                 ),
-                Item("stats_view", style="custom", show_label=False),
+                Item("stats_view",
+                     style="custom",
+                     show_label=False),
             ),
             resizable = True
         )
@@ -161,9 +168,8 @@ def main():
     from pyanno import ModelBt
     model = ModelBt.create_initial_state(5)
     annotations = model.generate_annotations(model.generate_labels(20))
-    print annotations
 
-    stats_view = AnnotationStatisticsView(annotations=annotations, nclasses=5)
+    stats_view = AnnotationsStatisticsView(annotations=annotations, nclasses=5)
     stats_view.configure_traits()
     return model, annotations, stats_view
 
