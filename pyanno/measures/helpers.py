@@ -108,7 +108,12 @@ def observed_agreement_frequency(annotations1, annotations2, nclasses):
     """
 
     conf_mat = confusion_matrix(annotations1, annotations2, nclasses)
-    observed_agreement = conf_mat.diagonal() / conf_mat.sum()
+    conf_mat_sum = conf_mat.sum()
+    if conf_mat_sum != 0:
+        observed_agreement = conf_mat.diagonal() / conf_mat_sum
+    else:
+        observed_agreement = np.empty((nclasses,), dtype=float)
+        observed_agreement.fill(np.nan)
     return observed_agreement
 
 

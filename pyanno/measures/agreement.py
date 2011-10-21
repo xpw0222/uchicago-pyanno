@@ -111,7 +111,11 @@ def cohens_weighted_kappa(annotations1, annotations2,
 
     # observed probability of each combination of annotations
     observed_freq = confusion_matrix(annotations1, annotations2, nclasses)
-    observed_freq /= observed_freq.sum()
+    observed_freq_sum = observed_freq.sum()
+    if observed_freq_sum == 0:
+        return np.nan
+
+    observed_freq /= observed_freq_sum
 
     # expected probability of each combination of annotations if annotators
     # draw annotations at random with different but constant frequencies
@@ -174,12 +178,12 @@ def _fleiss_kappa_nannotations(nannotations):
 
 
 def krippendorffs_alpha(annotations, metric_func=diagonal_distance,
-                       nclasses=None):
+                        nclasses=None):
     """Compute Krippendorff's alpha.
 
     Input:
 
-    annotations1, annotations2 -- array of annotations; classes are
+    annotations -- array of annotations; classes are
         indicated by non-negative integers, -1 indicates missing values
 
     weights_func -- weights function that receives two matrices of classes

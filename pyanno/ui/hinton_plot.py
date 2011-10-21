@@ -116,7 +116,6 @@ class HintonDiagramPlot(HasTraits):
                                  / (range2d.y_range.high - range2d.y_range.low))
 
         polyplot.border_visible = False
-        # some padding right, on the bottom
         polyplot.padding = [15, 15, 15, 25]
 
         return polyplot

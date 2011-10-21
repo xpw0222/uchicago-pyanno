@@ -12,6 +12,7 @@ from traitsui.menu import OKCancelButtons
 from traitsui.view import View
 from pyanno import ModelBt
 from pyanno.annotations import AnnotationsContainer
+from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
 from pyanno.ui.annotations_view import AnnotationsView
 from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.ui.model_bt_view import ModelBtView
@@ -63,10 +64,15 @@ class ModelDataView(HasTraits):
     annotations_are_defined = Bool(False)
     annotations_updated = Event
     annotations_view = Instance(AnnotationsView)
+    annotations_stats_view = Instance(AnnotationsStatisticsView)
 
     annotations = Property
     def _get_annotations(self):
         return self.annotations_view.annotations_container.annotations
+
+    nclasses = Property
+    def _get_nclasses(self):
+        return max(self.model.nclasses, self.annotations.max())
 
     info_string = Str
     log_likelihood = Float
@@ -77,6 +83,10 @@ class ModelDataView(HasTraits):
         anno = AnnotationsContainer.from_file(self.annotations_file)
         self.annotations_view = AnnotationsView(annotations_container = anno,
                                                 nclasses = self.model.nclasses)
+        self.annotations_stats_view = AnnotationsStatisticsView(
+            annotations = self.annotations,
+            nclasses = self.nclasses
+        )
 
         self.annotations_are_defined = True
         self.annotations_updated = True
@@ -205,6 +215,10 @@ class ModelDataView(HasTraits):
 
         data_info_group = VGroup(
             Item('annotations_view',
+                 style='custom',
+                 show_label=False,
+                 visible_when='annotations_are_defined'),
+            Item('annotations_stats_view',
                  style='custom',
                  show_label=False,
                  visible_when='annotations_are_defined')
