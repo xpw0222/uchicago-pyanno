@@ -5,6 +5,7 @@ from chaco.default_colormaps import jet
 from chaco.linear_mapper import LinearMapper
 from chaco.plot import Plot
 from chaco.plot_containers import HPlotContainer
+from chaco.tools.save_tool import SaveTool
 from enable.component_editor import ComponentEditor
 from traits.has_traits import HasTraits, on_trait_change, HasStrictTraits
 from traits.trait_numeric import Array
@@ -18,6 +19,9 @@ import pyanno.measures as measures
 
 
 # statistical measures for pairs of annotators
+from pyanno.ui.plot_tools import SaveToolPlus, CopyDataToClipboardTool
+
+
 PAIRWISE_STATS = {
     "Scott's Pi": measures.scotts_pi,
     "Cohen's Kappa": measures.cohens_kappa,
@@ -98,6 +102,12 @@ class _MatrixStatView(HasStrictTraits):
         container.add(plot)
         container.add(colorbar)
         container.bgcolor = "lightgray"
+
+        save_tool = SaveToolPlus(component=container,
+                                filename='/Users/pberkes/del/test.png')
+        plot.tools.append(save_tool)
+        copy_tool = CopyDataToClipboardTool(component=container, data=matrix)
+        plot.tools.append(copy_tool)
 
         return container
 
