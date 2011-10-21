@@ -174,12 +174,12 @@ def _fleiss_kappa_nannotations(nannotations):
 
 
 def krippendorffs_alpha(annotations, metric_func=diagonal_distance,
-                       nclasses=None):
+                        nclasses=None):
     """Compute Krippendorff's alpha.
 
     Input:
 
-    annotations1, annotations2 -- array of annotations; classes are
+    annotations -- array of annotations; classes are
         indicated by non-negative integers, -1 indicates missing values
 
     weights_func -- weights function that receives two matrices of classes

@@ -8,7 +8,7 @@ import scipy.stats
 from pyanno.util import is_valid, MISSING_VALUE
 
 
-def pearsons_rho(annotations1, annotations2):
+def pearsons_rho(annotations1, annotations2, nclasses=None):
     """Compute Pearson's product-moment correlation coefficient."""
 
     valid = is_valid(annotations1) & is_valid(annotations2)
@@ -16,7 +16,7 @@ def pearsons_rho(annotations1, annotations2):
     return rho
 
 
-def spearmans_rho(annotations1, annotations2):
+def spearmans_rho(annotations1, annotations2, nclasses=None):
     """Compute Spearman's rank correlation coefficient."""
 
     valid = is_valid(annotations1) & is_valid(annotations2)
@@ -24,7 +24,7 @@ def spearmans_rho(annotations1, annotations2):
     return rho
 
 
-def cronbachs_alpha(annotations):
+def cronbachs_alpha(annotations, nclasses=None):
     """Compute Cronbach's alpha."""
 
     nitems = annotations.shape[0]
