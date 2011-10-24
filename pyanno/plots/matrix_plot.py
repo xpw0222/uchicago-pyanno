@@ -129,9 +129,14 @@ def plot_square_matrix(matrix, **kwargs):
     The matrix is shown with a color code, and the plot will allow saving the
     plot (with Ctrl-S), and copying the matrix data to the clipboard (with
     Ctrl-C).
+
+    It is possible to set a number of keyword arguments:
+    title -- title for the resulting plot
+    colormap_low -- lower value for the colormap
+    colormap_high -- higher value for the colormap
     """
     matrix_view = ChacoMatrixView(matrix=matrix, **kwargs)
-    matrix_view.configure_traits(view='resizable_view')
+    matrix_view.edit_traits(view='resizable_view')
     return matrix_view
 
 
@@ -142,8 +147,7 @@ def plot_square_matrix(matrix, **kwargs):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    matrix = np.random.rand(100, 100)
-    matrix = np.eye(50)
+    matrix = np.eye(5)
     matrix_view = plot_square_matrix(matrix, title='Debug plot_matrix')
     return matrix_view
 
