@@ -26,6 +26,7 @@ import numpy as np
 def _is_control_down(key_event):
     """Return true if the Ctrl or Cmd key is down."""
 
+    # FIXME: at the moment PyQt4 would not catch Ctrl-C or Ctrl-S
     is_control_down = key_event.control_down
 
     if ETSConfig.toolkit == 'wx':
@@ -116,7 +117,5 @@ class CopyDataToClipboardTool(BaseTool):
         if ((event.character == "c" or event.character == u'\x03')
             and _is_control_down(event)):
             clipboard.data = repr(self.data)
-
-            print 'triggered copy!!'
 
             event.handled = True
