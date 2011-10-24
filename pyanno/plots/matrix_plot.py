@@ -15,7 +15,8 @@ from traits.trait_numeric import Array
 from traits.trait_types import Str, Instance, Float
 
 import numpy as np
-from traitsui.item import Item
+from traitsui.group import VGroup, HGroup
+from traitsui.item import Item, Spring
 from traitsui.view import View
 from pyanno.plots.plot_tools import SaveToolPlus, CopyDataToClipboardTool
 
@@ -33,6 +34,7 @@ class ChacoMatrixView(HasTraits):
 
     matrix_plot_container = Instance(HPlotContainer)
 
+    instructions = Str('Ctrl-S: Save plot,  Ctrl-C: Copy data to clipboard')
 
     def _create_colormap(self):
         if self.colormap_low is None:
@@ -93,6 +95,7 @@ class ChacoMatrixView(HasTraits):
         save_tool = SaveToolPlus(component=container,
                                  filename='/Users/pberkes/del/test.png')
         copy_tool = CopyDataToClipboardTool(component=container, data=matrix)
+        plot.tooltip ='ah-ha'
 
         plot.tools.append(save_tool)
         plot.tools.append(copy_tool)
@@ -100,26 +103,38 @@ class ChacoMatrixView(HasTraits):
         return container
 
 
+    instructions_group = HGroup(
+        Spring(),
+        Item('instructions', style='readonly', show_label=False),
+        Spring()
+    )
+
     resizable_view = View(
-        Item('matrix_plot_container',
-             editor=ComponentEditor(),
-             resizable=True,
-             show_label=False,
-             width = 600,
-             height = 400
+        VGroup(
+            Item('matrix_plot_container',
+                 editor=ComponentEditor(),
+                 resizable=True,
+                 show_label=False,
+                 width = 600,
+                 height = 400
+            ),
+            instructions_group
         ),
         resizable = True
     )
 
 
     traits_view = View(
-        Item('matrix_plot_container',
-             editor=ComponentEditor(),
-             resizable=False,
-             show_label=False,
-             height=-200,
-             width=-200
-        ),
+        VGroup(
+            Item('matrix_plot_container',
+                 editor=ComponentEditor(),
+                 resizable=False,
+                 show_label=False,
+                 height=-200,
+                 width=-200
+            ),
+            instructions_group
+        )
     )
 
 
