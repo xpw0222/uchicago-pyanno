@@ -11,7 +11,7 @@ from chaco.base import n_gon
 import numpy as np
 
 from pyanno.ui.arrayview import Array2DAdapter
-from pyanno.ui.hinton_plot import HintonDiagramPlot
+from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.ui.theta_view import ThetaView
 
 

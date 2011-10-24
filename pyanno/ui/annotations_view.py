@@ -9,7 +9,7 @@ from traitsui.item import Item, Spring
 from traitsui.menu import OKCancelButtons
 from pyanno.annotations import AnnotationsContainer
 from pyanno.ui.arrayview import Array2DAdapter
-from pyanno.ui.hinton_plot import HintonDiagramPlot
+from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.util import labels_frequency, is_valid
 
 import numpy as np
