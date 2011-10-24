@@ -1,17 +1,24 @@
+# Copyright (c) 2011, Enthought, Ltd.
+# Author: Pietro Berkes <pberkes@enthought.com>
+# License: Apache license
+
 from chaco.data_range_2d import DataRange2D
 from chaco.label_axis import LabelAxis
 from chaco.scales.scales import FixedScale
 from chaco.scales_tick_generator import ScalesTickGenerator
+from chaco.api import ArrayPlotData, Plot
+from chaco.base import n_gon
+
 from enable.component_editor import ComponentEditor
 from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_types import Str, ListFloat
 from traits.api import Instance
-from chaco.api import ArrayPlotData, Plot
-from chaco.base import n_gon
-import numpy as np
-from traitsui.group import VGroup
-from traitsui.item import Item
+from traitsui.group import VGroup, HGroup
+from traitsui.item import Item, Spring
 from traitsui.view import View
+
+import numpy as np
+from pyanno.plots.plot_tools import SaveToolPlus, CopyDataToClipboardTool
 
 
 class HintonDiagramPlot(HasTraits):
@@ -19,14 +26,22 @@ class HintonDiagramPlot(HasTraits):
 
     A Hinton diagram displays a probability distribution as a series of
     squares, with area proportional to the probability mass of each element.
+
+    The plot updates automatically whenever the attribute `data` is modified.
     """
 
+    #### Traits definition ####################################################
+
+    # data to be displayed
     data = ListFloat
+
+    #### plot-related traits
+    title = Str
 
     plot_data = Instance(ArrayPlotData)
     plot = Instance(Plot)
 
-    title = Str
+    instructions = Str('Ctrl-S: Save plot,  Ctrl-C: Copy data to clipboard')
 
 
     @on_trait_change('data', post_init=True)
@@ -52,6 +67,8 @@ class HintonDiagramPlot(HasTraits):
         self._update_data()
         return self.plot_data
 
+
+    #### Plot definition ######################################################
 
     def _create_probability_axis(self, plot):
         """Create plot axis for probability values."""
@@ -118,19 +135,64 @@ class HintonDiagramPlot(HasTraits):
         polyplot.border_visible = False
         polyplot.padding = [15, 15, 15, 25]
 
+        # add tools
+        save_tool = SaveToolPlus(component=polyplot)
+        copy_tool = CopyDataToClipboardTool(component=polyplot, data=self.data)
+
+        polyplot.tools.append(save_tool)
+        polyplot.tools.append(copy_tool)
+
         return polyplot
 
 
-    #### View definition #####################################################
+    #### View definition ######################################################
 
-    body = Item('plot',
-             editor=ComponentEditor(),
-             resizable=False,
-             show_label=False,
-             height=-100,
-            )
 
-    traits_view = View(body)
+    instructions_group = HGroup(
+        Spring(),
+        Item('instructions', style='readonly', show_label=False),
+        Spring()
+    )
+
+    resizable_view = View(
+        VGroup(
+            Item('plot',
+                 editor=ComponentEditor(),
+                 resizable=True,
+                 show_label=False,
+                 width = 600,
+                 height = 400
+            ),
+            instructions_group
+        ),
+        resizable = True
+    )
+
+    traits_view = View(
+        VGroup(
+            Item('plot',
+                 editor=ComponentEditor(),
+                 resizable=False,
+                 show_label=False,
+                 height=-100,
+            ),
+            instructions_group
+        )
+    )
+
+
+def plot_hinton_diagram(data, **kwargs):
+    """Create and display a Chaco plot of a Hinton diagram.
+
+    The component allows saving the plot (with Ctrl-S), and copying the matrix
+    data to the clipboard (with Ctrl-C).
+
+    IKeyword arguments:
+    title -- title for the resulting plot
+    """
+    matrix_view = HintonDiagramPlot(data=data, **kwargs)
+    matrix_view.edit_traits(view='resizable_view')
+    return matrix_view
 
 
 
@@ -139,15 +201,12 @@ class HintonDiagramPlot(HasTraits):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno import ModelBt
-    import numpy as np
-
-    model = ModelBt.create_initial_state(5)
-    mv = HintonDiagramPlot(data=model.gamma.tolist())
-    mv.configure_traits(view='traits_view')
-
-    return model, mv
+    data = np.random.random(5)
+    data /= data.sum()
+    hinton_view = plot_hinton_diagram(data.tolist(),
+                                      title='Debug plot_hinton_diagram')
+    return hinton_view
 
 
 if __name__ == '__main__':
-    model, mv = main()
+    hv = main()
