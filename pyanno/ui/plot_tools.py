@@ -1,5 +1,8 @@
-"""Define a tools to save plots and one to copy the data inside plots to the
-clipboard.
+# Copyright (c) 2011, Enthought, Ltd.
+# Author: Pietro Berkes <pberkes@enthought.com>
+# License: Apache license
+
+"""Plot tools to save plots and copy their data inside to the clipboard.
 """
 
 # Major library imports
@@ -50,6 +53,8 @@ class SaveToolPlus(SaveTool):
 
 class CopyDataToClipboardTool(BaseTool):
     """Subclass of SaveTool that requests a filename and dpi before saving."""
+
+    # TODO: test w/ image data, files
 
     data = Any
 
