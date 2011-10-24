@@ -7,7 +7,7 @@ from traitsui.view import View
 
 import numpy as np
 import pyanno.measures as measures
-from pyanno.plots.matrix_plot import ChacoMatrixView
+from pyanno.plots.matrix_plot import MatrixPlot
 
 
 
@@ -75,7 +75,7 @@ class AnnotationsStatisticsView(HasTraits):
             res = measures.pairwise_matrix(stat_func, self.annotations,
                                            nclasses=self.nclasses)
 
-            self.stats_view = ChacoMatrixView(matrix=res,
+            self.stats_view = MatrixPlot(matrix=res,
                                               colormap_low=-1.0,
                                               colormap_high=1.0,
                                               title=self.statistics_name)

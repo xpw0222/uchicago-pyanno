@@ -1,6 +1,9 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Pietro Berkes <pberkes@enthought.com>
 # License: Apache license
+
+"""View of 2D matrix based on Chaco."""
+
 from chaco.array_plot_data import ArrayPlotData
 from chaco.color_bar import ColorBar
 from chaco.data_range_1d import DataRange1D
@@ -13,15 +16,15 @@ from enable.component_editor import ComponentEditor
 from traits.has_traits import HasTraits
 from traits.trait_numeric import Array
 from traits.trait_types import Str, Instance, Float
-
-import numpy as np
 from traitsui.group import VGroup, HGroup
 from traitsui.item import Item, Spring
 from traitsui.view import View
+
+import numpy as np
 from pyanno.plots.plot_tools import SaveToolPlus, CopyDataToClipboardTool
 
 
-class ChacoMatrixView(HasTraits):
+class MatrixPlot(HasTraits):
 
     # data to be displayed
     matrix = Array
@@ -92,10 +95,9 @@ class ChacoMatrixView(HasTraits):
         container.bgcolor = "lightgray"
 
         # add tools
-        save_tool = SaveToolPlus(component=container,
-                                 filename='/Users/pberkes/del/test.png')
-        copy_tool = CopyDataToClipboardTool(component=container, data=matrix)
-        plot.tooltip ='ah-ha'
+        save_tool = SaveToolPlus(component=container)
+        copy_tool = CopyDataToClipboardTool(component=container,
+                                            data=self.matrix)
 
         plot.tools.append(save_tool)
         plot.tools.append(copy_tool)
@@ -150,7 +152,7 @@ def plot_square_matrix(matrix, **kwargs):
     colormap_low -- lower value for the colormap
     colormap_high -- higher value for the colormap
     """
-    matrix_view = ChacoMatrixView(matrix=matrix, **kwargs)
+    matrix_view = MatrixPlot(matrix=matrix, **kwargs)
     matrix_view.edit_traits(view='resizable_view')
     return matrix_view
 
