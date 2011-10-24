@@ -14,8 +14,29 @@ from chaco.tools.save_tool import SaveTool
 from enable.base_tool import BaseTool
 from traits.trait_types import Int, Any
 from pyface.api import clipboard
+from enthought.etsconfig.api import ETSConfig
 
 import numpy as np
+
+
+def _is_control_down(key_event):
+    """Return true if the Ctrl or Cmd key is down."""
+
+    is_control_down = key_event.control_down
+
+    if ETSConfig.toolkit == 'wx':
+        # workaround for the fact that wxPython does not return True in
+        # KeyEvent.ContrlDown() when the Cmd key is pressed on a Mac,
+        # which is not what wx does (see
+        # http://docs.wxwidgets.org/2.9.2/classwx_keyboard_state.html)
+
+        # note that qt already does the right thing (i.e.,
+        # control_down is true also for Mac's cmd key)
+        is_control_down = (key_event.event.ControlDown()
+                           or key_event.event.CmdDown())
+
+    return is_control_down
+
 
 class SaveToolPlus(SaveTool):
     """Subclass of SaveTool that requests a filename and dpi before saving."""
@@ -31,7 +52,7 @@ class SaveToolPlus(SaveTool):
         if self.component is None: return
 
         if ((event.character == "s" or event.character == u'\x13')
-            and event.control_down):
+            and _is_control_down(event)):
             # TODO: request name of file, dpi
             print 'triggered!!'
 
@@ -55,8 +76,6 @@ class SaveToolPlus(SaveTool):
 class CopyDataToClipboardTool(BaseTool):
     """Tool that copies the plot's data to the clipboard."""
 
-    # TODO allow apple-c key combination
-
     data = Any
 
     def normal_key_pressed(self, event):
@@ -68,7 +87,7 @@ class CopyDataToClipboardTool(BaseTool):
         if self.component is None: return
 
         if ((event.character == "c" or event.character == u'\x03')
-            and event.control_down):
+            and _is_control_down(event)):
             clipboard.data = repr(self.data)
 
             print 'triggered copy!!'
