@@ -44,10 +44,25 @@ class ModelBt(HasStrictTraits):
     def create_initial_state(nclasses, gamma=None, theta=None):
         """Factory method returning a random model.
 
-        Input:
-        nclasses -- number of categories
-        gamma -- probability of each annotation value
-        theta -- the parameters of P( v_i | psi ) (one for each annotator)
+        <behaviour>
+
+        Arguments
+        ---------
+        nclasses : int
+            number of categories
+
+        gamma : nparray
+            An array of floats with size that holds the probability of each
+            annotation value. Default is None
+
+        theta : nparray
+            An array of floats that the parameters of P( v_i | psi ) (one for
+            each annotator)
+
+        Returns
+        -------
+        model : :class:`~ModelBt`
+            Instance of ModelBt
         """
 
         if gamma is None:
