@@ -23,6 +23,8 @@ import os.path
 import numpy as np
 
 
+# NOTE this code can be deleted after the next release of enthought.enable
+# NOTE current version is enable.__version__ == '4.0.1'
 def _key_event_repackaging(key_event):
     """Workaround for Issue #37 in enable.
 
@@ -127,9 +129,10 @@ class SaveToolPlus(SaveTool):
 
         if self.component is None: return
 
-        if ((event.character == "s" or event.character == u'\x13')
-            and _is_control_down(event)):
+        # workaround for differences in Mac OS X, wx, and qt
+        event = _key_event_repackaging(event)
 
+        if event.character == "s" and _is_control_down(event):
             dialog = SaveFileDialog()
             dialog.edit_traits(kind='modal')
 
@@ -167,8 +170,9 @@ class CopyDataToClipboardTool(BaseTool):
 
         if self.component is None: return
 
-        if ((event.character == "c" or event.character == u'\x03')
-            and _is_control_down(event)):
-            clipboard.data = repr(self.data)
+        # workaround for differences in Mac OS X, wx, and qt
+        event = _key_event_repackaging(event)
 
+        if event.character == "c"  and _is_control_down(event):
+            clipboard.data = repr(self.data)
             event.handled = True
