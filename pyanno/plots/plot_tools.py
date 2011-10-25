@@ -23,24 +23,77 @@ import os.path
 import numpy as np
 
 
+def _key_event_repackaging(key_event):
+    """Workaround for Issue #37 in enable.
+
+    Remap keys in wx and qt to have a consistent behavior across platforms
+    """
+
+    import wx
+    from pyface.qt import QtCore, QtGui
+    import enable.wx.constants as wx_constants
+    from enable.events import KeyEvent
+
+    def wx_key_event_repackaging(key_event, gui_event):
+        key_code = gui_event.GetKeyCode()
+        if key_code in wx_constants.KEY_MAP:
+            character = wx_constants.KEY_MAP[key_code]
+        elif key_code == wx.WXK_COMMAND:
+            character = 'Menu'
+        else:
+            character = unichr(key_code).lower()
+
+        return KeyEvent(event_type=key_event.event_type,
+                        character=character,
+                        x=key_event.x, y=key_event.y,
+                        control_down=gui_event.ControlDown(),
+                        shift_down=gui_event.ShiftDown(),
+                        meta_down=gui_event.MetaDown(),
+                        event=gui_event,
+                        window=key_event.window)
+
+    def qt_new_behavior_key_event(key_event, gui_event):
+        modifiers = gui_event.modifiers()
+
+        character = key_event.character
+        import sys
+        if sys.platform == 'darwin':
+            # manually switch Meta and Control for Mac OS X
+            key_code = gui_event.key()
+            if key_code == QtCore.Qt.Key_Control: character = 'Menu'
+            elif key_code == QtCore.Qt.Key_Meta: character = 'Control'
+            control_down = bool(modifiers & QtCore.Qt.MetaModifier)
+            meta_down =  bool(modifiers & QtCore.Qt.ControlModifier)
+        else:
+            control_down = bool(modifiers & QtCore.Qt.ControlModifier)
+            meta_down =  bool(modifiers & QtCore.Qt.MetaModifier)
+
+        # re-package old event according to new criteria
+        return KeyEvent(event_type=key_event.event_type,
+                        character=character,
+                        x=key_event.x, y=key_event.y,
+                        alt_down=bool(modifiers & QtCore.Qt.AltModifier),
+                        shift_down=bool(modifiers & QtCore.Qt.ShiftModifier),
+                        control_down=control_down,
+                        meta_down=meta_down,
+                        event=gui_event,
+                        window=key_event.window)
+
+
+    gui_event = key_event.event
+
+    if isinstance(gui_event, wx._core.KeyEvent):
+        key_event = wx_key_event_repackaging(key_event, gui_event)
+    elif isinstance(gui_event, QtGui.QKeyEvent):
+        key_event = qt_new_behavior_key_event(key_event, gui_event)
+
+    return key_event
+
+
 def _is_control_down(key_event):
     """Return true if the Ctrl or Cmd key is down."""
 
-    # FIXME: at the moment PyQt4 would not catch Ctrl-C or Ctrl-S
-    is_control_down = key_event.control_down
-
-    if ETSConfig.toolkit == 'wx':
-        # workaround for the fact that wxPython does not return True in
-        # KeyEvent.ContrlDown() when the Cmd key is pressed on a Mac,
-        # which is not what wx does (see
-        # http://docs.wxwidgets.org/2.9.2/classwx_keyboard_state.html)
-
-        # note that qt already does the right thing (i.e.,
-        # control_down is true also for Mac's cmd key)
-        is_control_down = (key_event.event.ControlDown()
-                           or key_event.event.CmdDown())
-
-    return is_control_down
+    return key_event.control_down or key_event.meta_down
 
 
 class SaveFileDialog(HasTraits):
