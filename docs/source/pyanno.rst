@@ -25,14 +25,6 @@ pyanno Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`modelAB` Module
----------------------
-
-.. automodule:: pyanno.modelAB
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`modelB` Module
 --------------------
 
