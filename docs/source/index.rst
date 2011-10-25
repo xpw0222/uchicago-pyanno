@@ -11,7 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-  Library Reference <modules>
+   Library Reference <modules>
 
 Indices and tables
 ==================
