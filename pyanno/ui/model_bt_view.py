@@ -1,18 +1,15 @@
 from traits.has_traits import HasTraits, on_trait_change
-from traits.trait_types import Button, Str, ListFloat, List, CFloat
+from traits.trait_types import Button, List, CFloat
 from traitsui.api import ModelView, View, Item, Group, VGroup, HGroup
 from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.item import  Spring
 from traitsui.menu import OKButton, OKCancelButtons
 from traits.api import Instance
-from enable.component_editor import ComponentEditor
-from chaco.api import ArrayPlotData, Plot
-from chaco.base import n_gon
 import numpy as np
 
 from pyanno.ui.arrayview import Array2DAdapter
-from pyanno.ui.hinton_plot import HintonDiagramPlot
-from pyanno.ui.theta_view import ThetaView
+from pyanno.plots.hinton_plot import HintonDiagramPlot
+from pyanno.plots.theta_plot import ThetaPlot
 
 
 class GammaView(HasTraits):
@@ -72,7 +69,7 @@ class ModelBtView(ModelView):
     #### Traits UI view #########
     gamma_hinton = Instance(HintonDiagramPlot)
 
-    theta_view = Instance(ThetaView)
+    theta_view = Instance(ThetaPlot)
 
     ## Actions ##
     edit_gamma = Button(label='Edit...')
@@ -121,7 +118,7 @@ class ModelBtView(ModelView):
                                  title='Gamma parameters, P(label=k)')
 
     def _theta_view_default(self):
-        self.theta_view = ThetaView(model=self.model)
+        self.theta_view = ThetaPlot(model=self.model)
         self.theta_view._update_plot_data()
         return self.theta_view
 

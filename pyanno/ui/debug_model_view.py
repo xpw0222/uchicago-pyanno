@@ -1,6 +1,8 @@
-""" Base class for Model/View's to provide a python shell for debugging. """
+# Copyright (c) 2011, Enthought, Ltd.
+# Authors: Mark Dickinson and Martin Chilvers
+# License: Apache license
 
-# Copyright 2011 Mark Dickinson and Martin Chilvers, Enthought
+""" Base class for Model/View's to provide a python shell for debugging. """
 
 from enthought.traits.api import PythonValue
 from enthought.traits.ui.api import Group, Include, Item, ModelView
