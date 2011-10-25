@@ -187,12 +187,12 @@ def plot_hinton_diagram(data, **kwargs):
     The component allows saving the plot (with Ctrl-S), and copying the matrix
     data to the clipboard (with Ctrl-C).
 
-    IKeyword arguments:
+    Keyword arguments:
     title -- title for the resulting plot
     """
-    matrix_view = HintonDiagramPlot(data=data, **kwargs)
-    matrix_view.edit_traits(view='resizable_view')
-    return matrix_view
+    hinton_diagram = HintonDiagramPlot(data=data, **kwargs)
+    hinton_diagram.edit_traits(view='resizable_view')
+    return hinton_diagram
 
 
 
