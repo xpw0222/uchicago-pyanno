@@ -1,4 +1,9 @@
+# Copyright (c) 2011, Enthought, Ltd.
+# Author: Pietro Berkes <pberkes@enthought.com>
+# License: Apache license
+
 """TraitsUI view of the Theta parameters, and their samples."""
+
 from chaco.array_plot_data import ArrayPlotData
 from chaco.data_range_2d import DataRange2D
 from chaco.label_axis import LabelAxis
@@ -6,27 +11,61 @@ from chaco.plot import Plot
 from chaco.scales.scales import FixedScale
 from chaco.scales_tick_generator import ScalesTickGenerator
 from enable.component_editor import ComponentEditor
+
 from traits.has_traits import on_trait_change
 from traits.trait_numeric import Array
-from traits.trait_types import Instance, Bool, Event
-from traitsui.group import VGroup
-from traitsui.item import Item
+from traits.trait_types import Instance, Bool, Event, Str, DictStrAny
+from traits.traits import Property
+from traitsui.group import VGroup, HGroup
+from traitsui.handler import ModelView
+from traitsui.item import Item, Spring
 from traitsui.view import View
 
 import numpy as np
-from pyanno.ui.debug_model_view import DebugModelView
+from pyanno.plots.plot_tools import SaveToolPlus, CopyDataToClipboardTool
+
 
 def _w_idx(str_, idx):
     """Append number to string. Used to generate PlotData labels"""
     return str_ + str(idx)
 
-class ThetaView(DebugModelView):
 
-    theta_samples = Array(dtype=float, shape=(None, None))
+class ThetaPlot(ModelView):
+    """Defines a view of the annotator accuracy parameters, theta.
+
+    The view consists in a Chaco plot that displays the theta parameter for
+    each annotator, and samples from the posterior distribution over theta
+    with a combination of a scatter plot and a candle plot.
+    """
+
+    #### Traits definition ####################################################
+
     theta_samples_valid = Bool(False)
+    theta_samples = Array(dtype=float, shape=(None, None))
 
-    theta_plot = Instance(Plot)
+    # return value for "Copy" action on plot
+    data = DictStrAny
+
+    @on_trait_change('theta_samples,theta_samples_valid')
+    def _update_data(self):
+        if not self.data.has_key('theta'):
+            self.data = {'theta': None, 'theta_samples': None}
+
+        if self.theta_samples_valid:
+            theta_samples = self.theta_samples
+        else:
+            theta_samples = None
+
+        self.data['theta'] = self.model.theta
+        self.data['theta_samples'] = theta_samples
+
+    #### plot-related traits
+    title = Str('Accuracy of annotators (theta)')
+
     theta_plot_data = Instance(ArrayPlotData)
+    theta_plot = Instance(Plot)
+
+    instructions = Str('Ctrl-S: Save plot,  Ctrl-C: Copy data to clipboard')
 
     redraw = Event
 
@@ -119,9 +158,16 @@ class ThetaView(DebugModelView):
         theta_plot.underlays.append(label_axis)
 
         # title and axis name
-        theta_plot.title = 'Accuracy of annotators (theta)'
-        # some padding right, on the bottom
-        #theta_plot.padding = [0, 15, 0, 25]
+        theta_plot.title = self.title
+        #theta_plot.padding_bottom = 15
+
+        # add tools
+        save_tool = SaveToolPlus(component=theta_plot)
+        copy_tool = CopyDataToClipboardTool(component=theta_plot,
+                                            data=self.data)
+
+        theta_plot.tools.append(save_tool)
+        theta_plot.tools.append(copy_tool)
 
         return theta_plot
 
@@ -184,14 +230,61 @@ class ThetaView(DebugModelView):
 
     #### View definition #####################################################
 
-    body = VGroup(Item('theta_plot',
-             editor=ComponentEditor(),
-             resizable=True,
-             show_label=False,
-             #height=-100,
-            ))
+    instructions_group = HGroup(
+        Spring(),
+        Item('instructions', style='readonly', show_label=False),
+        Spring()
+    )
 
-    traits_view = View(body)
+    resizable_view = View(
+        VGroup(
+            Item('theta_plot',
+                 editor=ComponentEditor(),
+                 resizable=True,
+                 show_label=False,
+                 width=600,
+                 height=400
+            ),
+            instructions_group
+        ),
+        resizable=True
+    )
+
+    traits_view = View(
+        VGroup(
+            Item('theta_plot',
+                 editor=ComponentEditor(),
+                 resizable=True,
+                 show_label=False,
+                 width=-300,
+                 height=-300
+            ),
+            instructions_group
+        )
+    )
+
+
+def plot_theta_parameters(modelBt, theta_samples=None, **kwargs):
+    """Display a Chaco plot of of the annotator accuracy parameters, theta.
+
+    The component allows saving the plot (with Ctrl-S), and copying the matrix
+    data to the clipboard (with Ctrl-C).
+
+    Input:
+    modelBt -- an instance of ModelBt
+    theta_samples -- if given, samples from the posterior over theta,
+        as returned by modelBt.sample_posterior_over_theta
+
+    Keyword arguments:
+    title -- title for the resulting plot
+    """
+
+    theta_view = ThetaPlot(model=modelBt, **kwargs)
+    if theta_samples is not None:
+        theta_view.theta_samples = theta_samples
+        theta_view.theta_samples_valid = True
+    theta_view.configure_traits(view='resizable_view')
+    return theta_view
 
 
 #### Testing and debugging ####################################################
@@ -200,17 +293,14 @@ def main():
     """ Entry point for standalone testing/debugging. """
 
     from pyanno import ModelBt
-    import numpy as np
 
     model = ModelBt.create_initial_state(5)
     annotations = model.generate_annotations(model.generate_labels(100))
     theta_samples = model.sample_posterior_over_theta(annotations, 100,
                                                       step_optimization_nsamples=3)
 
-    theta_view = ThetaView(model=model,
-                           theta_samples=theta_samples)
-    #theta_view.theta_samples_valid = True
-    theta_view.configure_traits(view='traits_view')
+    theta_view = plot_theta_parameters(model, theta_samples,
+                                       title='Debug plot_theta_parameters')
 
     return model, theta_view
 
