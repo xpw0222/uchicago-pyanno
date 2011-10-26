@@ -48,7 +48,7 @@ class ThetaPlot(PyannoPlotContainer):
             self.data = {'theta': None, 'theta_samples': None}
 
         if self.theta_samples_valid:
-            theta_samples = self.theta_samples.tolist()
+            theta_samples = self.theta_samples
         else:
             theta_samples = None
 
