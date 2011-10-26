@@ -11,6 +11,7 @@ setup(name = "pyanno",
       package_data = {
           '': ['*.txt', '*.rst', 'data/*'],
       },
+      include_package_data = True,
 
       install_requires = [],
 
@@ -36,5 +37,5 @@ setup(name = "pyanno",
              'http://alias-i.com/lingpipe/web/sandbox.html'],
       download_url = ['https://github.com/enthought/uchicago-pyanno'],
 
-      license='BSD 2-clause'
+      license='LICENSE.txt'
       )
