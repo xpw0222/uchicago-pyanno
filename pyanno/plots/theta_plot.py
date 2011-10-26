@@ -15,6 +15,7 @@ from enable.component_editor import ComponentEditor
 from traits.has_traits import on_trait_change
 from traits.trait_numeric import Array
 from traits.trait_types import Instance, Bool, Event, Str, DictStrAny
+from traitsui.handler import ModelView
 from traitsui.item import Item
 
 import numpy as np
@@ -26,7 +27,7 @@ def _w_idx(str_, idx):
     return str_ + str(idx)
 
 
-class ThetaPlot(PyannoPlotContainer):
+class ThetaPlot(ModelView, PyannoPlotContainer):
     """Defines a view of the annotator accuracy parameters, theta.
 
     The view consists in a Chaco plot that displays the theta parameter for
@@ -42,18 +43,18 @@ class ThetaPlot(PyannoPlotContainer):
     # return value for "Copy" action on plot
     data = DictStrAny
 
-    @on_trait_change('theta_samples,theta_samples_valid')
-    def _update_data(self):
-        if not self.data.has_key('theta'):
-            self.data = {'theta': None, 'theta_samples': None}
+    def _data_default(self):
+        return {'theta': self.model.theta, 'theta_samples': None}
 
+    @on_trait_change('redraw,theta_samples,theta_samples_valid')
+    def _update_data(self):
         if self.theta_samples_valid:
             theta_samples = self.theta_samples
         else:
             theta_samples = None
 
-        self.data['theta'] = self.model.theta.tolist()
-        self.data['theta_samples'] = theta_samples.tolist()
+        self.data['theta'] = self.model.theta
+        self.data['theta_samples'] = theta_samples
 
     #### plot-related traits
     title = Str('Accuracy of annotators (theta)')
