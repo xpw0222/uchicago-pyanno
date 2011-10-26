@@ -109,16 +109,16 @@ class AnnotationsView(HasStrictTraits):
              style='readonly',
              height=80
         ),
-        Item('frequency_plot',
-             style='custom',
-             resizable=False,
-             show_label=False
-        ),
         HGroup(
             Item('edit_data',
                  enabled_when='annotations_are_defined',
                  show_label=False),
             Spring()
+        ),
+        Item('frequency_plot',
+             style='custom',
+             resizable=False,
+             show_label=False
         ),
     )
 

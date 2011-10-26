@@ -124,7 +124,7 @@ class HintonDiagramPlot(PyannoPlotContainer):
                                  / (range2d.y_range.high - range2d.y_range.low))
 
         polyplot.border_visible = False
-        polyplot.padding = [15, 15, 15, 25]
+        polyplot.padding = [15, 15, 25, 25]
 
         self.decorate_plot(polyplot, self.data)
         return polyplot

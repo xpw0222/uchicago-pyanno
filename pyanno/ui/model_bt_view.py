@@ -90,11 +90,13 @@ class ModelBtView(ModelView):
              label='number of annotators',
              style='readonly'),
         HGroup(
+            Spring(),
             Item('handler.gamma_hinton',
                  style='custom',
                  resizable=False,
                  show_label=False,
             ),
+            Spring(),
             vcenter(Item('handler.edit_gamma', show_label=False)),
         ),
         HGroup(
@@ -102,6 +104,7 @@ class ModelBtView(ModelView):
                  style='custom',
                  resizable=False,
                  show_label=False),
+            Spring(),
             vcenter(Item('handler.edit_theta',
                          show_label=False,
                          enabled_when='False')),

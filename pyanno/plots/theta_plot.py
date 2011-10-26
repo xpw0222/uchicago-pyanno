@@ -150,7 +150,8 @@ class ThetaPlot(PyannoPlotContainer):
 
         theta_plot.index_axis = label_axis
         theta_plot.underlays.append(label_axis)
-        #theta_plot.padding_bottom = 15
+        theta_plot.padding = 25
+        theta_plot.padding_left = 40
 
         self.decorate_plot(theta_plot, self.data)
         return theta_plot
@@ -203,7 +204,6 @@ class ThetaPlot(PyannoPlotContainer):
         plot_data = self.theta_plot_data
 
         for idx, th in enumerate(theta):
-            #
             plot_data.set_data('x%d' % idx, [th])
             plot_data.set_data('y%d' % idx, [idx+1.2])
 
@@ -226,9 +226,9 @@ class ThetaPlot(PyannoPlotContainer):
     traits_plot_item = Item(
         'theta_plot',
         editor=ComponentEditor(),
-        resizable=True,
+        resizable=False,
         show_label=False,
-        width=-300,
+        width=-320,
         height=-300
         )
 
