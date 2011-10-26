@@ -107,7 +107,7 @@ class AnnotationsView(HasStrictTraits):
         Item('annotations_info_str',
              show_label=False,
              style='readonly',
-             height=80
+             height=100
         ),
         HGroup(
             Item('edit_data',
