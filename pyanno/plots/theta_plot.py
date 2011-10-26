@@ -48,12 +48,12 @@ class ThetaPlot(PyannoPlotContainer):
             self.data = {'theta': None, 'theta_samples': None}
 
         if self.theta_samples_valid:
-            theta_samples = self.theta_samples
+            theta_samples = self.theta_samples.tolist()
         else:
             theta_samples = None
 
-        self.data['theta'] = self.model.theta
-        self.data['theta_samples'] = theta_samples
+        self.data['theta'] = self.model.theta.tolist()
+        self.data['theta_samples'] = theta_samples.tolist()
 
     #### plot-related traits
     title = Str('Accuracy of annotators (theta)')

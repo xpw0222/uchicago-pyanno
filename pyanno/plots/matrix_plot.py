@@ -87,7 +87,7 @@ class MatrixPlot(PyannoPlotContainer):
         container.add(colorbar)
         container.bgcolor = "lightgray"
 
-        self.decorate_plot(container, self.matrix)
+        self.decorate_plot(container, self.matrix.tolist())
         return container
 
 
