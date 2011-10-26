@@ -15,14 +15,10 @@ from enable.component_editor import ComponentEditor
 from traits.has_traits import on_trait_change
 from traits.trait_numeric import Array
 from traits.trait_types import Instance, Bool, Event, Str, DictStrAny
-from traits.traits import Property
-from traitsui.group import VGroup, HGroup
-from traitsui.handler import ModelView
-from traitsui.item import Item, Spring
-from traitsui.view import View
+from traitsui.item import Item
 
 import numpy as np
-from pyanno.plots.plot_tools import SaveToolPlus, CopyDataToClipboardTool
+from pyanno.plots.plots_superclass import PyannoPlotContainer
 
 
 def _w_idx(str_, idx):
@@ -30,7 +26,7 @@ def _w_idx(str_, idx):
     return str_ + str(idx)
 
 
-class ThetaPlot(ModelView):
+class ThetaPlot(PyannoPlotContainer):
     """Defines a view of the annotator accuracy parameters, theta.
 
     The view consists in a Chaco plot that displays the theta parameter for
@@ -64,8 +60,6 @@ class ThetaPlot(ModelView):
 
     theta_plot_data = Instance(ArrayPlotData)
     theta_plot = Instance(Plot)
-
-    instructions = Str('Ctrl-S: Save plot,  Ctrl-C: Copy data to clipboard')
 
     redraw = Event
 
@@ -156,19 +150,9 @@ class ThetaPlot(ModelView):
 
         theta_plot.index_axis = label_axis
         theta_plot.underlays.append(label_axis)
-
-        # title and axis name
-        theta_plot.title = self.title
         #theta_plot.padding_bottom = 15
 
-        # add tools
-        save_tool = SaveToolPlus(component=theta_plot)
-        copy_tool = CopyDataToClipboardTool(component=theta_plot,
-                                            data=self.data)
-
-        theta_plot.tools.append(save_tool)
-        theta_plot.tools.append(copy_tool)
-
+        self.decorate_plot(theta_plot, self.data)
         return theta_plot
 
 
@@ -230,38 +214,23 @@ class ThetaPlot(ModelView):
 
     #### View definition #####################################################
 
-    instructions_group = HGroup(
-        Spring(),
-        Item('instructions', style='readonly', show_label=False),
-        Spring()
-    )
-
-    resizable_view = View(
-        VGroup(
-            Item('theta_plot',
-                 editor=ComponentEditor(),
-                 resizable=True,
-                 show_label=False,
-                 width=600,
-                 height=400
-            ),
-            instructions_group
-        ),
-        resizable=True
-    )
-
-    traits_view = View(
-        VGroup(
-            Item('theta_plot',
-                 editor=ComponentEditor(),
-                 resizable=True,
-                 show_label=False,
-                 width=-300,
-                 height=-300
-            ),
-            instructions_group
+    resizable_plot_item = Item(
+        'theta_plot',
+        editor=ComponentEditor(),
+        resizable=True,
+        show_label=False,
+        width=600,
+        height=400
         )
-    )
+
+    traits_plot_item = Item(
+        'theta_plot',
+        editor=ComponentEditor(),
+        resizable=True,
+        show_label=False,
+        width=-300,
+        height=-300
+        )
 
 
 def plot_theta_parameters(modelBt, theta_samples=None, **kwargs):

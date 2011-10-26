@@ -13,31 +13,25 @@ from chaco.plot import Plot
 from chaco.plot_containers import HPlotContainer
 from enable.component_editor import ComponentEditor
 
-from traits.has_traits import HasTraits
 from traits.trait_numeric import Array
 from traits.trait_types import Str, Instance, Float
-from traitsui.group import VGroup, HGroup
-from traitsui.item import Item, Spring
-from traitsui.view import View
+from traitsui.item import Item
 
 import numpy as np
-from pyanno.plots.plot_tools import SaveToolPlus, CopyDataToClipboardTool
+from pyanno.plots.plots_superclass import PyannoPlotContainer
 
 
-class MatrixPlot(HasTraits):
+class MatrixPlot(PyannoPlotContainer):
 
     # data to be displayed
     matrix = Array
 
     #### plot-related traits
-    title = Str
     colormap_low = Float(None)
     colormap_high = Float(None)
     origin = Str('top left')
 
     matrix_plot_container = Instance(HPlotContainer)
-
-    instructions = Str('Ctrl-S: Save plot,  Ctrl-C: Copy data to clipboard')
 
     def _create_colormap(self):
         if self.colormap_low is None:
@@ -71,7 +65,6 @@ class MatrixPlot(HasTraits):
                                  colormap=self._create_colormap())[0]
 
         #### tweak plot attributes
-        plot.title = self.title
         plot.aspect_ratio = 1.
         # padding [left, right, up, down]
         plot.padding = [0, 0, 25, 25]
@@ -94,50 +87,28 @@ class MatrixPlot(HasTraits):
         container.add(colorbar)
         container.bgcolor = "lightgray"
 
-        # add tools
-        save_tool = SaveToolPlus(component=container)
-        copy_tool = CopyDataToClipboardTool(component=container,
-                                            data=self.matrix)
-
-        plot.tools.append(save_tool)
-        plot.tools.append(copy_tool)
-
+        self.decorate_plot(container, self.matrix)
         return container
 
 
-    instructions_group = HGroup(
-        Spring(),
-        Item('instructions', style='readonly', show_label=False),
-        Spring()
-    )
-
-    resizable_view = View(
-        VGroup(
-            Item('matrix_plot_container',
-                 editor=ComponentEditor(),
-                 resizable=True,
-                 show_label=False,
-                 width = 600,
-                 height = 400
-            ),
-            instructions_group
-        ),
-        resizable = True
-    )
-
-
-    traits_view = View(
-        VGroup(
-            Item('matrix_plot_container',
-                 editor=ComponentEditor(),
-                 resizable=False,
-                 show_label=False,
-                 height=-200,
-                 width=-200
-            ),
-            instructions_group
+    resizable_plot_item = Item(
+        'matrix_plot_container',
+        editor=ComponentEditor(),
+        resizable=True,
+        show_label=False,
+        width = 600,
+        height = 400
         )
-    )
+
+
+    traits_plot_item = Item(
+        'matrix_plot_container',
+        editor=ComponentEditor(),
+        resizable=False,
+        show_label=False,
+        height=-200,
+        width=-200
+        )
 
 
 def plot_square_matrix(matrix, **kwargs):
