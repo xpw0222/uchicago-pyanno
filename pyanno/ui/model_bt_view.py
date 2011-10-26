@@ -100,14 +100,17 @@ class ModelBtView(ModelView):
             vcenter(Item('handler.edit_gamma', show_label=False)),
         ),
         HGroup(
-            Item('handler.theta_view',
-                 style='custom',
-                 resizable=False,
-                 show_label=False),
             Spring(),
-            vcenter(Item('handler.edit_theta',
-                         show_label=False,
-                         enabled_when='False')),
+            HGroup(
+                Item('handler.theta_view',
+                     style='custom',
+                     resizable=False,
+                     show_label=False),
+                Spring(),
+                vcenter(Item('handler.edit_theta',
+                             show_label=False,
+                             enabled_when='False')),
+            ),
         )
         #Item('model.theta', label="Theta[j] = P(annotation_j=k | label=k)"),
     )
