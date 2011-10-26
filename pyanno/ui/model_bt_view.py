@@ -45,7 +45,6 @@ class ModelBtView(ModelView):
     # TODO: make this into Event
     def update_from_model(self):
         """Update view parameters to the ones in the model."""
-        print 'update from model'
         self.gamma = self.model.gamma.tolist()
         self.theta_view.theta_samples_valid = False
         self.theta_view.redraw = True

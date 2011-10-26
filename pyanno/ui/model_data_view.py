@@ -93,7 +93,6 @@ class ModelDataView(HasTraits):
 
     @on_trait_change('annotations_updated,model_updated')
     def _update_log_likelihood(self):
-        print 'llhood'
         if self.annotations_are_defined:
             self.log_likelihood = self.model.log_likelihood(self.annotations)
 

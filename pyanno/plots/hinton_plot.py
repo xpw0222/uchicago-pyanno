@@ -10,18 +10,16 @@ from chaco.api import ArrayPlotData, Plot
 from chaco.base import n_gon
 
 from enable.component_editor import ComponentEditor
-from traits.has_traits import HasTraits, on_trait_change
-from traits.trait_types import Str, ListFloat
+from traits.has_traits import on_trait_change
+from traits.trait_types import ListFloat
 from traits.api import Instance
-from traitsui.group import VGroup, HGroup
-from traitsui.item import Item, Spring
-from traitsui.view import View
+from traitsui.item import Item
 
 import numpy as np
-from pyanno.plots.plot_tools import SaveToolPlus, CopyDataToClipboardTool
+from pyanno.plots.plots_superclass import PyannoPlotContainer
 
 
-class HintonDiagramPlot(HasTraits):
+class HintonDiagramPlot(PyannoPlotContainer):
     """Defines a Hinton diagram view of a discrete probability distribution.
 
     A Hinton diagram displays a probability distribution as a series of
@@ -36,12 +34,8 @@ class HintonDiagramPlot(HasTraits):
     data = ListFloat
 
     #### plot-related traits
-    title = Str
-
     plot_data = Instance(ArrayPlotData)
     plot = Instance(Plot)
-
-    instructions = Str('Ctrl-S: Save plot,  Ctrl-C: Copy data to clipboard')
 
 
     @on_trait_change('data', post_init=True)
@@ -124,9 +118,6 @@ class HintonDiagramPlot(HasTraits):
         #polyplot.underlays.append(prob_axis)
 
         # tweak some of the plot properties
-        #polyplot.padding = 50
-        if self.title is not None:
-            polyplot.title = self.title
         range2d = DataRange2D(low=(0.5, 0.), high=(distr_len+0.5, 1.))
         polyplot.range2d = range2d
         polyplot.aspect_ratio = ((range2d.x_range.high - range2d.x_range.low)
@@ -135,50 +126,28 @@ class HintonDiagramPlot(HasTraits):
         polyplot.border_visible = False
         polyplot.padding = [15, 15, 15, 25]
 
-        # add tools
-        save_tool = SaveToolPlus(component=polyplot)
-        copy_tool = CopyDataToClipboardTool(component=polyplot, data=self.data)
-
-        polyplot.tools.append(save_tool)
-        polyplot.tools.append(copy_tool)
-
+        self.decorate_plot(polyplot, self.data)
         return polyplot
 
 
     #### View definition ######################################################
 
-
-    instructions_group = HGroup(
-        Spring(),
-        Item('instructions', style='readonly', show_label=False),
-        Spring()
-    )
-
-    resizable_view = View(
-        VGroup(
-            Item('plot',
-                 editor=ComponentEditor(),
-                 resizable=True,
-                 show_label=False,
-                 width = 600,
-                 height = 400
-            ),
-            instructions_group
-        ),
-        resizable = True
-    )
-
-    traits_view = View(
-        VGroup(
-            Item('plot',
-                 editor=ComponentEditor(),
-                 resizable=False,
-                 show_label=False,
-                 height=-100,
-            ),
-            instructions_group
+    resizable_traits_item = Item(
+        'plot',
+        editor=ComponentEditor(),
+        resizable=True,
+        show_label=False,
+        width = 600,
+        height = 400
         )
-    )
+
+    traits_plot_item = Item(
+        'plot',
+        editor=ComponentEditor(),
+        resizable=False,
+        show_label=False,
+        height=-100,
+        )
 
 
 def plot_hinton_diagram(data, **kwargs):
