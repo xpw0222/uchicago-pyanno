@@ -1,6 +1,10 @@
+# Copyright (c) 2011, Enthought, Ltd.
+# Author: Pietro Berkes <pberkes@enthought.com>
+# License: Apache license
+
 from traits.has_traits import HasTraits, on_trait_change
-from traits.trait_types import Button, List, CFloat, Event, Str, Range
-from traitsui.api import ModelView, View, Item, Group, VGroup, HGroup
+from traits.trait_types import Button, List, CFloat, Str, Range
+from traitsui.api import View, Item, Group, VGroup, HGroup
 from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.item import  Spring
 from traitsui.menu import OKButton, OKCancelButtons
@@ -11,26 +15,20 @@ from pyanno.modelBt import ModelBt
 from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.plots.theta_plot import ThetaPlot
+from pyanno.ui.model_view import PyannoModelView, NewModelDialog
 
 
 MODEL_BT_NAME = 'Model B-with-theta'
 
 
-class NewModelBtDialog(HasTraits):
+class NewModelBtDialog(NewModelDialog):
     model_name = Str(MODEL_BT_NAME)
     nclasses = Range(low=3, high=50, value=5)
 
-    def traits_view(self):
-        traits_view = View(
-            VGroup(
-                Item(name='nclasses',
-                     label='Number of annotation classes:')
-            ),
-            buttons=OKCancelButtons,
-            title='Create new ' + self.model_name,
-            kind='modal'
-        )
-        return traits_view
+    parameters_group = VGroup(
+        Item(name='nclasses',
+             label='Number of annotation classes:')
+    )
 
 
 class GammaView(HasTraits):
@@ -55,29 +53,17 @@ class GammaView(HasTraits):
 def vcenter(item):
     return VGroup(Spring(),item,Spring())
 
-class ModelBtView(ModelView):
+class ModelBtView(PyannoModelView):
     """ Traits UI Model/View for 'ModelBt' objects.
     """
 
     model_name = Str(MODEL_BT_NAME)
+    new_model_dialog_class = NewModelBtDialog
 
-    @staticmethod
-    def create_model_dialog():
-        """Open a dialog to create a new model and model view."""
+    @classmethod
+    def _create_model_from_dialog(cls, dialog):
+        return ModelBt.create_initial_state(dialog.nclasses)
 
-        dialog = NewModelBtDialog()
-        dialog_ui = dialog.edit_traits()
-        if dialog_ui.result:
-            # user pressed 'Ok'
-            # create model and update view
-            model = ModelBt.create_initial_state(dialog.nclasses)
-            model_view = ModelBtView(model=model)
-            return model, model_view
-        else:
-            return None, None
-
-    # raised when model is updated
-    model_updated = Event
 
     #### Model properties #######
     gamma = List(CFloat)
