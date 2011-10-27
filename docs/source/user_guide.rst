@@ -1,14 +1,8 @@
-pyAnno 1.0 USER GUIDE
-============================================================
+User guide
+==========
 
 This user guide contains information about getting started
 with pyanno, running simulations and running model estimation.
-
-
-INSTALLATION
-------------------------------------------------------------
-The installation guide is in Install.txt
-
 
 LICENSE
 ------------------------------------------------------------

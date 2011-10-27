@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    Installation guide <installation>
+   User guide <user_guide>
    Developer guide <developer_guide>
    Library Reference <modules>
 
