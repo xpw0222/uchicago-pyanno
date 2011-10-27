@@ -153,6 +153,7 @@ class ThetaPlot(ModelView, PyannoPlotContainer):
         theta_plot.underlays.append(label_axis)
         theta_plot.padding = 25
         theta_plot.padding_left = 40
+        theta_plot.aspect_ratio = 1.0
 
         self.decorate_plot(theta_plot, self.data)
         return theta_plot
@@ -229,8 +230,8 @@ class ThetaPlot(ModelView, PyannoPlotContainer):
         editor=ComponentEditor(),
         resizable=False,
         show_label=False,
-        width=-320,
-        height=-300
+        #width=-320,
+        #height=-300
         )
 
 
