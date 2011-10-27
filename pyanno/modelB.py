@@ -1,12 +1,43 @@
-"""This file contains the classes defining the models."""
+"""Definition of model B full."""
+
+from traits.api import HasStrictTraits, Int, Array
 import numpy as np
 from pyanno.util import (random_categorical, create_band_matrix,
                          warn_missing_vals, normalize, dirichlet_llhood, is_valid)
 
-# TODO arguments checking
+class ModelB(HasStrictTraits):
+    """Implementation of Model B from Rzhetsky et al.
 
-class ModelB(object):
-    """See Model.txt for a description of the model."""
+    See the documentations for a description of the model.
+
+    At the moment the model assumes 1) a total of 8 annotators, and 2) each
+    item is annotated by 3 annotators.
+    """
+
+    #### Model traits
+
+    # number of label classes
+    nclasses = Int
+
+    # number of annotators
+    nannotators = Int
+
+    #### Model parameters
+
+    # pi[k] is the prior probability of class k
+    pi = Array(dtype=float, shape=(None,))
+
+    # theta[j,k,:] is P(annotator j chooses : | real label = k)
+    theta = Array(dtype=float, shape=(None, None, None))
+
+    #### Hyperparameters
+
+    # beta[:] are the parameters of the Dirichlet prior over pi[:]
+    beta = Array(dtype=float, shape=(None,))
+
+    # alpha[k,:] are the parameters of the Dirichlet prior over theta[j,k,:]
+    alpha = Array(dtype=float, shape=(None, None))
+
 
     def __init__(self, nclasses, nannotators,
                  pi=None, theta=None,
@@ -33,6 +64,7 @@ class ModelB(object):
             self.beta = np.ones((nclasses,))
         else:
             self.beta = beta
+
 
     ##### Model and data generation methods ###################################
 
