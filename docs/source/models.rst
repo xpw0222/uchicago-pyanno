@@ -1,5 +1,5 @@
-pyanno 1.0: MODEL DEFINITIONS
-============================================================
+Model definitions
+=================
 
 DAWID AND SKENE'S MULTINOMIAL MODEL W. ARBITRARY DESIGN
 ------------------------------------------------------------

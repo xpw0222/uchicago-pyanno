@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pyanno's documentation!
+Welcome to pySnno's documentation!
 ==================================
 
 Contents:
@@ -13,6 +13,7 @@ Contents:
 
    Installation guide <installation>
    User guide <user_guide>
+   pyAnno models <models>
    Developer guide <developer_guide>
    Library Reference <modules>
 
