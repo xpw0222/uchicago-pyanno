@@ -5,9 +5,10 @@
 """Defines super class for all traits UI views of annotations models."""
 from traits.has_traits import HasTraits
 from traits.trait_types import Event, Str, Instance
-from traitsui.group import Group
+from traitsui.group import Group, VGroup
 from traitsui.handler import ModelView
 from traitsui.include import Include
+from traitsui.item import Item
 from traitsui.menu import OKCancelButtons
 from traitsui.view import View
 
@@ -33,14 +34,14 @@ class PyannoModelView(ModelView):
 
     #### Class attributes (*not* traits)
 
-    # name of the model
-    model_name = 'pyAnno model'
-
     # subclass of NewModelDialog
     new_model_dialog_class = None
 
 
     #### Model traits
+
+    # name of the model
+    model_name = Str('pyAnno model')
 
     # raised when model is updated
     model_updated = Event
@@ -66,3 +67,19 @@ class PyannoModelView(ModelView):
             return model, model_view
         else:
             return None, None
+
+
+    info_group = VGroup(
+        Item('model_name',
+             label='Model name:',
+             style='readonly',
+             emphasized=True),
+        Item('model.nclasses',
+             label='Number of labels',
+             style='readonly',
+             emphasized=True),
+        Item('model.nannotators',
+             label='Number of annotators',
+             style='readonly',
+             emphasized=True),
+    )

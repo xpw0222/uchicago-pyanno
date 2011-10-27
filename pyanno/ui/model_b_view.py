@@ -5,6 +5,7 @@
 from traits.has_traits import on_trait_change
 from traits.trait_types import Instance, Str, Range
 from traitsui.group import VGroup
+from traitsui.include import Include
 from traitsui.item import Item
 from traitsui.menu import OKButton
 from traitsui.view import View
@@ -62,21 +63,6 @@ class ModelBView(PyannoModelView):
     pi_hinton_diagram = Instance(HintonDiagramPlot)
     theta_matrix_plot = Instance(MatrixPlot)
 
-    info_group = VGroup(
-        Item('model_name',
-             label='Model name:',
-             style='readonly',
-             emphasized=True),
-        Item('model.nclasses',
-             label='Number of labels',
-             style='readonly',
-             emphasized=True),
-        Item('model.nannotators',
-             label='Number of annotators',
-             style='readonly',
-             emphasized=True),
-    )
-
     parameters_group = VGroup(
         Item('handler.pi_hinton_diagram',
              style='custom',
@@ -89,7 +75,7 @@ class ModelBView(PyannoModelView):
     )
 
     body = VGroup(
-        info_group,
+        Include('info_group'),
         parameters_group
     )
 
