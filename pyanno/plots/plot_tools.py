@@ -121,7 +121,7 @@ class SaveFileDialog(HasTraits):
 class SaveToolPlus(SaveTool):
     """Subclass of SaveTool that requests a filename and dpi before saving."""
 
-    def normal_key_released(self, event):
+    def normal_key_pressed(self, event):
         """Handles a key-release when the tool is in the 'normal' state.
 
         Saves an image of the plot when the user presses Ctrl-S.
@@ -162,7 +162,7 @@ class CopyDataToClipboardTool(BaseTool):
 
     data = Any
 
-    def normal_key_released(self, event):
+    def normal_key_pressed(self, event):
         """Handles a key-release when the tool is in the 'normal' state.
 
         Copy `data` to the keyboard when the user presses Ctrl-C.
