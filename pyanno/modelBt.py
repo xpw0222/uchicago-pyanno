@@ -293,9 +293,9 @@ class ModelBt(HasStrictTraits):
     ##### Sampling posterior over parameters ##################################
 
     # TODO arguments for burn-in, thinning
-    def sample_posterior_over_theta(self, annotations, nsamples,
+    def sample_posterior_over_accuracy(self, annotations, nsamples,
                                     target_rejection_rate = 0.3,
-                                    rejection_rate_tolerance = 0.05,
+                                    rejection_rate_tolerance = 0.2,
                                     step_optimization_nsamples = 500,
                                     adjust_step_every = 100):
         """Return samples from posterior distribution over theta given data.

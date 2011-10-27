@@ -278,7 +278,7 @@ class TestModelB(unittest.TestCase):
         model.theta = model._random_theta(nclasses, nannotators, model.alpha)
         # save current parameters
         pi_before, theta_before = model.pi.copy(), model.theta.copy()
-        samples = model.sample_posterior_over_theta(annotations, nsamples)
+        samples = model.sample_posterior_over_accuracy(annotations, nsamples)
         # eliminate bootstrap samples
         samples = samples[5:]
 

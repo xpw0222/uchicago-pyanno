@@ -244,7 +244,7 @@ def plot_theta_parameters(modelBt, theta_samples=None, **kwargs):
     Input:
     modelBt -- an instance of ModelBt
     theta_samples -- if given, samples from the posterior over theta,
-        as returned by modelBt.sample_posterior_over_theta
+        as returned by modelBt.sample_posterior_over_accuracy
 
     Keyword arguments:
     title -- title for the resulting plot
@@ -267,7 +267,7 @@ def main():
 
     model = ModelBt.create_initial_state(5)
     annotations = model.generate_annotations(model.generate_labels(100))
-    theta_samples = model.sample_posterior_over_theta(annotations, 100,
+    theta_samples = model.sample_posterior_over_accuracy(annotations, 100,
                                                       step_optimization_nsamples=3)
 
     theta_view = plot_theta_parameters(model, theta_samples,

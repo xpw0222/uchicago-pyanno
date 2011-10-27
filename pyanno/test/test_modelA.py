@@ -168,7 +168,7 @@ class TestModelA(unittest.TestCase):
         model.theta = model._random_theta(model.nannotators)
         # save current parameters
         omega_before, theta_before = model.omega.copy(), model.theta.copy()
-        samples = model.sample_posterior_over_theta(annotations, nsamples)
+        samples = model.sample_posterior_over_accuracy(annotations, nsamples)
         # test: the mean of the sampled parameters is the same as the MLE one
         # (up to 3 standard deviations of the estimate sample distribution)
         testing.assert_array_less(np.absolute(samples.mean(0)-real_theta),

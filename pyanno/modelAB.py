@@ -855,7 +855,7 @@ class ABmodelGUI(HasTraits):
                 model = model_Bt
             if cmp(report, 'Nothing') != 0:
                 print string_wrap('**Computing credible intervals**', 4)
-            Samples = model.sample_posterior_over_theta(
+            Samples = model.sample_posterior_over_accuracy(
                 mat, Metropolis_jumps,
                 target_rejection_rate = targetreject,
                 rejection_rate_tolerance = Delta,

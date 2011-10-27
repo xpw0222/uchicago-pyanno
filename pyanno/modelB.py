@@ -403,7 +403,7 @@ class ModelB(HasStrictTraits):
 
     ##### Sampling posterior over parameters ##################################
 
-    def sample_posterior_over_theta(self, annotations, nsamples):
+    def sample_posterior_over_accuracy(self, annotations, nsamples):
         # use Gibbs sampling
         nitems, nannotators = annotations.shape
         nclasses = self.nclasses
