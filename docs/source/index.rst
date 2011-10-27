@@ -11,6 +11,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   Installation guide <installation>
+   Developer guide <developer_guide>
    Library Reference <modules>
 
 Indices and tables
