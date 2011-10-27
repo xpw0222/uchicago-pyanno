@@ -4,6 +4,9 @@
 
 """Entry point for pyanno UI application."""
 
+from enthought.etsconfig.api import ETSConfig
+ETSConfig.toolkit = 'wx'
+
 from pyanno.modelBt import ModelBt
 from pyanno.ui.model_bt_view import ModelBtView
 from pyanno.ui.model_data_view import ModelDataView

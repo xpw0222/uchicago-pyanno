@@ -230,6 +230,7 @@ class ThetaPlot(ModelView, PyannoPlotContainer):
         editor=ComponentEditor(),
         resizable=False,
         show_label=False,
+        height=-280
         #width=-320,
         #height=-300
         )
