@@ -1,15 +1,36 @@
 from traits.has_traits import HasTraits, on_trait_change
-from traits.trait_types import Button, List, CFloat
+from traits.trait_types import Button, List, CFloat, Event, Str, Range
 from traitsui.api import ModelView, View, Item, Group, VGroup, HGroup
 from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.item import  Spring
 from traitsui.menu import OKButton, OKCancelButtons
 from traits.api import Instance
 import numpy as np
+from pyanno.modelBt import ModelBt
 
 from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.plots.theta_plot import ThetaPlot
+
+
+MODEL_BT_NAME = 'Model B-with-theta'
+
+
+class NewModelBtDialog(HasTraits):
+    model_name = Str(MODEL_BT_NAME)
+    nclasses = Range(low=3, high=50, value=5)
+
+    def traits_view(self):
+        traits_view = View(
+            VGroup(
+                Item(name='nclasses',
+                     label='Number of annotation classes:')
+            ),
+            buttons=OKCancelButtons,
+            title='Create new ' + self.model_name,
+            kind='modal'
+        )
+        return traits_view
 
 
 class GammaView(HasTraits):
@@ -38,11 +59,31 @@ class ModelBtView(ModelView):
     """ Traits UI Model/View for 'ModelBt' objects.
     """
 
+    model_name = Str(MODEL_BT_NAME)
+
+    @staticmethod
+    def create_model_dialog():
+        """Open a dialog to create a new model and model view."""
+
+        dialog = NewModelBtDialog()
+        dialog_ui = dialog.edit_traits()
+        if dialog_ui.result:
+            # user pressed 'Ok'
+            # create model and update view
+            model = ModelBt.create_initial_state(dialog.nclasses)
+            model_view = ModelBtView(model=model)
+            return model, model_view
+        else:
+            return None, None
+
+    # raised when model is updated
+    model_updated = Event
+
     #### Model properties #######
     gamma = List(CFloat)
 
 
-    # TODO: make this into Event
+    @on_trait_change('model_updated')
     def update_from_model(self):
         """Update view parameters to the ones in the model."""
         self.gamma = self.model.gamma.tolist()
@@ -81,8 +122,7 @@ class ModelBtView(ModelView):
         gamma_view.edit_traits(kind='livemodal')
 
 
-    # TODO check that gamma is a distribution, and that bounds are btw 0 and 1
-    body = VGroup(
+    info_group = VGroup(
         Item('model.nclasses',
              label='number of labels',
              style='readonly',
@@ -91,6 +131,10 @@ class ModelBtView(ModelView):
              label='number of annotators',
              style='readonly',
              emphasized=True),
+    )
+
+    body = VGroup(
+        info_group,
         HGroup(
             Item('handler.gamma_hinton',
                  style='custom',

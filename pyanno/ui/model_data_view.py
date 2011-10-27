@@ -1,61 +1,42 @@
 """View for model and data pair."""
 from traits.has_traits import HasTraits, on_trait_change
-from traits.trait_numeric import Array
 from traits.trait_types import Any, File, Instance, Button, Enum, Str, Range, Bool, Float, Event, List
 from traits.traits import Property
-from traitsui.editors.file_editor import FileEditor
-from traitsui.editors.instance_editor import InstanceEditor
-from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.group import HGroup, VGroup
+from traitsui.handler import ModelView
 from traitsui.item import Item, Spring
 from traitsui.menu import OKCancelButtons
 from traitsui.view import View
-from pyanno import ModelBt
+from pyanno import ModelBt, ModelB
 from pyanno.annotations import AnnotationsContainer
 from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
 from pyanno.ui.annotations_view import AnnotationsView
-from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.ui.model_bt_view import ModelBtView
+from pyanno.ui.model_b_view import ModelBView
 
 import numpy as np
-from pyanno.util import is_valid
+
 
 
 # TODO remember last setting of parameters
 
 
-class NewModelDialog(HasTraits):
-    model_name = Str
-    nclasses = Range(low=3, high=50)
-
-    def traits_view(self):
-        traits_view = View(
-            VGroup(
-                Item(name='nclasses',
-                     label='Number of annotation classes:',
-                     id='test')
-            ),
-            buttons=OKCancelButtons,
-            title='Create new ' + self.model_name,
-            kind='modal'
-        )
-        return traits_view
-
-
 class ModelDataView(HasTraits):
 
     model_name = Enum('Model B-with-theta',
-                      'Model B (full model) [not ready yet]',
+                      'Model B',
                       'Model A [not ready yet]')
     _model_name_to_class = {
-        'Model B-with-theta': ModelBt
+        'Model B-with-theta': ModelBt,
+        'Model B': ModelB
     }
     _model_name_to_view = {
-        'Model B-with-theta': ModelBtView
+        'Model B-with-theta': ModelBtView,
+        'Model B': ModelBView
     }
 
     model = Any
-    model_view = Instance(ModelBtView)
+    model_view = Instance(ModelView)
     model_updated = Event
     model_update_suspended = Bool(False)
 
@@ -111,19 +92,12 @@ class ModelDataView(HasTraits):
         self.annotations_view.nclasses = self.model.nclasses
         self.annotations_view.annotations_updated = True
 
-    #@on_trait_change('annotations_updated,model.nclasses')
-    #def _create_annotations_view(self):
-    #    if self.annotations_are_defined:
-    #        self.annotations_view = AnnotationsView(
-    #            annotations_container = self.annotations_container,
-    #            nclasses = self.model.nclasses
-    #        )
-
     ### Actions ##############################################################
 
     ### Model creation actions
     # FIXME tooltip begins with "specifies..."
     new_model = Button(label='New model...')
+    # TODO: get_info shows docstring
     get_info_on_model = Button(label='Info...')
 
     ml_estimate = Button(label='ML estimate...',
@@ -135,18 +109,17 @@ class ModelDataView(HasTraits):
 
     def _new_model_fired(self):
         """Create new model."""
-        model_name = self.model_name
 
-        # dialog to request basic parameters
-        dialog = NewModelDialog(model_name=model_name)
-        dialog_ui = dialog.edit_traits()
-        if dialog_ui.result:
-            # user pressed 'Ok'
-            # create model and update view
-            model_class = self._model_name_to_class[model_name]
-            self.model = model_class.create_initial_state(dialog.nclasses)
-            self.model_view = self._model_name_to_view[model_name](
-                model=self.model)
+        # delegate creation to associated model_view
+        model_name = self.model_name
+        responsible_view = self._model_name_to_view[model_name]
+
+        # model == None if the user cancelled the action
+        model, model_view = responsible_view.create_model_dialog()
+        if model is not None:
+            self.model = model
+            self.model_view = model_view
+            self.model_updated = True
 
     def _ml_estimate_fired(self):
         """Run ML estimation of parameters."""
@@ -156,7 +129,7 @@ class ModelDataView(HasTraits):
         self.model_update_suspended = False
         # TODO change this into event listener (self.model_updated)
         self._fire_model_updated()
-        self.model_view.update_from_model()
+        self.model_view.model_updated = True
 
     def _map_estimate_fired(self):
         """Run ML estimation of parameters."""
@@ -166,7 +139,7 @@ class ModelDataView(HasTraits):
         self.model_update_suspended = False
         # TODO change this into event listener (self.model_updated)
         self._fire_model_updated()
-        self.model_view.update_from_model()
+        self.model_view.model_updated = True
 
     def _sample_theta_posterior_fired(self):
         """Sample the posterior of the parameters `theta`."""
@@ -284,11 +257,9 @@ class ModelDataView(HasTraits):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno import ModelBt
-
-    model = ModelBt.create_initial_state(5)
+    model = ModelB.create_initial_state(5, 8)
     model_data_view = ModelDataView(model=model,
-                                    model_view=ModelBtView(model=model))
+                                    model_view=ModelBView(model=model))
     model_data_view.configure_traits(view='traits_view')
 
     return model, model_data_view
