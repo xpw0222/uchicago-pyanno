@@ -1,11 +1,10 @@
 """View for model and data pair."""
 from traits.has_traits import HasTraits, on_trait_change
-from traits.trait_types import Any, File, Instance, Button, Enum, Str, Range, Bool, Float, Event, List
+from traits.trait_types import Any, File, Instance, Button, Enum, Str, Bool, Float, Event
 from traits.traits import Property
 from traitsui.group import HGroup, VGroup
 from traitsui.handler import ModelView
-from traitsui.item import Item, Spring
-from traitsui.menu import OKCancelButtons
+from traitsui.item import Item
 from traitsui.view import View
 from pyanno import ModelBt, ModelB
 from pyanno.annotations import AnnotationsContainer
@@ -14,12 +13,8 @@ from pyanno.ui.annotations_view import AnnotationsView
 from pyanno.ui.model_bt_view import ModelBtView
 from pyanno.ui.model_b_view import ModelBView
 
-import numpy as np
-
-
 
 # TODO remember last setting of parameters
-
 
 class ModelDataView(HasTraits):
 
@@ -81,6 +76,8 @@ class ModelDataView(HasTraits):
     def _fire_model_updated(self):
         if not self.model_update_suspended:
             self.model_updated = True
+            if self.model_view is not None:
+                self.model_view.model_updated = True
 
     def _annotations_view_default(self):
         anno = AnnotationsContainer.from_array([[0]], name='<undefined>')
@@ -104,7 +101,7 @@ class ModelDataView(HasTraits):
                          desc=('Maximum Likelihood estimate of model '
                                'parameters'))
     map_estimate = Button(label='MAP estimate...')
-    sample_theta_posterior = Button(label='Sample parameters...')
+    sample_posterior_over_accuracy = Button(label='Sample parameters...')
     estimate_labels = Button(label='Estimate labels...')
 
     def _new_model_fired(self):
@@ -125,32 +122,32 @@ class ModelDataView(HasTraits):
         """Run ML estimation of parameters."""
         print 'ML estimate...'
         self.model_update_suspended = True
-        self.model.mle(self.annotations, estimate_gamma=True)
+        self.model.mle(self.annotations)
         self.model_update_suspended = False
-        # TODO change this into event listener (self.model_updated)
+
         self._fire_model_updated()
-        self.model_view.model_updated = True
 
     def _map_estimate_fired(self):
         """Run ML estimation of parameters."""
         print 'MAP estimate...'
         self.model_update_suspended = True
-        self.model.map(self.annotations, estimate_gamma=True)
+        self.model.map(self.annotations)
         self.model_update_suspended = False
-        # TODO change this into event listener (self.model_updated)
-        self._fire_model_updated()
-        self.model_view.model_updated = True
 
-    def _sample_theta_posterior_fired(self):
+        self._fire_model_updated()
+
+    def _sample_posterior_over_accuracy_fired(self):
         """Sample the posterior of the parameters `theta`."""
         print 'Sample...'
         self.model_update_suspended = True
         nsamples = 100
-        samples = self.model.sample_posterior_over_theta(self.annotations,
-                                                         nsamples,
-                                                         step_optimization_nsamples=3)
+        samples = self.model.sample_posterior_over_accuracy(
+            self.annotations,
+            nsamples)
         self.model_update_suspended = False
-        self.model_view.plot_theta_samples(samples)
+        # TODO: delegate plot to model views
+        if hasattr(self.model_view, 'plot_theta_samples'):
+            self.model_view.plot_theta_samples(samples)
 
 
     ### Views ################################################################
@@ -218,7 +215,7 @@ class ModelDataView(HasTraits):
                     Item('map_estimate',
                          enabled_when='annotations_are_defined',
                          show_label=False),
-                    Item('sample_theta_posterior',
+                    Item('sample_posterior_over_accuracy',
                          enabled_when='annotations_are_defined',
                          show_label=False),
                     Item('estimate_labels',
@@ -257,9 +254,9 @@ class ModelDataView(HasTraits):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    model = ModelB.create_initial_state(5, 8)
+    model = ModelBt.create_initial_state(5)
     model_data_view = ModelDataView(model=model,
-                                    model_view=ModelBView(model=model))
+                                    model_view=ModelBtView(model=model))
     model_data_view.configure_traits(view='traits_view')
 
     return model, model_data_view
