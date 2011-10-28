@@ -51,7 +51,7 @@ class ModelDataView(HasTraits):
 
     nclasses = Property
     def _get_nclasses(self):
-        return max(self.model.nclasses, self.annotations.max())
+        return max(self.model.nclasses, self.annotations.max() + 1)
 
     info_string = Str
     log_likelihood = Float
