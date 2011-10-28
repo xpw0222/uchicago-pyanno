@@ -13,6 +13,7 @@ from traitsui.view import View
 from pyanno.modelA import ModelA
 from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.plots.matrix_plot import MatrixPlot
+from pyanno.plots.theta_plot import ThetaPlot
 from pyanno.ui.model_view import PyannoModelView, NewModelDialog
 
 
@@ -46,17 +47,25 @@ class ModelAView(PyannoModelView):
     @on_trait_change('model,model_updated')
     def update_from_model(self):
         """Recreate plots."""
-        self.theta_hinton_diagram = HintonDiagramPlot(
-            data = self.model.theta.tolist(),
-            title = 'Theta parameters, P(annotator[k] is correct)')
+        self.theta_plot = ThetaPlot(
+            model=self.model,
+            title = 'Theta parameters, P(annotator[k] is correct)'
+        )
+        #self.theta_plot._update_plot_data()
+
         self.omega_hinton_diagram = HintonDiagramPlot(
             data = self.model.omega.tolist(),
             title = 'Omega parameters, P(label = k)'
         )
 
 
+    def plot_theta_samples(self, theta_samples):
+        self.theta_plot.theta_samples = theta_samples
+        self.theta_plot.theta_samples_valid = True
+
+
     #### UI traits
-    theta_hinton_diagram = Instance(HintonDiagramPlot)
+    theta_plot = Instance(ThetaPlot)
     omega_hinton_diagram = Instance(HintonDiagramPlot)
 
     parameters_group = VGroup(
@@ -64,10 +73,11 @@ class ModelAView(PyannoModelView):
              style='custom',
              resizable=False,
              show_label=False),
-        Item('handler.theta_hinton_diagram',
+        Item('handler.theta_plot',
              style='custom',
              resizable=False,
-             show_label=False),
+             show_label=False,
+        ),
     )
 
     body = VGroup(
