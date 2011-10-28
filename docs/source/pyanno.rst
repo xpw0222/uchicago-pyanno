@@ -9,14 +9,6 @@ pyanno Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`annotations` Module
--------------------------
-
-.. automodule:: pyanno.annotations
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`modelA` Module
 --------------------
 
@@ -37,6 +29,14 @@ pyanno Package
 ---------------------
 
 .. automodule:: pyanno.modelBt
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`annotations` Module
+-------------------------
+
+.. automodule:: pyanno.annotations
     :members:
     :undoc-members:
     :show-inheritance:
@@ -64,6 +64,6 @@ Subpackages
 
     pyanno.measures
     pyanno.plots
-    pyanno.test
-    pyanno.ui
+..    pyanno.test
+..    pyanno.ui
 

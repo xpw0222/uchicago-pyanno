@@ -31,18 +31,28 @@ To use pyAnno you will need to have the following Python libraries installed:
    http://enthought.com/products/epd_free.php
 
 
-Installing with `easy_install`
-------------------------------
+Mac OS X and Windows installers
+-------------------------------
+
+[Where to find the installers, and how to use them.]
+
+
+Installing with `easy_install` or `pip`
+---------------------------------------
+
+pyAnno is hosted on PyPi_, so it can be installed simply with either
+
+::
+
+   pip install pyanno
+
+or
 
 ::
 
    easy_install pyanno
 
-
-Mac OS X and Windows installers
--------------------------------
-
-Where to find the installers, and how to use them.
+.. _PyPi: http://pypi.python.org/pypi
 
 
 Installing from source
