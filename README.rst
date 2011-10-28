@@ -34,7 +34,7 @@ The documentation is hosted at [URL here] .
 
 CONTRIBUTORS
 ------------------------------------------------------------
-Pietro Berkes    (Enthought, Ltd.)
-Bob Carpenter    (Columbia University,   Statistics)
-Andrey Rzhetsky  (University of Chicago, Medicine)
-James Evans      (University of Chicago, Sociology)
+* Pietro Berkes    (Enthought, Ltd.)
+* Bob Carpenter    (Columbia University,   Statistics)
+* Andrey Rzhetsky  (University of Chicago, Medicine)
+* James Evans      (University of Chicago, Sociology)

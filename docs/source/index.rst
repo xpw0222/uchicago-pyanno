@@ -34,6 +34,22 @@ Contents:
    Developer guide <developer_guide>
    Library Reference <modules>
 
+
+Licensing
+---------
+
+pyAnno is licensed under the Apache License, Version 2.0.
+
+
+Contributors
+------------
+
+* Pietro Berkes    (Enthought, Ltd.)
+* Bob Carpenter    (Columbia University,   Statistics)
+* Andrey Rzhetsky  (University of Chicago, Medicine)
+* James Evans      (University of Chicago, Sociology)
+
+
 Indices and tables
 ==================
 
