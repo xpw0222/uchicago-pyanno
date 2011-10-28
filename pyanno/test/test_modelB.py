@@ -291,5 +291,28 @@ class TestModelB(unittest.TestCase):
         testing.assert_equal(model.pi, pi_before)
         testing.assert_equal(model.theta, theta_before)
 
+
+    def test_fix_map_nans(self):
+        # bug is: when the number of classes in the annotations is smaller
+        # than the one assumed by the model, the objective function of the
+        # MAP estimation returns 'nan'
+
+        true_nclasses = 3
+        nannotators = 5
+        true_model = ModelB.create_initial_state(true_nclasses, nannotators)
+        labels = true_model.generate_labels(100)
+        annotations = true_model.generate_annotations(labels)
+
+        nclasses = 4
+        model = ModelB.create_initial_state(nclasses, nannotators)
+        # manually run a few EM iteration
+        init_accuracy = 0.6
+        mle_em_generator = model._map_em_step(annotations, init_accuracy)
+        for i in range(3):
+            objective, _, _, _ = mle_em_generator.next()
+
+        self.assertFalse(np.isnan(objective))
+
+
 if __name__ == '__main__':
     unittest.main()

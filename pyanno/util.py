@@ -1,9 +1,10 @@
 import numpy as np
+from numpy.core import getlimits
 from scipy.special import gammaln
 import time
 
 MISSING_VALUE = -1
-
+SMALLEST_FLOAT = getlimits.finfo(np.float).min
 
 def random_categorical(distr, nsamples):
     """Return an array of samples from a categorical distribution."""
@@ -11,10 +12,15 @@ def random_categorical(distr, nsamples):
     cumulative = distr.cumsum()
     return cumulative.searchsorted(np.random.random(nsamples))
 
-
 def dirichlet_llhood(theta, alpha):
     """Compute the log likelihood of theta under Dirichlet(alpha)."""
     log_theta = np.log(theta)
+
+    # substitute negative infinity with very large negative number
+    is_neg_inf = np.isneginf(log_theta)
+    log_theta[is_neg_inf] = SMALLEST_FLOAT
+
+    #log_theta = np.nan_to_num(log_theta)
     return (gammaln(alpha.sum())
             - (gammaln(alpha)).sum()
             + ((alpha - 1.) * log_theta).sum())

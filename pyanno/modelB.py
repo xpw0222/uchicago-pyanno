@@ -288,8 +288,7 @@ class ModelB(HasStrictTraits):
         """Return prevalence, P( category )."""
         beta_prior_count = self.beta - 1.
         if category is None:
-            # ??? this may be wrong, it should rather be initialize at the mean
-            #     of the dirichlet, i.e., beta / beta.sum()
+            # initialize at the *mode* of the distribution
             return normalize(beta_prior_count)
         else:
             return normalize(beta_prior_count + category.sum(0))
@@ -314,6 +313,7 @@ class ModelB(HasStrictTraits):
         accuracy[j,k,k'] = P(annotation_j = k' | category=k).
         """
         nitems, nannotators = annotations.shape
+        # alpha - 1 : the mode of a Dirichlet is  (alpha_i - 1) / (alpha_0 - K)
         alpha_prior_count = self.alpha - 1.
         valid_mask = is_valid(annotations)
 
@@ -322,10 +322,12 @@ class ModelB(HasStrictTraits):
             accuracy = np.tile(alpha_prior_count, (nannotators, 1, 1))
         else:
             accuracy = np.zeros((nannotators, self.nclasses, self.nclasses))
+
         for i in xrange(nitems):
             valid = valid_mask[i,:]
             accuracy[annotators[:,valid],:,annotations[i,valid]] += category[i,:]
         accuracy /= accuracy.sum(2)[:, :, None]
+
         return accuracy
 
 
