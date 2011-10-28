@@ -6,10 +6,11 @@ from traitsui.group import HGroup, VGroup
 from traitsui.handler import ModelView
 from traitsui.item import Item
 from traitsui.view import View
-from pyanno import ModelBt, ModelB
+from pyanno import ModelBt, ModelB, ModelA
 from pyanno.annotations import AnnotationsContainer
 from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
 from pyanno.ui.annotations_view import AnnotationsView
+from pyanno.ui.model_a_view import ModelAView
 from pyanno.ui.model_bt_view import ModelBtView
 from pyanno.ui.model_b_view import ModelBView
 
@@ -20,14 +21,16 @@ class ModelDataView(HasTraits):
 
     model_name = Enum('Model B-with-theta',
                       'Model B',
-                      'Model A [not ready yet]')
+                      'Model A')
     _model_name_to_class = {
         'Model B-with-theta': ModelBt,
-        'Model B': ModelB
+        'Model B': ModelB,
+        'Model A': ModelA
     }
     _model_name_to_view = {
         'Model B-with-theta': ModelBtView,
-        'Model B': ModelBView
+        'Model B': ModelBView,
+        'Model A': ModelAView
     }
 
     model = Any
