@@ -60,14 +60,14 @@ class ModelAView(PyannoModelView):
     omega_hinton_diagram = Instance(HintonDiagramPlot)
 
     parameters_group = VGroup(
+        Item('handler.omega_hinton_diagram',
+             style='custom',
+             resizable=False,
+             show_label=False),
         Item('handler.theta_hinton_diagram',
              style='custom',
              resizable=False,
              show_label=False),
-        Item('handler.omega_hinton_diagram',
-             style='custom',
-             resizable=False,
-             show_label=False)
     )
 
     body = VGroup(
