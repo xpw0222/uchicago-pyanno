@@ -9,6 +9,9 @@ from collections import defaultdict
 import numpy as np
 import scipy.optimize
 import scipy.stats
+from traits.has_traits import HasStrictTraits
+from traits.trait_numeric import Array
+from traits.trait_types import Int
 from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import compute_counts, random_categorical, labels_frequency, MISSING_VALUE
 
@@ -69,7 +72,7 @@ def _triplet_to_counts_index(triplet, nclasses):
     return (triplet * np.array([nclasses**2, nclasses, 1])).sum(1)
 
 
-class ModelA(object):
+class ModelA(HasStrictTraits):
     """Model A in Rzhetsky et al., 2009.
 
     At the moment the model assumes 1) a total of 8 annotators, and 2) each
@@ -79,11 +82,29 @@ class ModelA(object):
     your curation effort", PLoS Computational Biology, 5(5).
     """
 
+
+    ######## Model traits
+
+    # number of label classes
+    nclasses = Int
+
+    # number of annotators
+    nannotators = Int(8)
+
+    # number of annotators rating each item in the loop design
+    annotators_per_item = Int(3)
+
+    #### Model parameters
+
+    # theta[j] is the probability that annotator j is correct
+    theta = Array(dtype=float, shape=(None,))
+
+    # omega[k] is the probability of observing label class k
+    omega = Array(dtype=float, shape=(None,))
+
+
     def __init__(self, nclasses, theta, omega):
         self.nclasses = nclasses
-        self.nannotators = 8
-        # number of annotators rating each item in the loop design
-        self.annotators_per_item = 3
         self.theta = theta
         self.omega = omega
 
@@ -97,8 +118,6 @@ class ModelA(object):
          Input:
          nclasses -- number of categories
          theta -- probability of annotators being correct
-         alpha -- probability of drawing agreement pattern given
-                  correctness pattern
          omega -- probability of drawing an annotation value
                   (assumed to be the same for all annotators)
          """
