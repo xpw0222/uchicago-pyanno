@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import log
 from numpy.core import getlimits
 from scipy.special import gammaln
 import time
@@ -6,19 +7,33 @@ import time
 MISSING_VALUE = -1
 SMALLEST_FLOAT = getlimits.finfo(np.float).min
 
+
 def random_categorical(distr, nsamples):
     """Return an array of samples from a categorical distribution."""
     assert np.allclose(distr.sum(), 1., atol=1e-8)
     cumulative = distr.cumsum()
     return cumulative.searchsorted(np.random.random(nsamples))
 
-def dirichlet_llhood(theta, alpha):
-    """Compute the log likelihood of theta under Dirichlet(alpha)."""
-    log_theta = np.log(theta)
+
+def log_ninf(x):
+    """Logarithm function, robust against negative infinity.
+
+    Return log(x), substituting -inf with the smallest floating point number
+    available. This corrects some formulas that compute 0. * log(0.),
+    which in some context should return 0, not NaN.
+    """
+    log_x = np.log(x)
 
     # substitute negative infinity with very large negative number
-    is_neg_inf = np.isneginf(log_theta)
-    log_theta[is_neg_inf] = SMALLEST_FLOAT
+    is_neg_inf = np.isneginf(log_x)
+    log_x[is_neg_inf] = SMALLEST_FLOAT
+
+    return log_x
+
+
+def dirichlet_llhood(theta, alpha):
+    """Compute the log likelihood of theta under Dirichlet(alpha)."""
+    log_theta = log_ninf(theta)
 
     #log_theta = np.nan_to_num(log_theta)
     return (gammaln(alpha.sum())

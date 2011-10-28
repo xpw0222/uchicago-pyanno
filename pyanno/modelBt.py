@@ -1,12 +1,13 @@
 """Definition of model B-with-theta."""
 
-from traits.api import HasStrictTraits, Int, Array, Bool
+from traits.api import HasStrictTraits, Int, Array
 import numpy as np
 import scipy.optimize
 import scipy.stats
 from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import (random_categorical, compute_counts,
-                         SMALLEST_FLOAT)
+                         SMALLEST_FLOAT, MISSING_VALUE, labels_frequency,
+                         is_valid, log_ninf)
 
 
 # map of `n` to list of all possible triplets of `n` elements
@@ -256,7 +257,8 @@ class ModelBt(HasStrictTraits):
 
         # compute P( v_{ijk} | params )
         pf = self._pattern_frequencies(theta_triplet)
-        l = (counts_triplet * np.log(pf)).sum()
+        log_pf = log_ninf(pf)
+        l = (counts_triplet * log_pf).sum()
 
         return l
 

@@ -14,7 +14,8 @@ from traits.trait_numeric import Array
 from traits.trait_types import Int
 from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import (compute_counts, random_categorical,
-                         labels_frequency, MISSING_VALUE, SMALLEST_FLOAT)
+                         labels_frequency, MISSING_VALUE, SMALLEST_FLOAT,
+                         log_ninf)
 
 
 _compatibility_tables_cache = {}
@@ -368,11 +369,7 @@ class ModelA(HasStrictTraits):
             # P( V_ijk | model ) = sum over A and T of conditional probability
             indices = pattern_to_indices[pattern]
             count_indices = _triplet_to_counts_index(indices, nclasses)
-            log_prob = np.log(prob)
-
-            # substitute negative infinity with very large negative number
-            is_neg_inf = np.isneginf(log_prob)
-            log_prob[is_neg_inf] = SMALLEST_FLOAT
+            log_prob = log_ninf(prob)
 
             llhood += (counts_triplet[count_indices] * log_prob).sum()
 
@@ -382,6 +379,11 @@ class ModelA(HasStrictTraits):
     def _log_prior(self):
         """Compute log probability of prior on the theta parameters."""
         log_prob = scipy.stats.beta._logpdf(self.theta, 2., 1.).sum()
+
+        # substitute negative infinity with very large negative number
+        is_neg_inf = np.isneginf(log_prob)
+        log_prob[is_neg_inf] = SMALLEST_FLOAT
+
         return log_prob
 
 
