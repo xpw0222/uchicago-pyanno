@@ -6,6 +6,7 @@ from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_types import Button, List, CFloat, Str, Range
 from traitsui.api import View, Item, Group, VGroup, HGroup
 from traitsui.editors.tabular_editor import TabularEditor
+from traitsui.group import VGrid
 from traitsui.include import Include
 from traitsui.item import  Spring
 from traitsui.menu import OKButton, OKCancelButtons
@@ -110,27 +111,22 @@ class ModelBtView(PyannoModelView):
 
     body = VGroup(
         Include('info_group'),
-        HGroup(
+        VGrid(
             Item('handler.gamma_hinton',
                  style='custom',
                  resizable=False,
                  show_label=False,
             ),
-            vcenter(Item('handler.edit_gamma', show_label=False)),
-        ),
-        HGroup(
-            Spring(),
+            Item('handler.edit_gamma', show_label=False),
             Item('handler.theta_view',
                  style='custom',
                  resizable=False,
                  show_label=False,
             ),
-            Spring(),
             Item('handler.edit_theta',
                          show_label=False,
                          enabled_when='False'),
         )
-        #Item('model.theta', label="Theta[j] = P(annotation_j=k | label=k)"),
     )
 
     traits_view = View(body, buttons=[OKButton], resizable=True)
