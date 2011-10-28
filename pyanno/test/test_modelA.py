@@ -225,5 +225,21 @@ class TestModelA(unittest.TestCase):
         self.assertTrue(np.all(valid.sum(1) == 3))
 
 
+    def test_fix_map_nans(self):
+        # bug is: when the number of classes in the annotations is smaller
+        # than the one assumed by the model, the objective function of the
+        # MAP estimation returns 'nan'
+
+        true_nclasses = 3
+        true_model = ModelA.create_initial_state(true_nclasses)
+        annotations = true_model.generate_annotations(100)
+
+        nclasses = 4
+        model = ModelA.create_initial_state(nclasses)
+        model.map(annotations)
+
+        self.assertFalse(np.isnan(model.log_likelihood(annotations)))
+
+
 if __name__ == '__main__':
     unittest.main()

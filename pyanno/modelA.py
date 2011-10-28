@@ -368,7 +368,13 @@ class ModelA(HasStrictTraits):
             # P( V_ijk | model ) = sum over A and T of conditional probability
             indices = pattern_to_indices[pattern]
             count_indices = _triplet_to_counts_index(indices, nclasses)
-            llhood += (counts_triplet[count_indices] * np.log(prob)).sum()
+            log_prob = np.log(prob)
+
+            # substitute negative infinity with very large negative number
+            is_neg_inf = np.isneginf(log_prob)
+            log_prob[is_neg_inf] = SMALLEST_FLOAT
+
+            llhood += (counts_triplet[count_indices] * log_prob).sum()
 
         return llhood
 
