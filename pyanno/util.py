@@ -15,25 +15,18 @@ def random_categorical(distr, nsamples):
     return cumulative.searchsorted(np.random.random(nsamples))
 
 
-def log_ninf(x):
-    """Logarithm function, robust against negative infinity.
+def ninf_to_num(x):
+    """Substitute -inf with smallest floating point number."""
+    is_neg_inf = np.isneginf(x)
+    x[is_neg_inf] = SMALLEST_FLOAT
 
-    Return log(x), substituting -inf with the smallest floating point number
-    available. This corrects some formulas that compute 0. * log(0.),
-    which in some context should return 0, not NaN.
-    """
-    log_x = np.log(x)
-
-    # substitute negative infinity with very large negative number
-    is_neg_inf = np.isneginf(log_x)
-    log_x[is_neg_inf] = SMALLEST_FLOAT
-
-    return log_x
+    return x
 
 
 def dirichlet_llhood(theta, alpha):
     """Compute the log likelihood of theta under Dirichlet(alpha)."""
-    log_theta = log_ninf(theta)
+    # substitute -inf with SMALLEST_FLOAT, so that 0*log(0) is 0 when necessary
+    log_theta = ninf_to_num(log(theta))
 
     #log_theta = np.nan_to_num(log_theta)
     return (gammaln(alpha.sum())

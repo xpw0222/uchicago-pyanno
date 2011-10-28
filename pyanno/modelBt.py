@@ -7,7 +7,7 @@ import scipy.stats
 from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import (random_categorical, compute_counts,
                          SMALLEST_FLOAT, MISSING_VALUE, labels_frequency,
-                         is_valid, log_ninf)
+                         is_valid, ninf_to_num)
 
 
 # map of `n` to list of all possible triplets of `n` elements
@@ -257,7 +257,7 @@ class ModelBt(HasStrictTraits):
 
         # compute P( v_{ijk} | params )
         pf = self._pattern_frequencies(theta_triplet)
-        log_pf = log_ninf(pf)
+        log_pf = ninf_to_num(np.log(pf))
         l = (counts_triplet * log_pf).sum()
 
         return l
