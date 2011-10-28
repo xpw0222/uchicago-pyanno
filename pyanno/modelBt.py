@@ -5,7 +5,8 @@ import numpy as np
 import scipy.optimize
 import scipy.stats
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import random_categorical, compute_counts, labels_frequency, MISSING_VALUE, is_valid
+from pyanno.util import (random_categorical, compute_counts,
+                         SMALLEST_FLOAT)
 
 
 # map of `n` to list of all possible triplets of `n` elements
@@ -165,8 +166,7 @@ class ModelBt(HasStrictTraits):
                                           params_start,
                                           args=(counts,),
                                           xtol=1e-4, ftol=1e-4,
-                                          disp=True, maxiter=1e+10,
-                                          maxfun=1e+30)
+                                          disp=True, maxiter=2000)
 
         # parse arguments and update
         self.gamma, self.theta = self._vector_to_params(params_best)
@@ -223,7 +223,7 @@ class ModelBt(HasStrictTraits):
         if (min(min(self.gamma), min(self.theta)) < 0.
             or max(max(self.gamma), max(self.theta)) > 1.):
             #return np.inf
-            return -1e20
+            return SMALLEST_FLOAT
 
         llhood = 0.
         # loop over the 8 combinations of annotators

@@ -13,7 +13,8 @@ from traits.has_traits import HasStrictTraits
 from traits.trait_numeric import Array
 from traits.trait_types import Int
 from pyanno.sampling import optimum_jump, sample_distribution
-from pyanno.util import compute_counts, random_categorical, labels_frequency, MISSING_VALUE
+from pyanno.util import (compute_counts, random_categorical,
+                         labels_frequency, MISSING_VALUE, SMALLEST_FLOAT)
 
 
 _compatibility_tables_cache = {}
@@ -280,8 +281,7 @@ class ModelA(HasStrictTraits):
                                           params_start,
                                           args=(counts,),
                                           xtol=1e-4, ftol=1e-4, disp=True,
-                                          maxiter=1e+10, maxfun=1e+30)
-
+                                          maxiter=2000)
         self.theta = params_best
 
 
@@ -314,7 +314,7 @@ class ModelA(HasStrictTraits):
         # check bounds of parameters (for likelihood optimization)
         if np.amin(self.theta) <= 0 or np.amax(self.theta) > 1:
             # return np.inf
-            return -1e20
+            return SMALLEST_FLOAT
 
         # compute alpha and beta (they do not depend on theta)
         alpha = self._compute_alpha()

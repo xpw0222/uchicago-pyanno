@@ -3,7 +3,8 @@
 from traits.api import HasStrictTraits, Int, Array
 import numpy as np
 from pyanno.util import (random_categorical, create_band_matrix,
-                         warn_missing_vals, normalize, dirichlet_llhood, is_valid)
+                         warn_missing_vals, normalize, dirichlet_llhood,
+                         is_valid, SMALLEST_FLOAT)
 
 class ModelB(HasStrictTraits):
     """Implementation of Model B from Rzhetsky et al.
@@ -390,7 +391,7 @@ class ModelB(HasStrictTraits):
 
         llhood = np.log(unnorm_category.sum(1)).sum()
         if np.isnan(llhood):
-            llhood = -1e20
+            llhood = SMALLEST_FLOAT
 
         return llhood, unnorm_category
 
