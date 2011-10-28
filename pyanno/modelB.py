@@ -14,7 +14,8 @@ class ModelB(HasStrictTraits):
     item is annotated by 3 annotators.
     """
 
-    #### Model traits
+
+    ######## Model traits
 
     # number of label classes
     nclasses = Int
