@@ -2,21 +2,17 @@
 # Author: Pietro Berkes <pberkes@enthought.com>
 # License: Apache license
 from chaco.array_plot_data import ArrayPlotData
-from chaco.cmap_image_plot import CMapImagePlot
 from chaco.color_bar import ColorBar
 from chaco.data_range_1d import DataRange1D
 from chaco.default_colormaps import jet, YlOrRd, Reds, BuPu
-from chaco.label_axis import LabelAxis
 from chaco.linear_mapper import LinearMapper
 from chaco.plot import Plot
 from chaco.plot_containers import HPlotContainer
-from chaco.scales.scales import FixedScale
-from chaco.scales_tick_generator import ScalesTickGenerator
 from enable.component_editor import ComponentEditor
 
 from tables.array import Array
-from traits.trait_types import Str, Instance, Float, Any, Int
-from traitsui.group import VGroup, HGroup
+from traits.trait_types import Str, Instance, Float
+from traitsui.group import VGroup
 from traitsui.include import Include
 from traitsui.item import Item
 from traitsui.view import View
@@ -27,18 +23,19 @@ import numpy as np
 
 class PosteriorPlot(PyannoPlotContainer):
     # data to be displayed
-    pasterior = Array
+    posterior = Array
 
     ### plot-related traits
     plot_width = Float(250)
-    plot_height = Float(200)
+    plot_height = Float
 
     colormap_low = Float(0.0)
     colormap_high = Float(1.0)
 
     origin = Str('top left')
 
-    posterior_plot = Instance(HPlotContainer)
+    plot_container = Instance(HPlotContainer)
+    plot_posterior = Instance(Plot)
 
     def _create_colormap(self):
         if self.colormap_low is None:
@@ -53,7 +50,7 @@ class PosteriorPlot(PyannoPlotContainer):
         return colormap
 
 
-    def _posterior_plot_default(self):
+    def _plot_container_default(self):
         data = self.posterior
         nannotations, nclasses = data.shape
 
@@ -109,11 +106,33 @@ class PosteriorPlot(PyannoPlotContainer):
         container.bgcolor = "lightgray"
 
         self.decorate_plot(container, self.posterior)
+        self.plot_posterior = plot
         return container
 
 
-    def add_markings(self, classes):
-        pass
+    def add_markings(self, mark_classes, mark_name, marker_shape,
+                     delta_x, delta_y, marker_size=5, line_width=1.,
+                     marker_color='white'):
+        plot = self.plot_posterior
+        nannotations = plot.data.arrays['values'].shape[0]
+
+        y_name = mark_name + '_y'
+        x_name = mark_name + '_x'
+
+        y_values = np.arange(nannotations) + delta_y + 0.5
+        x_values = mark_classes.astype(float) + delta_x + 0.5
+
+        plot.data.set_data(y_name, y_values)
+        plot.data.set_data(x_name, x_values)
+
+        plot.plot((x_name, y_name), type='scatter', name=mark_name,
+                  marker=marker_shape, marker_size=marker_size,
+                  color='transparent',
+                  outline_color=marker_color, line_width=line_width)
+
+
+    def remove_markings(self, mark_name):
+        self.plot_posterior.delplot(mark_name)
 
 
     def _create_resizable_view(self):
@@ -122,11 +141,11 @@ class PosteriorPlot(PyannoPlotContainer):
         # do that
 
         # "touch" posterior_plot to have it initialize
-        self.posterior_plot
+        self.plot_container
 
         resizable_plot_item = (
             Item(
-                'posterior_plot',
+                'plot_container',
                 editor=ComponentEditor(),
                 resizable=True,
                 show_label=False,
