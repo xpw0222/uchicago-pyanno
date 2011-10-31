@@ -76,7 +76,7 @@ class PosteriorPlot(PyannoPlotContainer):
 
         # create x axis for labels
         label_axis = self._create_increment_one_axis(plot, 0.5, nclasses, 'top')
-        self._add_index_axis(label_axis)
+        self._add_index_axis(plot, label_axis)
 
         # create y axis for annotation numbers
         value_axis_ticks = [str(id) for id in range(nannotations-1, -1, -1)]

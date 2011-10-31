@@ -75,7 +75,7 @@ class PyannoPlotContainer(HasTraits):
 
 
     def _remove_grid_and_axes(self, plot):
-        # remove grids and axes
+        """Remove grids and axes."""
         plot.underlays = []
 
 

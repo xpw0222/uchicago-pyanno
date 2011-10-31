@@ -64,6 +64,15 @@ class MatrixPlot(PyannoPlotContainer):
                                  ybounds=(0, width),
                                  colormap=self._create_colormap())[0]
 
+        #### fix axes
+        self._remove_grid_and_axes(plot)
+
+        axis = self._create_increment_one_axis(plot, 0.5, width, 'bottom')
+        self._add_value_axis(plot, axis)
+
+        axis = self._create_increment_one_axis(plot, 0.5, width, 'left')
+        self._add_index_axis(plot, axis)
+
         #### tweak plot attributes
         plot.aspect_ratio = 1.
         # padding [left, right, up, down]
