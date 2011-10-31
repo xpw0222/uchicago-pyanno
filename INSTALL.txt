@@ -1,0 +1,4 @@
+Installation guide
+==================
+
+See docs/source/installation.rst .

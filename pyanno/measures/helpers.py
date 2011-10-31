@@ -10,6 +10,33 @@ def pairwise_matrix(pairwise_statistic, annotations, *args, **kwargs):
     This function applies an agreement or covariation statistic that is only
     defined for pairs of annotators to all combinations of annotators pairs,
     and returns a matrix of the result.
+
+    Example ::
+
+        >>> from pyanno.measures import pairwise_matrix, cohens_kappa
+        >>> stat_matrix = pairwise_matrix(cohens_kappa, annotations, nclasses=4)
+
+    Arguments
+    ---------
+    pairwise_statistics : function
+        Function accepting as first two arguments two 1D array of
+        annotations, and returning a single scalar measuring some annotations
+        statistics.
+
+    annotations : ndarray, shape = (n_items, n_annotators)
+        Annotations in pyanno format.
+
+    args : any
+        Additional arguments passed to `pairwise_statistics`.
+
+    kwargs : any
+        Additional keyword arguments passed to `pairwise_statistics`.
+
+    Returns
+    -------
+    stat_matrix : ndarray, shape = (n_annotators, n_annotators)
+        `stat_matrix[i,j]` is the value of `pairwise_statistics` applied to
+        the annotations of annotators `i` and `j`
     """
 
     nannotators = annotations.shape[1]
@@ -33,7 +60,9 @@ def confusion_matrix(annotations1, annotations2, nclasses):
     Parameters
     ----------
     annotations1 : array, shape = [n_samples]
+
     annotations2 : array, shape = [n_samples]
+
     nclasses
 
     Returns

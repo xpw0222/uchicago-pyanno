@@ -1,25 +1,14 @@
-pyAnno 1.0 DEVELOPER GUIDE
-============================================================
+Developer guide
+===============
 
-VERSION CONTROL ORGANIZATION
-------------------------------------------------------------
-pyAnno uses Subversion (SVN) for version control.
+**Under construction**
 
-Anonymous Checkout
-----------------------------------------
-Check the project our from directory $PYANNO_SVN_ROOT (this
-doesn't need to be an environment variable; the notation is
-just for convenience in the doc).
+git repository
+--------------
 
-     % cd $PYANNO_SVN_ROOT
+pyAnno is hosted on github at https://github.com/enthought/uchicago-pyanno .
 
-     % svn co https://aliasi.devguard.com/svn/sandbox/ProjectName
-
-     % cd trunk
-
-From now on, we'll assume $PYANNO_HOME is the directory
-$PYANNO_SVN_ROOT/trunk.
-
+*describe workflow: fork, pull request*
 
 
 BUILD AND INSTALL

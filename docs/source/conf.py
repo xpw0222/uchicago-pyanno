@@ -221,20 +221,18 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 
 
 
-## from enamldoc import FunctionDocstring, ClassDocstring
+from enamldoc import FunctionDocstring, ClassDocstring
 
-## def new_docstring(app, what, name, obj, options, lines):
+def new_docstring(app, what, name, obj, options, lines):
 
-##     verbose = True
-##     # if 'component.Component' in name:
-##         # verbose = True
+    verbose = False
 
-##     if ('class' in what):
-##         ClassDocstring(lines, verbose=verbose)
+    if ('class' in what):
+        ClassDocstring(lines, verbose=verbose)
 
-##     elif ('function' in what) or ('method' in what):
-##         FunctionDocstring(lines, verbose=verbose)
+    elif ('function' in what) or ('method' in what):
+        FunctionDocstring(lines, verbose=verbose)
 
 
-## def setup(app):
-##     app.connect('autodoc-process-docstring', new_docstring)
+def setup(app):
+    app.connect('autodoc-process-docstring', new_docstring)
