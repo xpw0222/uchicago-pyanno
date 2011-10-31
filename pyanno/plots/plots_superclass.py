@@ -20,6 +20,7 @@ class PyannoPlotContainer(HasTraits):
         else:
             return 'Ctrl-S: Save,  Ctrl-C: Copy data'
 
+
     def decorate_plot(self, plot, data):
         """Add title and Copy and Save tools."""
 
@@ -31,6 +32,11 @@ class PyannoPlotContainer(HasTraits):
 
         plot.tools.append(save_tool)
         plot.tools.append(copy_tool)
+
+
+    def _remove_grid_and_axes(self, plot):
+        # remove grids and axes
+        plot.underlays = []
 
 
     #### View definitions #####################################################

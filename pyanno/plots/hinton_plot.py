@@ -85,8 +85,7 @@ class HintonDiagramPlot(PyannoPlotContainer):
             orientation='bottom',
             positions=ids,
             labels=label_list,
-            label_rotation=0,
-            small_haxis_style=True
+            label_rotation=0
         )
         # use a FixedScale tick generator with a resolution of 1
         label_axis.tick_generator = ScalesTickGenerator(scale=FixedScale(1.))
@@ -104,8 +103,7 @@ class HintonDiagramPlot(PyannoPlotContainer):
                           face_color='black',
                           edge_color='black')
 
-        # remove grids and axes
-        polyplot.underlays = []
+        self._remove_axes(polyplot)
 
         # create x axis for labels
         label_axis = self._create_label_axis(distr_len, polyplot)
