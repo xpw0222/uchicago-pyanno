@@ -3,10 +3,13 @@
 # License: Apache license
 from chaco.array_plot_data import ArrayPlotData
 from chaco.cmap_image_plot import CMapImagePlot
+from chaco.color_bar import ColorBar
 from chaco.data_range_1d import DataRange1D
 from chaco.default_colormaps import jet, YlOrRd, Reds, BuPu
 from chaco.label_axis import LabelAxis
+from chaco.linear_mapper import LinearMapper
 from chaco.plot import Plot
+from chaco.plot_containers import HPlotContainer
 from chaco.scales.scales import FixedScale
 from chaco.scales_tick_generator import ScalesTickGenerator
 from enable.component_editor import ComponentEditor
@@ -35,9 +38,7 @@ class PosteriorPlot(PyannoPlotContainer):
 
     origin = Str('top left')
 
-    posterior_plot = Instance(Plot)
-
-    #matrix_plot_container = Instance(HPlotContainer)
+    posterior_plot = Instance(HPlotContainer)
 
     def _create_colormap(self):
         if self.colormap_low is None:
@@ -50,9 +51,6 @@ class PosteriorPlot(PyannoPlotContainer):
                                    high=self.colormap_high))
 
         return colormap
-
-
-
 
 
     def _posterior_plot_default(self):
@@ -84,11 +82,34 @@ class PosteriorPlot(PyannoPlotContainer):
                                                      'left', value_axis_ticks)
         self._add_value_axis(plot, value_axis)
 
+        # tweak plot aspect
         plot.aspect_ratio = float(nclasses) / nannotations
         self.plot_height = int(self.plot_width / plot.aspect_ratio)
 
-        self.decorate_plot(plot, self.posterior)
-        return plot
+        # add colorbar
+        colormap = img_plot.color_mapper
+        colorbar = ColorBar(index_mapper = LinearMapper(range=colormap.range),
+                            color_mapper = colormap,
+                            plot = img_plot,
+                            orientation = 'v',
+                            resizable = '',
+                            width = 15,
+                            height = 250)
+        #colorbar.padding_top = plot.padding_top
+        colorbar.padding_bottom = int(self.plot_height - colorbar.height -
+                                      plot.padding_top)
+        colorbar.padding_left = 0
+        colorbar.padding_right = 10
+
+
+        # create a container to position the plot and the colorbar side-by-side
+        container = HPlotContainer(use_backbuffer=True)
+        container.add(plot)
+        container.add(colorbar)
+        container.bgcolor = "lightgray"
+
+        self.decorate_plot(container, self.posterior)
+        return container
 
 
     def add_markings(self, classes):
