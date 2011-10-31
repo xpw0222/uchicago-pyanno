@@ -4,7 +4,7 @@
 from chaco.array_plot_data import ArrayPlotData
 from chaco.color_bar import ColorBar
 from chaco.data_range_1d import DataRange1D
-from chaco.default_colormaps import jet, YlOrRd, Reds, BuPu
+from chaco.default_colormaps import jet, YlOrRd, Reds, BuPu, YlGnBu
 from chaco.linear_mapper import LinearMapper
 from chaco.plot import Plot
 from chaco.plot_containers import HPlotContainer
@@ -44,7 +44,7 @@ class PosteriorPlot(PyannoPlotContainer):
         if self.colormap_high is None:
             self.colormap_high = self.posterior.max()
 
-        colormap = jet(DataRange1D(low=self.colormap_low,
+        colormap = Reds(DataRange1D(low=self.colormap_low,
                                    high=self.colormap_high))
 
         return colormap
@@ -67,6 +67,7 @@ class PosteriorPlot(PyannoPlotContainer):
                                  ybounds=(0, nannotations),
                                  colormap=self._create_colormap())[0]
 
+        self._set_title(plot)
         self._remove_grid_and_axes(plot)
 
         # create x axis for labels
@@ -168,6 +169,35 @@ class PosteriorPlot(PyannoPlotContainer):
         return resizable_view
 
 
+def plot_posterior(posterior, show_maximum=False, **kwargs):
+    """Display a plot of the posterior distribution over classes.
+
+    The plot allows saving (Ctrl-S), and copying the data (Ctrl-C).
+
+    Parameters
+    ----------
+    posterior : ndarray, shape=(n_annotations, n_classes)
+        posterior[i,:] is the posterior distribution over classes for the
+        i-th annotation.
+
+    show_maximum : bool
+        if True, indicate the position of the maxima with white circles
+
+    title : string
+        the title of the plot
+    """
+    post_view = PosteriorPlot(posterior=posterior, **kwargs)
+    resizable_view = post_view._create_resizable_view()
+    post_view.edit_traits(view=resizable_view)
+
+    if show_maximum:
+        maximum = posterior.argmax(1)
+        post_view.add_markings(maximum, 'maximum',
+                               'circle', 0., 0., marker_size=7)
+
+    return post_view
+
+
 #### Testing and debugging ####################################################
 
 def main():
@@ -175,17 +205,13 @@ def main():
 
     import numpy as np
 
-    matrix = np.random.random(size=(200, 5))
+    matrix = np.random.random(size=(2000, 5))
     matrix = matrix / matrix.sum(1)[:,None]
     matrix[0,0] = 1.
 
-    matrix_view = PosteriorPlot(posterior=matrix, title='Debug plot_posterior')
-    resizable_view = matrix_view._create_resizable_view()
-
-    matrix_view.edit_traits(view=resizable_view)
-
-    return matrix_view, resizable_view
+    matrix_view = plot_posterior(matrix, show_maximum=True, title='TEST')
+    return matrix_view
 
 
 if __name__ == '__main__':
-    mv, rv = main()
+    mv = main()
