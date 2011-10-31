@@ -87,6 +87,7 @@ class HintonDiagramPlot(PyannoPlotContainer):
                           face_color='black',
                           edge_color='black')
 
+        self._set_title(polyplot)
         self._remove_grid_and_axes(polyplot)
 
         # create x axis for labels

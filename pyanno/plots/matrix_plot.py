@@ -74,6 +74,7 @@ class MatrixPlot(PyannoPlotContainer):
         self._add_index_axis(plot, axis)
 
         #### tweak plot attributes
+        self._set_title(plot)
         plot.aspect_ratio = 1.
         # padding [left, right, up, down]
         plot.padding = [0, 0, 25, 25]
