@@ -81,7 +81,7 @@ class PosteriorPlot(PyannoPlotContainer):
         self._add_value_axis(plot, value_axis)
 
         # tweak plot aspect
-        plot.aspect_ratio = float(nclasses) / nannotations
+        plot.aspect_ratio = float(nclasses) / nannotations * 2
         self.plot_height = int(self.plot_width / plot.aspect_ratio)
 
         # add colorbar
@@ -205,7 +205,7 @@ def main():
 
     import numpy as np
 
-    matrix = np.random.random(size=(2000, 5))
+    matrix = np.random.random(size=(500, 5))
     matrix = matrix / matrix.sum(1)[:,None]
     matrix[0,0] = 1.
 
