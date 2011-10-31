@@ -26,16 +26,18 @@ class PyannoPlotContainer(HasTraits):
 
 
     def decorate_plot(self, plot, data):
-        """Add title and Copy and Save tools."""
-
-        if self.title is not None:
-            plot.title = self.title
+        """Add Copy and Save tools."""
 
         save_tool = SaveToolPlus(component=plot)
         copy_tool = CopyDataToClipboardTool(component=plot, data=data)
 
         plot.tools.append(save_tool)
         plot.tools.append(copy_tool)
+
+
+    def _set_title(self, plot):
+        if self.title is not None:
+            plot.title = self.title
 
 
     def _create_increment_one_axis(self, plot, start, number, orientation,
