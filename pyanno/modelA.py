@@ -1,6 +1,8 @@
-"""Definition of model A from Rzhetsly et al., 2009.
+"""This modules defines the class ModelA, an implementation of model A from
+Rzhetsly et al., 2009.
 
-See reference:
+Reference
+---------
 Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most from
 your curation effort", PLoS Computational Biology, 5(5).
 """
@@ -75,11 +77,13 @@ def _triplet_to_counts_index(triplet, nclasses):
 
 
 class ModelA(HasStrictTraits):
-    """Model A in Rzhetsky et al., 2009.
+    """Implementation of Model A in Rzhetsky et al., 2009.
 
     At the moment the model assumes 1) a total of 8 annotators, and 2) each
     item is annotated by 3 annotators.
 
+    Reference
+    ---------
     Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most from
     your curation effort", PLoS Computational Biology, 5(5).
     """
@@ -106,6 +110,19 @@ class ModelA(HasStrictTraits):
 
 
     def __init__(self, nclasses, theta, omega):
+        """Create an instance of ModelA.
+
+        Parameters
+        ----------
+        nclasses : int
+            number of possible annotation classes
+
+        theta : ndarray, shape = (n_annotators, )
+            theta[j] is the probability of annotator j being correct
+
+        omega : ndarray, shape = (n_classes, )
+            omega[k] is the probability of observing a label of class k
+        """
         self.nclasses = nclasses
         self.theta = theta
         self.omega = omega
@@ -115,14 +132,32 @@ class ModelA(HasStrictTraits):
 
     @staticmethod
     def create_initial_state(nclasses, theta=None, omega=None):
-        """Factory method returning a random model.
+        """Factory method to create a new model.
 
-         Input:
-         nclasses -- number of categories
-         theta -- probability of annotators being correct
-         omega -- probability of drawing an annotation value
-                  (assumed to be the same for all annotators)
-         """
+        It is often more convenient to use this factory method over the
+        constructor, as one does not need to specify the initial model
+        parameters.
+
+        If not specified, the parameters theta are drawn from a uniform
+        distribution between 0.6 and 0.95 . The parameters omega are drawn
+        from a Dirichlet distribution with parameters 2.0 :
+
+        :math:`\\theta_j \sim \mathrm{Uniform}(0.6, 0.95)`
+
+        :math:`\omega_k \sim \mathrm{Dirichlet}(2.0)`
+
+
+        Parameters
+        ----------
+        nclasses : int
+            number of possible annotation classes
+
+        theta : ndarray, shape = (n_annotators, )
+            theta[j] is the probability of annotator j being correct
+
+        omega : ndarray, shape = (n_classes, )
+            omega[k] is the probability of observing a label of class k
+        """
 
         if theta is None:
             nannotators = 8
