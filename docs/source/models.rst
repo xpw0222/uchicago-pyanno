@@ -9,6 +9,11 @@ arbitrary designs, including that of (Rzhetsky et al. 2009).  There
 are no priors, so estimation is necessarily through maximum
 likelihood.
 
+
+Example math:
+:math:`P(x_i = y^t)`
+
+
 Data
 --------------------
 I                 number of items being annotated
