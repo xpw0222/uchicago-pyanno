@@ -116,6 +116,7 @@ class ModelBtView(PyannoModelView):
                  style='custom',
                  resizable=False,
                  show_label=False,
+                 width=300
             ),
             Item('handler.edit_gamma', show_label=False),
             Item('handler.theta_view',

@@ -4,7 +4,7 @@ from traits.trait_types import Any, File, Instance, Button, Enum, Str, Bool, Flo
 from traits.traits import Property
 from traitsui.group import HGroup, VGroup
 from traitsui.handler import ModelView
-from traitsui.item import Item
+from traitsui.item import Item, Label
 from traitsui.view import View
 from pyanno import ModelBt, ModelB, ModelA
 from pyanno.annotations import AnnotationsContainer
@@ -159,28 +159,40 @@ class ModelDataView(HasTraits):
         ## Model view
 
         model_create_group = (
-            HGroup(
-                Item(name='model_name',show_label=False),
-                Item(name='new_model', show_label=False),
-                Item(name='get_info_on_model', show_label=False,
-                     enabled_when='False'),
-                show_border=True
+            VGroup(
+                HGroup(
+                    Item(name='model_name',show_label=False, width=200),
+                    Item(name='new_model', show_label=False, width=100),
+                    Item(name='get_info_on_model', show_label=False,
+                         enabled_when='False', width=100),
+                    #show_border=True
+                ),
+                label = 'Create new model'
             )
         )
 
         model_group = (
             VGroup (
                 model_create_group,
-                Item('model_view', style='custom', show_label=False),
-                show_border = True,
-                label = 'Model view',
-            )
+                VGroup(
+                    Item(
+                        'model_view',
+                        style='custom',
+                        show_label=False,
+                        width=400
+                    ),
+                    #show_border = True,
+                    label = 'Model view',
+                )
+            ),
         )
 
         ## Data view
 
         data_create_group = VGroup(
+            Label('Open annotation file:', width=800),
             Item('annotations_file', style='simple', label='Annotations file',
+                 show_label=False,
                  width=400),
             show_border = True,
         )
@@ -189,7 +201,9 @@ class ModelDataView(HasTraits):
             Item('annotations_view',
                  style='custom',
                  show_label=False,
-                 visible_when='annotations_are_defined'),
+                 visible_when='annotations_are_defined',
+                 width=800
+            ),
             Item('annotations_stats_view',
                  style='custom',
                  show_label=False,
@@ -200,9 +214,8 @@ class ModelDataView(HasTraits):
             VGroup (
                 data_create_group,
                 data_info_group,
-                show_border = True,
                 label = 'Data view',
-            )
+            ),
         )
 
         ## (Model,Data) view
@@ -226,7 +239,6 @@ class ModelDataView(HasTraits):
                          show_label=False,
                          enabled_when='False'),
                 ),
-                show_border = True,
                 label = 'Model-data view'
             )
         )
@@ -238,14 +250,14 @@ class ModelDataView(HasTraits):
             VGroup(
                 HGroup(
                     model_group,
-                    data_group
+                    data_group,
                 ),
                 model_data_group
             ),
             title='PyAnno - Models of data annotations by multiple curators',
             width = 1200,
             height = 800,
-            resizable = True
+            resizable = False
         )
 
         return full_view
