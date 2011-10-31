@@ -52,40 +52,7 @@ class PosteriorPlot(PyannoPlotContainer):
         return colormap
 
 
-    def _create_increment_one_axis(self, plot, start, number, orientation,
-                                   ticks=None):
-        """Create axis with ticks at a distance of one units.
 
-        Parameters
-        ----------
-        plot : Plot
-            plot where the axis will be attached
-        start : float
-            position of first tick
-        number : int
-            number of ticks
-        orientation: ['top', 'bottom', 'left', 'right']
-            position of axis on the plot
-        ticks : list of strings
-            string to be displayed for each tick
-        """
-
-        ids = start + np.arange(0, number)
-        if ticks is None:
-            ticks = [str(idx) for idx in np.arange(0, number)]
-
-        axis = LabelAxis(
-            plot,
-            orientation = orientation,
-            positions = ids,
-            labels = ticks,
-            label_rotation = 0
-        )
-
-        # use a FixedScale tick generator with a resolution of 1
-        axis.tick_generator = ScalesTickGenerator(scale=FixedScale(1.))
-
-        return axis
 
 
     def _posterior_plot_default(self):
@@ -109,15 +76,13 @@ class PosteriorPlot(PyannoPlotContainer):
 
         # create x axis for labels
         label_axis = self._create_increment_one_axis(plot, 0.5, nclasses, 'top')
-        plot.index_axis = label_axis
-        plot.underlays.append(label_axis)
+        self._add_index_axis(label_axis)
 
-        # create y axis for values
+        # create y axis for annotation numbers
         value_axis_ticks = [str(id) for id in range(nannotations-1, -1, -1)]
         value_axis = self._create_increment_one_axis(plot, 0.5, nannotations,
                                                      'left', value_axis_ticks)
-        plot.value_axis = value_axis
-        plot.underlays.append(value_axis)
+        self._add_value_axis(plot, value_axis)
 
         plot.aspect_ratio = float(nclasses) / nannotations
         self.plot_height = int(self.plot_width / plot.aspect_ratio)

@@ -1,6 +1,10 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Pietro Berkes <pberkes@enthought.com>
 # License: Apache license
+from chaco.label_axis import LabelAxis
+from chaco.scales.scales import FixedScale
+from chaco.scales_tick_generator import ScalesTickGenerator
+import numpy as np
 
 from traits.api import HasTraits, Str
 from traitsui.api import HGroup, Spring, Item, View, VGroup, Include
@@ -34,9 +38,55 @@ class PyannoPlotContainer(HasTraits):
         plot.tools.append(copy_tool)
 
 
+    def _create_increment_one_axis(self, plot, start, number, orientation,
+                                   ticks=None):
+        """Create axis with ticks at a distance of one units.
+
+        Parameters
+        ----------
+        plot : Plot
+            plot where the axis will be attached
+        start : float
+            position of first tick
+        number : int
+            number of ticks
+        orientation: ['top', 'bottom', 'left', 'right']
+            position of axis on the plot
+        ticks : list of strings
+            string to be displayed for each tick
+        """
+
+        ids = start + np.arange(0, number)
+        if ticks is None:
+            ticks = [str(idx) for idx in np.arange(0, number)]
+
+        axis = LabelAxis(
+            plot,
+            orientation = orientation,
+            positions = ids,
+            labels = ticks,
+            label_rotation = 0
+        )
+
+        # use a FixedScale tick generator with a resolution of 1
+        axis.tick_generator = ScalesTickGenerator(scale=FixedScale(1.))
+
+        return axis
+
+
     def _remove_grid_and_axes(self, plot):
         # remove grids and axes
         plot.underlays = []
+
+
+    def _add_index_axis(self, plot, axis):
+        plot.index_axis = axis
+        plot.underlays.append(axis)
+
+
+    def _add_value_axis(self, plot, axis):
+        plot.value_axis = axis
+        plot.underlays.append(axis)
 
 
     #### View definitions #####################################################
@@ -51,14 +101,15 @@ class PyannoPlotContainer(HasTraits):
         VGroup(
             Include('resizable_plot_item'),
             Include('instructions_group'),
-        ),
+            ),
         resizable = True
     )
+
 
     traits_view = View(
         VGroup(
             Include('traits_plot_item'),
             Include('instructions_group'),
-        ),
+            ),
         resizable = True
     )
