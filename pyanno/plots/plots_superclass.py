@@ -107,11 +107,12 @@ class PyannoPlotContainer(HasTraits):
         resizable = True
     )
 
-
-    traits_view = View(
-        VGroup(
-            Include('traits_plot_item'),
-            Include('instructions_group'),
-            ),
-        resizable = True
-    )
+    def traits_view(self):
+        traits_view = View(
+            VGroup(
+                Include('traits_plot_item'),
+                Include('instructions_group'),
+                ),
+            resizable = True
+        )
+        return traits_view
