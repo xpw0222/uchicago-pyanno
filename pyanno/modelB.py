@@ -152,6 +152,8 @@ class ModelB(HasStrictTraits):
         are stored in the class attributes `pi` and `theta`.
         """
 
+        self._raise_if_incompatible(annotations)
+
         map_em_generator = self._map_em_step(annotations, init_accuracy)
         return self._parameter_estimation(map_em_generator, epsilon, max_epochs)
 
@@ -171,6 +173,8 @@ class ModelB(HasStrictTraits):
         The estimates of the label frequency and accuracy parameters,
         are stored in the class attributes `pi` and `theta`.
         """
+
+        self._raise_if_incompatible(annotations)
 
         mle_em_generator = self._mle_em_step(annotations, init_accuracy)
         return self._parameter_estimation(mle_em_generator, epsilon, max_epochs)
@@ -376,6 +380,9 @@ class ModelB(HasStrictTraits):
     ##### Model likelihood methods ############################################
 
     def log_likelihood(self, annotations):
+
+        self._raise_if_incompatible(annotations)
+
         missing_mask_nclasses = self._missing_mask(annotations)
         llhood, _ = self._log_likelihood_core(annotations,
                                               self.pi, self.theta,
@@ -411,6 +418,9 @@ class ModelB(HasStrictTraits):
     ##### Sampling posterior over parameters ##################################
 
     def sample_posterior_over_accuracy(self, annotations, nsamples):
+
+        self._raise_if_incompatible(annotations)
+
         # use Gibbs sampling
         nitems, nannotators = annotations.shape
         nclasses = self.nclasses
@@ -467,6 +477,8 @@ class ModelB(HasStrictTraits):
         current point estimate of the parameters pi and theta.
         """
 
+        self._raise_if_incompatible(annotations)
+
         category = self._compute_category(annotations,
                                           self.pi,
                                           self.theta)
@@ -477,6 +489,9 @@ class ModelB(HasStrictTraits):
     ##### Verify input ########################################################
 
     def are_annotations_compatible(self, annotations):
+        """Check if the annotations are compatible with the models' parameters.
+        """
+
         masked_annotations = np.ma.masked_equal(annotations, MISSING_VALUE)
 
         if annotations.shape[1] != self.nannotators:
@@ -489,3 +504,9 @@ class ModelB(HasStrictTraits):
             return False
 
         return True
+
+
+    def _raise_if_incompatible(self, annotations):
+        if not self.are_annotations_compatible(annotations):
+            raise ValueError('Annotations are incompatible with model '
+                             'parameters')

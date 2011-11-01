@@ -287,6 +287,7 @@ class ModelA(HasStrictTraits):
     ##### Parameters estimation methods #######################################
 
     def mle(self, annotations, estimate_omega=True):
+        self._raise_if_incompatible(annotations)
 
         def _wrap_lhood(params, counts):
             self.theta = params
@@ -297,6 +298,7 @@ class ModelA(HasStrictTraits):
 
 
     def map(self, annotations, estimate_omega=True):
+        self._raise_if_incompatible(annotations)
 
         def _wrap_lhood(params, counts):
             self.theta = params
@@ -339,6 +341,9 @@ class ModelA(HasStrictTraits):
     ##### Model likelihood methods ############################################
 
     def log_likelihood(self, annotations):
+
+        self._raise_if_incompatible(annotations)
+
         counts = compute_counts(annotations, self.nclasses)
         return self._log_likelihood_counts(counts)
 
@@ -472,6 +477,9 @@ class ModelA(HasStrictTraits):
                                     adjust_step_every = 100):
         """Return samples from posterior distribution over theta given data.
         """
+
+        self._raise_if_incompatible(annotations)
+
         # optimize step size
         counts = compute_counts(annotations, self.nclasses)
 
@@ -539,6 +547,9 @@ class ModelA(HasStrictTraits):
 
     def infer_labels(self, annotations):
         """Infer posterior distribution over true labels."""
+
+        self._raise_if_incompatible(annotations)
+
         nitems = annotations.shape[0]
         nclasses = self.nclasses
 
@@ -755,6 +766,8 @@ class ModelA(HasStrictTraits):
     ##### Verify input ########################################################
 
     def are_annotations_compatible(self, annotations):
+        """Check if the annotations are compatible with the models' parameters.
+        """
         masked_annotations = np.ma.masked_equal(annotations, MISSING_VALUE)
 
         if annotations.shape[1] != self.nannotators:
@@ -772,3 +785,9 @@ class ModelA(HasStrictTraits):
             return False
 
         return True
+
+
+    def _raise_if_incompatible(self, annotations):
+        if not self.are_annotations_compatible(annotations):
+            raise ValueError('Annotations are incompatible with model '
+                             'parameters')

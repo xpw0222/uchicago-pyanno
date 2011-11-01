@@ -262,5 +262,25 @@ class TestModelA(unittest.TestCase):
         self.assertFalse(model.are_annotations_compatible(anno))
 
 
+    def test_raise_error_on_incompatible_annotation(self):
+        nclasses = 3
+        model = ModelA.create_initial_state(nclasses)
+        anno = np.array([[MV, MV, 0, 0, 7, MV, MV, MV]])
+
+        with self.assertRaisesRegexp(ValueError, 'nnotations'):
+            model.mle(anno)
+
+        with self.assertRaisesRegexp(ValueError, 'nnotations'):
+            model.map(anno)
+
+        with self.assertRaisesRegexp(ValueError, 'nnotations'):
+            model.sample_posterior_over_accuracy(anno, 10)
+
+        with self.assertRaisesRegexp(ValueError, 'nnotations'):
+            model.infer_labels(anno)
+
+        with self.assertRaisesRegexp(ValueError, 'nnotations'):
+            model.log_likelihood(anno)
+
 if __name__ == '__main__':
     unittest.main()
