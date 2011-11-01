@@ -141,6 +141,35 @@ def is_valid(annotations):
     """
     return annotations != MISSING_VALUE
 
+
+def majority_vote(annotations):
+    """Compute an estimate of the real class by majority vote.
+
+    In case of ties, return the class with smallest number.
+
+    Parameters
+    ----------
+    annotations : ndarray, shape = (n_items, n_annotators)
+        annotations[i,j] is the annotation made by annotator j on item i
+
+    Return
+    ------
+    vote : ndarray, shape = (n_items, )
+        vote[i] is the majority vote estimate for item i
+    """
+
+    nitems = annotations.shape[0]
+    valid = is_valid(annotations)
+
+    vote = np.empty((nitems,), dtype=int)
+
+    for i in xrange(nitems):
+        count = np.bincount(annotations[i,valid[i,:]])
+        vote[i] = count.argmax()
+
+    return vote
+
+
 def string_wrap(st, mode):
     st = str(st)
 
