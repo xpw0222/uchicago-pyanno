@@ -38,7 +38,7 @@ class NewModelBDialog(NewModelDialog):
     )
 
 
-class ModelA_ThetaView(HasTraits):
+class ModelA_MultipleThetaView(HasTraits):
     """Tabular view for the parameters theta in Model B.
 
     Includes a spin box to select the parameters for each annotator.
@@ -47,7 +47,7 @@ class ModelA_ThetaView(HasTraits):
     @staticmethod
     def show(theta):
         """Create a window that with a ThetaView inside."""
-        tv = ModelA_ThetaView(theta=theta)
+        tv = ModelA_TabularThetaView(theta=theta)
         tv.edit_traits()
 
     # 3D tensor to be displayed
@@ -60,16 +60,7 @@ class ModelA_ThetaView(HasTraits):
     annotator_idx = Int(0)
 
     # tabular view of theta for annotator j
-    theta_j_view = Instance(ParametersTabularView)
-
-    def _theta_j_view_default(self):
-        return ParametersTabularView(
-            data = self.theta[self.annotator_idx,:,:].tolist()
-        )
-
-    @on_trait_change('annotator_idx')
-    def _theta_j_update(self):
-        self.theta_j_view.data = self.theta[self.annotator_idx,:,:].tolist()
+    theta_j_view = Instance(HasTraits)
 
     def traits_view(self):
 
@@ -85,11 +76,42 @@ class ModelA_ThetaView(HasTraits):
                     Item('theta_j_view', style='custom', show_label=False)
                 )
             ),
-            width = 600,
+            width = 500,
             height = 400,
             resizable = True
         )
         return traits_view
+
+
+class ModelA_TabularThetaView(ModelA_MultipleThetaView):
+    """Theta view is a tabular view."""
+
+    def _theta_j_view_default(self):
+        return ParametersTabularView(
+            data = self.theta[self.annotator_idx,:,:].tolist()
+        )
+
+    @on_trait_change('annotator_idx')
+    def _theta_j_update(self):
+        self.theta_j_view.data = self.theta[self.annotator_idx,:,:].tolist()
+
+
+class ModelA_MatrixThetaView(ModelA_MultipleThetaView):
+    """Theta view is a matrix plot."""
+
+    def _create_matrix_plot(self, annotator_idx):
+        return MatrixPlot(
+            matrix = self.theta[self.annotator_idx,:,:],
+            colormap_low = 0., colormap_high = 1.,
+            title = 'Theta[%d,:,:]' % self.annotator_idx
+        )
+
+    def _theta_j_view_default(self):
+        return self._create_matrix_plot(self.annotator_idx)
+
+    @on_trait_change('annotator_idx')
+    def _theta_j_update(self):
+        self.theta_j_view = self._create_matrix_plot(self.annotator_idx)
 
 
 class ModelBView(PyannoModelView):
@@ -113,18 +135,15 @@ class ModelBView(PyannoModelView):
         self.pi_hinton_diagram = HintonDiagramPlot(
             data = self.model.pi.tolist(),
             title = 'Pi parameters, P(label=k)')
-        self.theta_matrix_plot = MatrixPlot(
-            matrix = self.model.theta[0,:,:],
-            colormap_low = 0., colormap_high = 1.,
-            title = 'Theta[0,:,:]'
-        )
+
+        self.theta_matrix_plot = ModelA_MatrixThetaView(theta=self.model.theta)
 
 
     #### UI traits
 
     pi_hinton_diagram = Instance(HintonDiagramPlot)
 
-    theta_matrix_plot = Instance(MatrixPlot)
+    theta_matrix_plot = Instance(ModelA_MatrixThetaView)
 
 
     #### Actions
@@ -145,7 +164,7 @@ class ModelBView(PyannoModelView):
 
     def _view_theta_fired(self):
         """Create viewer for parameters theta."""
-        ModelA_ThetaView.show(self.model.theta)
+        ModelA_TabularThetaView.show(self.model.theta)
 
 
     #### Traits UI view #########
