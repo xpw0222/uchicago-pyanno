@@ -43,7 +43,8 @@ class ModelB(HasStrictTraits):
 
     def __init__(self, nclasses, nannotators,
                  pi=None, theta=None,
-                 alpha=None, beta=None):
+                 alpha=None, beta=None, **traits):
+
         self.nclasses = nclasses
         self.nannotators = nannotators
 
@@ -66,6 +67,8 @@ class ModelB(HasStrictTraits):
             self.beta = np.ones((nclasses,))
         else:
             self.beta = beta
+
+        super(ModelB, self).__init__(**traits)
 
 
     ##### Model and data generation methods ###################################

@@ -109,7 +109,7 @@ class ModelA(HasStrictTraits):
     omega = Array(dtype=float, shape=(None,))
 
 
-    def __init__(self, nclasses, theta, omega):
+    def __init__(self, nclasses, theta, omega, **traits):
         """Create an instance of ModelA.
 
         Parameters
@@ -123,9 +123,12 @@ class ModelA(HasStrictTraits):
         omega : ndarray, shape = (n_classes, )
             omega[k] is the probability of observing a label of class k
         """
+
         self.nclasses = nclasses
         self.theta = theta
         self.omega = omega
+
+        super(ModelA, self).__init__(**traits)
 
 
     ##### Model and data generation methods ###################################

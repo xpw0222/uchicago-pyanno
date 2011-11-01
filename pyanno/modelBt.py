@@ -34,10 +34,12 @@ class ModelBt(HasStrictTraits):
     gamma = Array(dtype=float, shape=(None,))
     theta = Array(dtype=float, shape=(None,))
 
-    def __init__(self, nclasses, gamma, theta):
+    def __init__(self, nclasses, gamma, theta, **traits):
         self.nclasses = nclasses
         self.gamma = gamma
         self.theta = theta
+
+        super(ModelBt, self).__init__(**traits)
 
 
     ##### Model and data generation methods ###################################
