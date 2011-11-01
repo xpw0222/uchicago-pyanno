@@ -18,6 +18,7 @@ from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.plots.theta_plot import ThetaPlot
 from pyanno.ui.model_view import PyannoModelView, NewModelDialog
+from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
 
 
 MODEL_BT_NAME = 'Model B-with-theta'
@@ -31,48 +32,6 @@ class NewModelBtDialog(NewModelDialog):
         Item(name='nclasses',
              label='Number of annotation classes:')
     )
-
-
-class GammaView(HasTraits):
-    data = List
-
-    def traits_view(self):
-        return View(
-            Group(Item('data',
-                       editor=TabularEditor(
-                           adapter=Array2DAdapter(ncolumns=len(self.data[0]),
-                                                  format='%.4f',
-                                                  show_index=False),
-                           editable=False
-                       ),
-                       show_label=False)),
-            title     = 'Model B-with-Theta, parameters gamma',
-            width     = 500,
-            height    = 200,
-            resizable = True,
-            buttons   = [OKButton]
-            )
-
-
-class BtThetaView(HasTraits):
-    data = List
-
-    def traits_view(self):
-        return View(
-            Group(Item('data',
-                       editor=TabularEditor(
-                           adapter=Array2DAdapter(ncolumns=len(self.data[0]),
-                                                  format='%.4f',
-                                                  show_index=False),
-                           editable=False
-                       ),
-                       show_label=False)),
-            title     = 'Model B-with-Theta, parameters gamma',
-            width     = 500,
-            height    = 200,
-            resizable = True,
-            buttons   = [OKButton]
-            )
 
 
 class ModelBtView(PyannoModelView):
@@ -136,13 +95,19 @@ class ModelBtView(PyannoModelView):
 
     def _view_gamma_fired(self):
         """Create viewer for gamma parameters."""
-        gamma_view = GammaView(data=[self.gamma])
+        gamma_view = ParametersTabularView(
+            title = 'Model B-with-Theta, parameters gamma',
+            data=[self.gamma]
+        )
         gamma_view.edit_traits()
 
 
     def _view_theta_fired(self):
         """Create viewer for theta parameters."""
-        theta_view = BtThetaView(data=[self.model.theta.tolist()])
+        theta_view = ParametersTabularView(
+            title = 'Model B-with-Theta, parameters theta',
+            data=[self.model.theta.tolist()]
+        )
         theta_view.edit_traits()
 
 
