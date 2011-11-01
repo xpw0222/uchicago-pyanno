@@ -18,6 +18,8 @@ from pyanno.ui.model_b_view import ModelBView
 
 
 # TODO remember last setting of parameters
+from pyanno.ui.posterior_view import PosteriorView
+
 
 class ModelDataView(HasTraits):
 
@@ -159,10 +161,13 @@ class ModelDataView(HasTraits):
         print 'Estimating labels...'
 
         posterior = self.model.infer_labels(self.annotations)
-        post_view = PosteriorPlot(posterior=posterior,
+        post_plot = PosteriorPlot(posterior=posterior,
                                   title='Posterior over classes')
-        resizable_view = post_view._create_resizable_view()
-        post_view.edit_traits(view=resizable_view)
+
+        post_view = PosteriorView(posterior_plot=post_plot,
+                                  annotations=self.annotations)
+
+        post_view.edit_traits()
 
 
     ### Views ################################################################

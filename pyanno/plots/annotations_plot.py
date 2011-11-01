@@ -169,6 +169,10 @@ class PosteriorPlot(PyannoPlotContainer):
         return resizable_view
 
 
+    def traits_view(self):
+        return self._create_resizable_view()
+
+
 def plot_posterior(posterior, show_maximum=False, **kwargs):
     """Display a plot of the posterior distribution over classes.
 
