@@ -185,7 +185,35 @@ class ModelA(HasStrictTraits):
 
 
     def generate_annotations(self, nitems):
-        """Generate random annotations given labels."""
+        """Generate random annotations from the model.
+
+        The method samples random annotations from the probability
+        distribution defined by the model parameters:
+
+            1) generate correct/incorrect labels for the three annotators,
+               according to the parameters `theta`
+
+            2) generate agreement patterns (which annotator agrees which whom)
+               given the correctness information and the parameters `alpha`
+
+            3) generate the annotations given the agreement patterns and the
+               parameters `omega`
+
+
+        Note that, according to the model's definition, only three annotators
+        per item return an annotation. Non-observed annotations have the
+        standard value of :attr:`~pyanno.util.MISSING_VALUE`.
+
+        Parameters
+        ----------
+        nitems : int
+            number of annotations to draw from the model
+
+        Returns
+        -------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+        """
         theta = self.theta
         nannotators = self.nannotators
         nitems_per_loop = np.ceil(float(nitems) / nannotators)
@@ -287,6 +315,21 @@ class ModelA(HasStrictTraits):
     ##### Parameters estimation methods #######################################
 
     def mle(self, annotations, estimate_omega=True):
+        """Computes maximum likelihood estimate (MLE) of parameters.
+
+        Estimate the parameters :attr:`theta` and :attr:`omega` from a set of
+        observed annotations using maximum likelihood estimation.
+
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+
+        estimate_omega : bool
+            If True, the parameters :attr:`omega` are estimated by the empirical
+            class frequency. If False, :attr:`omega` is left unchanged.
+        """
+
         self._raise_if_incompatible(annotations)
 
         def _wrap_lhood(params, counts):
@@ -298,6 +341,21 @@ class ModelA(HasStrictTraits):
 
 
     def map(self, annotations, estimate_omega=True):
+        """Computes maximum a posteriori (MAP) estimate of parameters.
+
+        Estimate the parameters :attr:`theta` and :attr:`omega` from a set of
+        observed annotations using maximum a posteriori estimation.
+
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+
+        estimate_omega : bool
+            If True, the parameters :attr:`omega` are estimated by the empirical
+            class frequency. If False, :attr:`omega` is left unchanged.
+        """
+
         self._raise_if_incompatible(annotations)
 
         def _wrap_lhood(params, counts):
@@ -341,6 +399,18 @@ class ModelA(HasStrictTraits):
     ##### Model likelihood methods ############################################
 
     def log_likelihood(self, annotations):
+        """Compute the log likelihood of a set of annotations given the model.
+
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+
+        Returns
+        -------
+        log_lhood : float
+            log likelihood of `annotations`
+        """
 
         self._raise_if_incompatible(annotations)
 
@@ -476,6 +546,44 @@ class ModelA(HasStrictTraits):
                                     step_optimization_nsamples = 500,
                                     adjust_step_every = 100):
         """Return samples from posterior distribution over theta given data.
+
+        Samples are drawn using a variant of a Metropolis-Hasting Markov Chain
+        Monte Carlo (MCMC) algorithm. Sampling proceeds in two phases:
+
+            1) *step size estimation phase*: first, the step size in the
+               MCMC algorithm is adjusted to achieve a given rejection rate.
+
+            2) *sampling phase*: second, samples are collected using the
+               step size from phase 1.
+
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+
+        nsamples : int
+            number of samples to draw from the posterior
+
+        target_rejection_rate : float
+            target rejection rate for the step size estimation phase
+
+        rejection_rate_tolerance : float
+            the step size estimation phase is ended when the rejection rate for
+            all parameters is within `rejection_rate_tolerance` from
+            `target_rejection_rate`
+
+        step_optimization_nsamples : int
+            number of samples to draw in the step size estimation phase
+
+        adjust_step_every : int
+            number of samples after which the step size is adjusted during
+            the step size estimation pahse
+
+        Returns
+        -------
+        samples : ndarray, shape = (n_samples, n_annotators)
+            samples[i,:] is one sample from the posterior distribution over the
+            parameters `theta`
         """
 
         self._raise_if_incompatible(annotations)
@@ -546,7 +654,22 @@ class ModelA(HasStrictTraits):
 
 
     def infer_labels(self, annotations):
-        """Infer posterior distribution over true labels."""
+        """Infer posterior distribution over label classes.
+
+        Compute the posterior distribution over label classes given observed
+        annotations, :math:`P( \mathbf{y} | \mathbf{x}, \\theta, \omega)`.
+
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+
+        Returns
+        -------
+        posterior : ndarray, shape = (n_items, n_classes)
+            posterior[i,k] is the posterior probability of class k given the
+            annotation observed in item i.
+        """
 
         self._raise_if_incompatible(annotations)
 
