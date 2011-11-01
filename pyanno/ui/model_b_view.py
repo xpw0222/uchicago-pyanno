@@ -2,9 +2,12 @@
 # Author: Pietro Berkes <pberkes@enthought.com>
 # License: Apache license
 
-from traits.has_traits import on_trait_change
-from traits.trait_types import Instance, Str, Range
-from traitsui.group import VGroup
+from traits.has_traits import on_trait_change, HasTraits
+from traits.trait_numeric import Array
+from traits.trait_types import Instance, Str, Range, Button, Int
+from traits.traits import Property
+from traitsui.editors.range_editor import RangeEditor
+from traitsui.group import VGroup, VGrid
 from traitsui.include import Include
 from traitsui.item import Item
 from traitsui.menu import OKButton
@@ -14,6 +17,7 @@ from pyanno.modelB import ModelB
 from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.plots.matrix_plot import MatrixPlot
 from pyanno.ui.model_view import PyannoModelView, NewModelDialog
+from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
 
 
 MODEL_B_NAME = 'Model B (full model)'
@@ -34,11 +38,68 @@ class NewModelBDialog(NewModelDialog):
     )
 
 
+class ModelA_ThetaView(HasTraits):
+    """Tabular view for the parameters theta in Model B.
+
+    Includes a spin box to select the parameters for each annotator.
+    """
+
+    @staticmethod
+    def show(theta):
+        """Create a window that with a ThetaView inside."""
+        tv = ModelA_ThetaView(theta=theta)
+        tv.edit_traits()
+
+    # 3D tensor to be displayed
+    theta = Array
+
+    # title of the view window
+    title = "Model B, parameters theta"
+
+    # annotator number
+    annotator_idx = Int(0)
+
+    # tabular view of theta for annotator j
+    theta_j_view = Instance(ParametersTabularView)
+
+    def _theta_j_view_default(self):
+        return ParametersTabularView(
+            data = self.theta[self.annotator_idx,:,:].tolist()
+        )
+
+    @on_trait_change('annotator_idx')
+    def _theta_j_update(self):
+        self.theta_j_view.data = self.theta[self.annotator_idx,:,:].tolist()
+
+    def traits_view(self):
+
+        traits_view = View(
+            VGroup(
+                Item('annotator_idx',
+                     label='Annotator index',
+                     editor=RangeEditor(mode='spinner',
+                                        low=0, high=self.theta.shape[0]-1,
+                                        ),
+                ),
+                VGroup(
+                    Item('theta_j_view', style='custom', show_label=False)
+                )
+            ),
+            width = 600,
+            height = 400,
+            resizable = True
+        )
+        return traits_view
+
+
 class ModelBView(PyannoModelView):
     """ Traits UI Model/View for 'ModelB' objects.
     """
 
+    # name of the model (inherited from PyannoModelView)
     model_name = MODEL_B_NAME
+
+    # dialog to instantiated when creating a new model
     new_model_dialog_class = NewModelBDialog
 
     @classmethod
@@ -60,18 +121,46 @@ class ModelBView(PyannoModelView):
 
 
     #### UI traits
+
     pi_hinton_diagram = Instance(HintonDiagramPlot)
+
     theta_matrix_plot = Instance(MatrixPlot)
 
-    parameters_group = VGroup(
+
+    #### Actions
+
+    view_pi = Button(label='View...')
+
+    view_theta = Button(label='View...')
+
+
+    def _view_pi_fired(self):
+        """Create viewer for parameters pi."""
+        pi_view = ParametersTabularView(
+            title = 'Model B, parameters pi',
+            data = [self.model.pi.tolist()]
+        )
+        pi_view.edit_traits()
+
+
+    def _view_theta_fired(self):
+        """Create viewer for parameters theta."""
+        ModelA_ThetaView.show(self.model.theta)
+
+
+    #### Traits UI view #########
+
+    parameters_group = VGrid(
         Item('handler.pi_hinton_diagram',
              style='custom',
              resizable=False,
              show_label=False),
+        Item('handler.view_pi', show_label=False),
         Item('handler.theta_matrix_plot',
              style='custom',
              resizable=False,
-             show_label=False)
+             show_label=False),
+        Item('handler.view_theta', show_label=False),
     )
 
     body = VGroup(
