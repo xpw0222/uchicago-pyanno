@@ -148,5 +148,25 @@ class TestModelBt(unittest.TestCase):
         self.assertTrue(np.all(valid.sum(1) == 3))
 
 
+    def test_annotations_compatibility(self):
+        nclasses = 3
+        model = ModelBt.create_initial_state(nclasses)
+
+        # test method that checks annotations compatibility
+        anno = np.array([[-1, -1, 0, 0, 1, -1, -1, -1]])
+        self.assertTrue(model.are_annotations_compatible(anno))
+
+        anno = np.array([[-1, -1, 0, 0, 1, -1, -1, -1, -1]])
+        self.assertFalse(model.are_annotations_compatible(anno))
+
+        anno = np.array([[-1, -1, 0, 0, 3, -1, -1, -1]])
+        self.assertFalse(model.are_annotations_compatible(anno))
+
+        anno = np.array([[-1, -1, 0, 0, 2, 1, -1, -1]])
+        self.assertFalse(model.are_annotations_compatible(anno))
+
+        anno = np.array([[0, 0, -1, -2, -1, -1, -1, -1]])
+        self.assertFalse(model.are_annotations_compatible(anno))
+
 if __name__ == '__main__':
     unittest.main()

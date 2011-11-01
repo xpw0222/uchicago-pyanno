@@ -30,7 +30,7 @@ class ModelBt(HasStrictTraits):
     nclasses = Int
     nannotators = Int(8)
     # number of annotators rating each item in the loop design
-    annotators_per_item = Int(3)
+    nannotators_per_item = Int(3)
     gamma = Array(dtype=float, shape=(None,))
     theta = Array(dtype=float, shape=(None,))
 
@@ -112,7 +112,7 @@ class ModelBt(HasStrictTraits):
 
         # mask annotation value according to loop design
         for l in xrange(nannotators):
-            label_idx = np.arange(l+self.annotators_per_item, l+nannotators) % 8
+            label_idx = np.arange(l+self.nannotators_per_item, l+nannotators) % 8
             annotations[l*nitems_per_loop:(l+1)*nitems_per_loop,
                         label_idx] = MISSING_VALUE
 
@@ -352,10 +352,10 @@ class ModelBt(HasStrictTraits):
         # get indices of annotators active in each row
         valid_entries = is_valid(annotations).nonzero()
         annotator_indices = np.reshape(valid_entries[1],
-            (nitems, self.annotators_per_item))
+            (nitems, self.nannotators_per_item))
         valid_annotations = annotations[valid_entries]
         valid_annotations = np.reshape(valid_annotations,
-            (nitems, self.annotators_per_item))
+            (nitems, self.nannotators_per_item))
 
         # thetas of active annotators
         theta_equal = self.theta[annotator_indices]
@@ -371,3 +371,25 @@ class ModelBt(HasStrictTraits):
         # normalize distribution
         psi_distr /= psi_distr.sum(1)[:,np.newaxis]
         return psi_distr
+
+
+    ##### Verify input ########################################################
+
+    def are_annotations_compatible(self, annotations):
+        masked_annotations = np.ma.masked_equal(annotations, MISSING_VALUE)
+
+        if annotations.shape[1] != self.nannotators:
+            return False
+
+        if annotations.max() >= self.nclasses:
+            return False
+
+        if masked_annotations.min() < 0:
+            return False
+
+        # exactly 3 annotations per row
+        nvalid = (~masked_annotations.mask).sum(1)
+        if not np.all(nvalid == self.nannotators_per_item):
+            return False
+
+        return True
