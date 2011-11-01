@@ -12,6 +12,7 @@ class Array2DAdapter(TabularAdapter):
     columns = List
     show_index = Bool(True)
     ncolumns = Int
+
     data_format = Str('%s')
 
     font = 'Courier 10'
@@ -25,7 +26,7 @@ class Array2DAdapter(TabularAdapter):
 
 
     def _columns_default(self):
-        columns = [('el%d' % (i+1), i) for i in range(self.ncolumns)]
+        columns = [('%d' % (i+1), i) for i in range(self.ncolumns)]
         if self.show_index:
             columns.insert(0, ('row\col', 'index'))
         return columns
