@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import pyanno.util as pu
-
+from pyanno.util import MISSING_VALUE as MV
 
 class TestUtil(unittest.TestCase):
 
@@ -42,6 +42,21 @@ class TestUtil(unittest.TestCase):
         result = pu.labels_count(annotations, nclasses, missing_val=-2)
         np.testing.assert_equal(result, expected)
 
+
+    def test_majority_vote(self):
+        annotations = np.array(
+            [
+                [1, 2, 2, MV],
+                [2, 2, 2, 2],
+                [1, 1, 3, 3],
+                [1, 3, 3, 2],
+                [MV, 2, 3, 1],
+                [MV, MV, MV, 3]
+            ]
+        )
+        expected = np.array([2, 2, 1, 3, 1, 3])
+        result = pu.majority_vote(annotations)
+        np.testing.assert_equal(expected, result)
 
 if __name__ == '__main__':
     unittest.main()

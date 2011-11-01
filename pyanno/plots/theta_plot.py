@@ -156,6 +156,7 @@ class ThetaPlot(ModelView, PyannoPlotContainer):
         theta_plot.aspect_ratio = 1.0
 
         self.decorate_plot(theta_plot, self.data)
+        self._set_title(theta_plot)
         return theta_plot
 
 

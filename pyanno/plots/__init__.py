@@ -1,1 +1,3 @@
 from pyanno_plots import plot_pairwise_statistics
+from annotations_plot import plot_posterior
+

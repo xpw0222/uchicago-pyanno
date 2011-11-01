@@ -76,23 +76,6 @@ class HintonDiagramPlot(PyannoPlotContainer):
         return prob_axis
 
 
-    def _create_label_axis(self, len_, plot):
-        """Create plot axis for labels at fixed intervals."""
-        ids = range(1, len_+1)
-        label_list = [str(id-1) for id in ids]
-        label_axis = LabelAxis(
-            plot,
-            orientation='bottom',
-            positions=ids,
-            labels=label_list,
-            label_rotation=0,
-            small_haxis_style=True
-        )
-        # use a FixedScale tick generator with a resolution of 1
-        label_axis.tick_generator = ScalesTickGenerator(scale=FixedScale(1.))
-        return label_axis
-
-
     def _plot_default(self):
         distr_len = len(self.data)
 
@@ -104,13 +87,12 @@ class HintonDiagramPlot(PyannoPlotContainer):
                           face_color='black',
                           edge_color='black')
 
-        # remove grids and axes
-        polyplot.underlays = []
+        self._set_title(polyplot)
+        self._remove_grid_and_axes(polyplot)
 
         # create x axis for labels
-        label_axis = self._create_label_axis(distr_len, polyplot)
-        polyplot.index_axis = label_axis
-        polyplot.underlays.append(label_axis)
+        axis = self._create_increment_one_axis(polyplot, 1., distr_len, 'bottom')
+        self._add_index_axis(polyplot, axis)
 
         # create y axis for probability density
         #prob_axis = self._create_probability_axis(polyplot)
@@ -132,7 +114,7 @@ class HintonDiagramPlot(PyannoPlotContainer):
 
     #### View definition ######################################################
 
-    resizable_traits_item = Item(
+    resizable_plot_item = Item(
         'plot',
         editor=ComponentEditor(),
         resizable=True,
@@ -160,6 +142,7 @@ def plot_hinton_diagram(data, **kwargs):
     title -- title for the resulting plot
     """
     hinton_diagram = HintonDiagramPlot(data=data, **kwargs)
+    print hinton_diagram.plot
     hinton_diagram.edit_traits(view='resizable_view')
     return hinton_diagram
 

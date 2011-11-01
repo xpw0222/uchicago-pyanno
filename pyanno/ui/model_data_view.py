@@ -8,6 +8,8 @@ from traitsui.item import Item, Label
 from traitsui.view import View
 from pyanno import ModelBt, ModelB, ModelA
 from pyanno.annotations import AnnotationsContainer
+from pyanno.plots import plot_posterior
+from pyanno.plots.annotations_plot import PosteriorPlot
 from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
 from pyanno.ui.annotations_view import AnnotationsView
 from pyanno.ui.model_a_view import ModelAView
@@ -16,6 +18,8 @@ from pyanno.ui.model_b_view import ModelBView
 
 
 # TODO remember last setting of parameters
+from pyanno.ui.posterior_view import PosteriorView
+
 
 class ModelDataView(HasTraits):
 
@@ -152,6 +156,19 @@ class ModelDataView(HasTraits):
         if hasattr(self.model_view, 'plot_theta_samples'):
             self.model_view.plot_theta_samples(samples)
 
+    def _estimate_labels_fired(self):
+        """Compute the posterior over annotations and show it in a new window"""
+        print 'Estimating labels...'
+
+        posterior = self.model.infer_labels(self.annotations)
+        post_plot = PosteriorPlot(posterior=posterior,
+                                  title='Posterior over classes')
+
+        post_view = PosteriorView(posterior_plot=post_plot,
+                                  annotations=self.annotations)
+
+        post_view.edit_traits()
+
 
     ### Views ################################################################
 
@@ -222,7 +239,7 @@ class ModelDataView(HasTraits):
 
         model_data_group = (
             VGroup(
-                Item('info_string', show_label=False, style='readonly'),
+                #Item('info_string', show_label=False, style='readonly'),
                 Item('log_likelihood', label='Log likelihood', style='readonly'),
                 HGroup(
                     Item('ml_estimate',
@@ -235,9 +252,8 @@ class ModelDataView(HasTraits):
                          enabled_when='annotations_are_defined',
                          show_label=False),
                     Item('estimate_labels',
-                         #enabled_when='annotations_are_defined',
-                         show_label=False,
-                         enabled_when='False'),
+                         enabled_when='annotations_are_defined',
+                         show_label=False),
                 ),
                 label = 'Model-data view'
             )
