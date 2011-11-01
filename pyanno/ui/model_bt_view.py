@@ -53,6 +53,25 @@ class GammaView(HasTraits):
             buttons   = [OKButton]
             )
 
+
+class BtThetaView(HasTraits):
+    data = List
+
+    def traits_view(self):
+        return View(
+            Group(Item('data',
+                       editor=TabularEditor(
+                           adapter=Array2DAdapter(ncolumns=len(self.data[0]),
+                                                  format='%.4f',
+                                                  show_index=False),
+                           editable=False
+                       ),
+                       show_label=False)),
+            title     = 'Model B-with-Theta, parameters gamma',
+            width     = 500,
+            height    = 200,
+            resizable = True,
+            buttons   = [OKButton]
             )
 
 
@@ -116,9 +135,16 @@ class ModelBtView(PyannoModelView):
 
 
     def _view_gamma_fired(self):
-        """Create viewer for gamma parameters"""
+        """Create viewer for gamma parameters."""
         gamma_view = GammaView(data=[self.gamma])
         gamma_view.edit_traits()
+
+
+    def _view_theta_fired(self):
+        """Create viewer for theta parameters."""
+        theta_view = BtThetaView(data=[self.model.theta.tolist()])
+        theta_view.edit_traits()
+
 
     #### Traits UI view #########
 
@@ -137,9 +163,7 @@ class ModelBtView(PyannoModelView):
                  resizable=False,
                  show_label=False,
             ),
-            Item('handler.view_theta',
-                 show_label=False,
-                 enabled_when='False'),
+            Item('handler.view_theta', show_label=False),
         )
     )
 
