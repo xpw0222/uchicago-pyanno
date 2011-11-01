@@ -174,5 +174,16 @@ class CopyDataToClipboardTool(BaseTool):
         event = _key_event_repackaging(event)
 
         if event.character == "c"  and _is_control_down(event):
+            # save numpy print options
+            old_printoptions = np.get_printoptions()
+            np.set_printoptions(infstr='numpy.inf', nanstr='numpy.nan',
+                                suppress=True, threshold=1000000,
+                                precision=6)
+
+            # copy data to clipboard
             clipboard.data = repr(self.data)
+
+            # reset numpy print options
+            np.set_printoptions(**old_printoptions)
+
             event.handled = True
