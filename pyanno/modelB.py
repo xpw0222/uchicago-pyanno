@@ -4,7 +4,7 @@ from traits.api import HasStrictTraits, Int, Array
 import numpy as np
 from pyanno.util import (random_categorical, create_band_matrix,
                          warn_missing_vals, normalize, dirichlet_llhood,
-                         is_valid, SMALLEST_FLOAT)
+                         is_valid, SMALLEST_FLOAT, MISSING_VALUE)
 
 class ModelB(HasStrictTraits):
     """Implementation of Model B from Rzhetsky et al.
@@ -472,3 +472,20 @@ class ModelB(HasStrictTraits):
                                           self.theta)
 
         return category
+
+
+    ##### Verify input ########################################################
+
+    def are_annotations_compatible(self, annotations):
+        masked_annotations = np.ma.masked_equal(annotations, MISSING_VALUE)
+
+        if annotations.shape[1] != self.nannotators:
+            return False
+
+        if annotations.max() >= self.nclasses:
+            return False
+
+        if masked_annotations.min() < 0:
+            return False
+
+        return True

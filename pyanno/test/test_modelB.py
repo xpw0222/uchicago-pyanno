@@ -314,5 +314,23 @@ class TestModelB(unittest.TestCase):
         self.assertFalse(np.isnan(objective))
 
 
+    def test_annotations_compatibility(self):
+        nclasses = 3
+        nannotators = 5
+        model = ModelB(nclasses, nannotators)
+
+        # test method that checks annotations compatibility
+        anno = np.array([[0, 1, MV, MV, MV]])
+        self.assertTrue(model.are_annotations_compatible(anno))
+
+        anno = np.array([[0, 0, 0, 0]])
+        self.assertFalse(model.are_annotations_compatible(anno))
+
+        anno = np.array([[4, 0, 0, 0, 0]])
+        self.assertFalse(model.are_annotations_compatible(anno))
+
+        anno = np.array([[-2, MV, MV, MV, MV]])
+        self.assertFalse(model.are_annotations_compatible(anno))
+
 if __name__ == '__main__':
     unittest.main()
