@@ -3,8 +3,8 @@
 # License: Apache license
 
 from traits.has_traits import on_trait_change
-from traits.trait_types import Instance, Str, Range
-from traitsui.group import VGroup
+from traits.trait_types import Instance, Str, Range, Button
+from traitsui.group import VGroup, VGrid
 from traitsui.include import Include
 from traitsui.item import Item
 from traitsui.menu import OKButton
@@ -15,6 +15,7 @@ from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.plots.matrix_plot import MatrixPlot
 from pyanno.plots.theta_plot import ThetaPlot
 from pyanno.ui.model_view import PyannoModelView, NewModelDialog
+from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
 
 
 MODEL_A_NAME = 'Model A (full model)'
@@ -36,8 +37,12 @@ class ModelAView(PyannoModelView):
     """ Traits UI Model/View for 'ModelA' objects.
     """
 
+    # name of the model (inherited from PyannoModelView)
     model_name = MODEL_A_NAME
+
+    # dialog to instantiated when creating a new model
     new_model_dialog_class = NewModelADialog
+
 
     @classmethod
     def _create_model_from_dialog(cls, dialog):
@@ -65,19 +70,51 @@ class ModelAView(PyannoModelView):
 
 
     #### UI traits
+
     theta_plot = Instance(ThetaPlot)
+
     omega_hinton_diagram = Instance(HintonDiagramPlot)
 
-    parameters_group = VGroup(
+
+    #### Actions
+
+    view_omega = Button(label='View...')
+
+    view_theta = Button(label='View...')
+
+
+    def _view_theta_fired(self):
+        """Create viewer for theta parameters."""
+        theta_view = ParametersTabularView(
+            title = 'Model A, parameters theta',
+            data = [self.model.theta.tolist()]
+        )
+        theta_view.edit_traits()
+
+
+    def _view_omega_fired(self):
+        """Create viewer for parameters omega."""
+        omega_view = ParametersTabularView(
+            title = 'Model A, parameters omega',
+            data = [self.model.omega.tolist()]
+        )
+        omega_view.edit_traits()
+
+
+    #### Traits UI view #########
+
+    parameters_group = VGrid(
         Item('handler.omega_hinton_diagram',
              style='custom',
              resizable=False,
              show_label=False),
+        Item('handler.view_omega', show_label=False),
         Item('handler.theta_plot',
              style='custom',
              resizable=False,
              show_label=False,
         ),
+        Item('handler.view_theta', show_label=False),
     )
 
     body = VGroup(
