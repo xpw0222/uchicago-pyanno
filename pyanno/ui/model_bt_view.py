@@ -39,21 +39,20 @@ class GammaView(HasTraits):
     def traits_view(self):
         return View(
             Group(Item('data',
-                       editor=TabularEditor
-                           (
+                       editor=TabularEditor(
                            adapter=Array2DAdapter(ncolumns=len(self.data[0]),
-                                                  show_index=False)),
+                                                  format='%.4f',
+                                                  show_index=False),
+                           editable=False
+                       ),
                        show_label=False)),
-            title     = 'Model B-with-Theta, gamma parameters',
+            title     = 'Model B-with-Theta, parameters gamma',
             width     = 500,
             height    = 200,
             resizable = True,
             buttons   = OKCancelButtons
             )
 
-
-def vcenter(item):
-    return VGroup(Spring(),item,Spring())
 
 class ModelBtView(PyannoModelView):
     """ Traits UI Model/View for 'ModelBt' objects.
@@ -67,7 +66,7 @@ class ModelBtView(PyannoModelView):
         return ModelBt.create_initial_state(dialog.nclasses)
 
 
-    #### Model properties #######
+    #### Model properties
     gamma = List(CFloat)
 
 
@@ -89,25 +88,37 @@ class ModelBtView(PyannoModelView):
         self.gamma_hinton.data = self.gamma
 
 
-    def plot_theta_samples(self, theta_samples):
-        self.theta_view.theta_samples = theta_samples
-        self.theta_view.theta_samples_valid = True
+    #### UI-related traits
 
-
-    #### Traits UI view #########
     gamma_hinton = Instance(HintonDiagramPlot)
 
     theta_view = Instance(ThetaPlot)
 
-    ## Actions ##
-    edit_gamma = Button(label='Edit...')
-    edit_theta = Button(label='Edit...')
-    generate_data = Button(label='Generate annotations...')
 
-    def _edit_gamma_fired(self):
-        """Create editor for gamma parameters"""
+    def _gamma_hinton_default(self):
+        return HintonDiagramPlot(data = self.gamma,
+                                 title='Gamma parameters, P(label=k)')
+
+
+    def _theta_view_default(self):
+        self.theta_view = ThetaPlot(model=self.model)
+        self.theta_view._update_plot_data()
+        return self.theta_view
+
+
+    #### Actions
+
+    view_gamma = Button(label='View...')
+
+    view_theta = Button(label='View...')
+
+
+    def _view_gamma_fired(self):
+        """Create viewer for gamma parameters"""
         gamma_view = GammaView(data=[self.gamma])
-        gamma_view.edit_traits(kind='livemodal')
+        gamma_view.edit_traits()
+
+    #### Traits UI view #########
 
     body = VGroup(
         Include('info_group'),
@@ -118,29 +129,19 @@ class ModelBtView(PyannoModelView):
                  show_label=False,
                  width=300
             ),
-            Item('handler.edit_gamma', show_label=False),
+            Item('handler.view_gamma', show_label=False),
             Item('handler.theta_view',
                  style='custom',
                  resizable=False,
                  show_label=False,
             ),
-            Item('handler.edit_theta',
-                         show_label=False,
-                         enabled_when='False'),
+            Item('handler.view_theta',
+                 show_label=False,
+                 enabled_when='False'),
         )
     )
 
     traits_view = View(body, buttons=[OKButton], resizable=True)
-
-
-    def _gamma_hinton_default(self):
-        return HintonDiagramPlot(data = self.gamma,
-                                 title='Gamma parameters, P(label=k)')
-
-    def _theta_view_default(self):
-        self.theta_view = ThetaPlot(model=self.model)
-        self.theta_view._update_plot_data()
-        return self.theta_view
 
 
 #### Testing and debugging ####################################################
