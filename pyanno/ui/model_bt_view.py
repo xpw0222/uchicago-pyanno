@@ -146,6 +146,11 @@ class ModelBtView(PyannoModelView):
         theta_view.edit_traits()
 
 
+    def plot_theta_samples(self, theta_samples):
+         self.theta_view.theta_samples = theta_samples
+         self.theta_view.theta_samples_valid = True
+
+
     #### Traits UI view #########
 
     body = VGroup(
