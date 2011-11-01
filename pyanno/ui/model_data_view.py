@@ -23,42 +23,79 @@ from pyanno.ui.posterior_view import PosteriorView
 
 class ModelDataView(HasTraits):
 
+    #### Information about available models
+
     model_name = Enum('Model B-with-theta',
                       'Model B',
                       'Model A')
+
     _model_name_to_class = {
         'Model B-with-theta': ModelBt,
         'Model B': ModelB,
         'Model A': ModelA
     }
+
     _model_name_to_view = {
         'Model B-with-theta': ModelBtView,
         'Model B': ModelBView,
         'Model A': ModelAView
     }
 
+    #### Model-related traits
+
+    # the annotations model
     model = Any
+
+    # Traits UI view of the model
     model_view = Instance(ModelView)
+
+    # fired when the model is updates
     model_updated = Event
+
+    # parameters view should not update when this trait is False
     model_update_suspended = Bool(False)
 
-    #annotations_container = Instance(AnnotationsContainer)
+
+    #### Annotation-related traits
+
+    # File trait to load a new annotations file
     annotations_file = File
+
+    # True then annotations are loaded correctly
     annotations_are_defined = Bool(False)
+
+    # fired when annotations are updated
     annotations_updated = Event
+
+    # Traits UI view of the annotations
     annotations_view = Instance(AnnotationsView)
+
+    # Traits UI view of the annotations' statistics
     annotations_stats_view = Instance(AnnotationsStatisticsView)
 
+    # shortcut to the annotations
     annotations = Property
     def _get_annotations(self):
         return self.annotations_view.annotations_container.annotations
 
+    # property that combines information from the model and the annotations
+    # to give a consistent number of classes
     nclasses = Property
     def _get_nclasses(self):
         return max(self.model.nclasses, self.annotations.max() + 1)
 
+    # info string -- currently not used
     info_string = Str
+
+    # used to display the current log likelihood
     log_likelihood = Float
+
+
+    def _annotations_view_default(self):
+        anno = AnnotationsContainer.from_array([[0]], name='<undefined>')
+        return AnnotationsView(annotations_container = anno,
+                               nclasses = self.model.nclasses)
+
 
     @on_trait_change('annotations_file')
     def _update_annotations_file(self):
@@ -74,10 +111,18 @@ class ModelDataView(HasTraits):
         self.annotations_are_defined = True
         self.annotations_updated = True
 
+
     @on_trait_change('annotations_updated,model_updated')
     def _update_log_likelihood(self):
         if self.annotations_are_defined:
             self.log_likelihood = self.model.log_likelihood(self.annotations)
+
+
+    @on_trait_change('model.nclasses')
+    def _update_nclasses(self):
+        self.annotations_view.nclasses = self.model.nclasses
+        self.annotations_view.annotations_updated = True
+
 
     @on_trait_change('model,model:theta,model:gamma')
     def _fire_model_updated(self):
@@ -86,29 +131,35 @@ class ModelDataView(HasTraits):
             if self.model_view is not None:
                 self.model_view.model_updated = True
 
-    def _annotations_view_default(self):
-        anno = AnnotationsContainer.from_array([[0]], name='<undefined>')
-        return AnnotationsView(annotations_container = anno,
-                               nclasses = self.model.nclasses)
-
-    @on_trait_change('model.nclasses')
-    def _update_nclasses(self):
-        self.annotations_view.nclasses = self.model.nclasses
-        self.annotations_view.annotations_updated = True
 
     ### Actions ##############################################################
 
-    ### Model creation actions
+    #### Model creation actions
+
     # FIXME tooltip begins with "specifies..."
+
+    # create a new model
     new_model = Button(label='New model...')
+
     # TODO: get_info shows docstring
+    # show informations about the selected model
     get_info_on_model = Button(label='Info...')
 
+
+    #### Model <-> data computations
+
+    # execute Maximum Likelihood estimation of parameters
     ml_estimate = Button(label='ML estimate...',
                          desc=('Maximum Likelihood estimate of model '
                                'parameters'))
+
+    # execute MAP estimation of parameters
     map_estimate = Button(label='MAP estimate...')
+
+    # draw samples from the posterior over accuracy
     sample_posterior_over_accuracy = Button(label='Sample parameters...')
+
+    # compute posterior over label classes
     estimate_labels = Button(label='Estimate labels...')
 
     def _new_model_fired(self):
