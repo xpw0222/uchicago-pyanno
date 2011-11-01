@@ -98,7 +98,7 @@ class ModelA(HasStrictTraits):
     nannotators = Int(8)
 
     # number of annotators rating each item in the loop design
-    annotators_per_item = Int(3)
+    nannotators_per_item = Int(3)
 
     #### Model parameters
 
@@ -221,7 +221,7 @@ class ModelA(HasStrictTraits):
 
 
     def _generate_incorrectness(self, n, theta_triplet):
-        _rnd = np.random.rand(n, self.annotators_per_item)
+        _rnd = np.random.rand(n, self.nannotators_per_item)
         incorrect = _rnd >= theta_triplet
         return incorrect
 
@@ -750,3 +750,25 @@ class ModelA(HasStrictTraits):
         alpha[4:7] = a5
 
         return alpha
+
+
+    ##### Verify input ########################################################
+
+    def are_annotations_compatible(self, annotations):
+        masked_annotations = np.ma.masked_equal(annotations, MISSING_VALUE)
+
+        if annotations.shape[1] != self.nannotators:
+            return False
+
+        if annotations.max() >= self.nclasses:
+            return False
+
+        if masked_annotations.min() < 0:
+            return False
+
+        # exactly 3 annotations per row
+        nvalid = (~masked_annotations.mask).sum(1)
+        if not np.all(nvalid == self.nannotators_per_item):
+            return False
+
+        return True

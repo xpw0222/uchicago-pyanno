@@ -241,5 +241,26 @@ class TestModelA(unittest.TestCase):
         self.assertFalse(np.isnan(model.log_likelihood(annotations)))
 
 
+    def test_annotations_compatibility(self):
+        nclasses = 3
+        model = ModelA.create_initial_state(nclasses)
+
+        # test method that checks annotations compatibility
+        anno = np.array([[-1, -1, 0, 0, 1, -1, -1, -1]])
+        self.assertTrue(model.are_annotations_compatible(anno))
+
+        anno = np.array([[-1, -1, 0, 0, 1, -1, -1, -1, -1]])
+        self.assertFalse(model.are_annotations_compatible(anno))
+
+        anno = np.array([[-1, -1, 0, 0, 3, -1, -1, -1]])
+        self.assertFalse(model.are_annotations_compatible(anno))
+
+        anno = np.array([[-1, -1, 0, 0, 2, 1, -1, -1]])
+        self.assertFalse(model.are_annotations_compatible(anno))
+
+        anno = np.array([[0, 0, -1, -2, -1, -1, -1, -1]])
+        self.assertFalse(model.are_annotations_compatible(anno))
+
+
 if __name__ == '__main__':
     unittest.main()
