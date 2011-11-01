@@ -246,19 +246,19 @@ class TestModelA(unittest.TestCase):
         model = ModelA.create_initial_state(nclasses)
 
         # test method that checks annotations compatibility
-        anno = np.array([[-1, -1, 0, 0, 1, -1, -1, -1]])
+        anno = np.array([[MV, MV, 0, 0, 1, MV, MV, MV]])
         self.assertTrue(model.are_annotations_compatible(anno))
 
-        anno = np.array([[-1, -1, 0, 0, 1, -1, -1, -1, -1]])
+        anno = np.array([[MV, MV, 0, 0, 1, MV, MV, MV, MV]])
         self.assertFalse(model.are_annotations_compatible(anno))
 
-        anno = np.array([[-1, -1, 0, 0, 3, -1, -1, -1]])
+        anno = np.array([[MV, MV, 0, 0, 3, MV, MV, MV]])
         self.assertFalse(model.are_annotations_compatible(anno))
 
-        anno = np.array([[-1, -1, 0, 0, 2, 1, -1, -1]])
+        anno = np.array([[MV, MV, 0, 0, 2, 1, MV, MV]])
         self.assertFalse(model.are_annotations_compatible(anno))
 
-        anno = np.array([[0, 0, -1, -2, -1, -1, -1, -1]])
+        anno = np.array([[0, 0, MV, -2, MV, MV, MV, MV]])
         self.assertFalse(model.are_annotations_compatible(anno))
 
 
