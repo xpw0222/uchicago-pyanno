@@ -9,7 +9,7 @@ from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.group import VGrid
 from traitsui.include import Include
 from traitsui.item import  Spring
-from traitsui.menu import OKButton, OKCancelButtons
+from traitsui.menu import OKButton
 from traits.api import Instance
 import numpy as np
 from pyanno.modelBt import ModelBt
@@ -50,7 +50,9 @@ class GammaView(HasTraits):
             width     = 500,
             height    = 200,
             resizable = True,
-            buttons   = OKCancelButtons
+            buttons   = [OKButton]
+            )
+
             )
 
 
