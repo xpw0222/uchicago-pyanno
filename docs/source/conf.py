@@ -26,7 +26,8 @@ sys.path.insert(0, os.path.abspath('./sphinxext'))
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 #extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.pngmath', 'sphinx.ext.viewcode']
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.pngmath', 'sphinx.ext.viewcode']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage',
+              'sphinx.ext.pngmath', 'sphinx.ext.viewcode', 'refactor_doc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -219,20 +220,3 @@ man_pages = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
 
-
-
-from enamldoc import FunctionDocstring, ClassDocstring
-
-def new_docstring(app, what, name, obj, options, lines):
-
-    verbose = False
-
-    if ('class' in what):
-        ClassDocstring(lines, verbose=verbose)
-
-    elif ('function' in what) or ('method' in what):
-        FunctionDocstring(lines, verbose=verbose)
-
-
-def setup(app):
-    app.connect('autodoc-process-docstring', new_docstring)
