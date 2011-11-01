@@ -6,9 +6,9 @@ from traitsui.group import HGroup, VGroup
 from traitsui.handler import ModelView
 from traitsui.item import Item, Label
 from traitsui.view import View
+from traitsui.message import error
 from pyanno import ModelBt, ModelB, ModelA
 from pyanno.annotations import AnnotationsContainer
-from pyanno.plots import plot_posterior
 from pyanno.plots.annotations_plot import PosteriorPlot
 from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
 from pyanno.ui.annotations_view import AnnotationsView
@@ -16,6 +16,7 @@ from pyanno.ui.model_a_view import ModelAView
 from pyanno.ui.model_bt_view import ModelBtView
 from pyanno.ui.model_b_view import ModelBView
 
+import numpy as np
 
 # TODO remember last setting of parameters
 from pyanno.ui.posterior_view import PosteriorView
@@ -115,7 +116,11 @@ class ModelDataView(HasTraits):
     @on_trait_change('annotations_updated,model_updated')
     def _update_log_likelihood(self):
         if self.annotations_are_defined:
-            self.log_likelihood = self.model.log_likelihood(self.annotations)
+            if not self.model.are_annotations_compatible(self.annotations):
+                self.log_likelihood = np.nan
+            else:
+                self.log_likelihood = self.model.log_likelihood(
+                    self.annotations)
 
 
     @on_trait_change('model.nclasses')
@@ -162,6 +167,7 @@ class ModelDataView(HasTraits):
     # compute posterior over label classes
     estimate_labels = Button(label='Estimate labels...')
 
+
     def _new_model_fired(self):
         """Create new model."""
 
@@ -176,49 +182,77 @@ class ModelDataView(HasTraits):
             self.model_view = model_view
             self.model_updated = True
 
-    def _ml_estimate_fired(self):
-        """Run ML estimation of parameters."""
-        print 'ML estimate...'
-        self.model_update_suspended = True
-        self.model.mle(self.annotations)
-        self.model_update_suspended = False
+
+    def _action_on_model(self, method, *args, **kwargs):
+        """Call method on model, taking care of exception handling"""
+
+        res = None
+        try:
+            self.model_update_suspended = True
+            # execute action
+            res = method(*args, **kwargs)
+
+        except ValueError as err:
+            # make sure that error belongs to pyanno
+            errmsg = err.args[0]
+            if 'Annotations' in errmsg:
+                error('Error: ' + errmsg)
+
+        except:
+            # re-raise exception if it has not been handled
+            raise
+
+        finally:
+            self.model_update_suspended = False
 
         self._fire_model_updated()
+        return res
+
+
+    def _ml_estimate_fired(self):
+        """Run ML estimation of parameters."""
+
+        print 'ML estimate...'
+        self._action_on_model(self.model.mle, self.annotations)
+
 
     def _map_estimate_fired(self):
         """Run ML estimation of parameters."""
-        print 'MAP estimate...'
-        self.model_update_suspended = True
-        self.model.map(self.annotations)
-        self.model_update_suspended = False
 
-        self._fire_model_updated()
+        print 'MAP estimate...'
+        self._action_on_model(self.model.map, self.annotations)
+
 
     def _sample_posterior_over_accuracy_fired(self):
         """Sample the posterior of the parameters `theta`."""
+
         print 'Sample...'
-        self.model_update_suspended = True
         nsamples = 100
-        samples = self.model.sample_posterior_over_accuracy(
-            self.annotations,
-            nsamples)
-        self.model_update_suspended = False
-        # TODO: delegate plot to model views
-        if hasattr(self.model_view, 'plot_theta_samples'):
+        samples = self._action_on_model(
+            self.model.sample_posterior_over_accuracy,
+            self.annotations, nsamples
+        )
+
+        if (samples is not None
+            and hasattr(self.model_view, 'plot_theta_samples')):
             self.model_view.plot_theta_samples(samples)
+
 
     def _estimate_labels_fired(self):
         """Compute the posterior over annotations and show it in a new window"""
+
         print 'Estimating labels...'
+        posterior = self._action_on_model(self.model.infer_labels,
+                                          self.annotations)
 
-        posterior = self.model.infer_labels(self.annotations)
-        post_plot = PosteriorPlot(posterior=posterior,
-                                  title='Posterior over classes')
+        if posterior is not None:
+            post_plot = PosteriorPlot(posterior=posterior,
+                                      title='Posterior over classes')
 
-        post_view = PosteriorView(posterior_plot=post_plot,
-                                  annotations=self.annotations)
+            post_view = PosteriorView(posterior_plot=post_plot,
+                                      annotations=self.annotations)
 
-        post_view.edit_traits()
+            post_view.edit_traits()
 
 
     ### Views ################################################################
