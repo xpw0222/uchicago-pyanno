@@ -239,7 +239,7 @@ class ModelDataView(HasTraits):
 
         model_data_group = (
             VGroup(
-                Item('info_string', show_label=False, style='readonly'),
+                #Item('info_string', show_label=False, style='readonly'),
                 Item('log_likelihood', label='Log likelihood', style='readonly'),
                 HGroup(
                     Item('ml_estimate',
