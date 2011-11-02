@@ -189,11 +189,11 @@ class ModelDataView(HasTraits):
         a failure of the long-running action.
         """
         self.model_update_suspended = False
-        self._fire_model_updated()
 
 
     def _action_sucess(self, result):
         self._action_finally()
+        self._fire_model_updated()
 
 
     def _action_failure(self, err):
@@ -269,10 +269,12 @@ class ModelDataView(HasTraits):
 
         message = 'Sampling from the posterior over accuracy'
         nsamples = 100
+        # TODO remove kwargs after test phase is over
         self._action_on_model(
             message,
             self.model.sample_posterior_over_accuracy,
             args=[self.annotations, nsamples],
+            kwargs={'step_optimization_nsamples': 100},
             on_success=self._sample_posterior_success
         )
 
