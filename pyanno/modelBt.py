@@ -171,7 +171,8 @@ class ModelBt(HasStrictTraits):
                                           params_start,
                                           args=(counts,),
                                           xtol=1e-4, ftol=1e-4,
-                                          disp=True, maxiter=2000)
+                                          disp=False, maxiter=10000)
+
 
         # parse arguments and update
         self.gamma, self.theta = self._vector_to_params(params_best)

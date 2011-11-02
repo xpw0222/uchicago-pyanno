@@ -385,7 +385,7 @@ class ModelA(HasStrictTraits):
                                           params_start,
                                           args=(counts,),
                                           xtol=1e-4, ftol=1e-4, disp=False,
-                                          maxiter=2000)
+                                          maxiter=10000)
 
         logger.info('Parameters optimization finished')
 
