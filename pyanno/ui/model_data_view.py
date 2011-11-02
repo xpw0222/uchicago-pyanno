@@ -1,10 +1,12 @@
 """View for model and data pair."""
 from traits.has_traits import HasTraits, on_trait_change
-from traits.trait_types import Any, File, Instance, Button, Enum, Str, Bool, Float, Event
+from traits.trait_types import Any, File, Instance, Button, Enum, Str, Bool, Float, Event, Range, Int
 from traits.traits import Property
+from traitsui.editors.range_editor import RangeEditor
 from traitsui.group import HGroup, VGroup
 from traitsui.handler import ModelView
 from traitsui.item import Item, Label
+from traitsui.menu import OKCancelButtons
 from traitsui.view import View
 from traitsui.message import error
 from pyanno import ModelBt, ModelB, ModelA
@@ -268,7 +270,17 @@ class ModelDataView(HasTraits):
         """Sample the posterior of the parameters `theta`."""
 
         message = 'Sampling from the posterior over accuracy'
-        nsamples = 100
+
+        # open dialog asking for number of samples
+        params = _SamplingParamsDialog()
+        dialog_ui = params.edit_traits(kind='modal')
+
+        if not dialog_ui.result:
+            # user pressed "Cancel"
+            return
+
+        nsamples = params.nsamples
+
         # TODO remove kwargs after test phase is over
         self._action_on_model(
             message,
@@ -412,6 +424,18 @@ class ModelDataView(HasTraits):
 
         return full_view
 
+
+class _SamplingParamsDialog(HasTraits):
+    nsamples = Int(200)
+    traits_view = View(
+        Item('nsamples',
+             label  = 'Number of samples',
+             editor = RangeEditor(mode='xslider',
+                                  low=100, high=50000,
+                                  is_float=False)
+        ),
+        buttons = OKCancelButtons
+    )
 
 
 #### Testing and debugging ####################################################
