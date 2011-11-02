@@ -6,10 +6,9 @@ from traitsui.api import ModelView, View, VGroup
 from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.group import HGroup
 from traitsui.item import Item, Spring
-from traitsui.menu import OKCancelButtons
 from pyanno.annotations import AnnotationsContainer
-from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.plots.hinton_plot import HintonDiagramPlot
+from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
 from pyanno.util import labels_frequency, is_valid
 
 import numpy as np
@@ -20,26 +19,6 @@ Number of annotations: {}
 Number of annotators: {}
 Number of classes: {}
 Labels: {}"""
-
-
-class DataView(HasTraits):
-    data = Array(dtype=object)
-
-    def traits_view(self):
-        return View(
-            VGroup(Item('data',
-                        editor=TabularEditor
-                            (
-                            adapter=Array2DAdapter(ncolumns=len(self.data[0]),
-                                                   format='%s',
-                                                   show_index=False)),
-                        show_label=False)),
-            title='Annotations (-1 is missing value)',
-            width=500,
-            height=800,
-            resizable=True,
-            buttons=OKCancelButtons
-        )
 
 
 class AnnotationsView(HasStrictTraits):
@@ -90,16 +69,24 @@ class AnnotationsView(HasStrictTraits):
     frequency_plot = Instance(HintonDiagramPlot)
 
     ## edit data button opens annotations editor
-    edit_data = Button(label='Edit annotations...')
+    edit_data = Button(label='View annotations...')
 
     def _edit_data_fired(self):
-        data_view = DataView(data=self.annotations_container.raw_annotations)
-        data_view.edit_traits(kind='modal')
-        self.annotations_container = AnnotationsContainer.from_array(
-            data_view.data,
-            name = self.annotations_container.name
+        data_view = ParametersTabularView(
+            data   = self.annotations_container.raw_annotations,
+            title  = 'Annotations',
+            format = '%s',
+            height = 800
         )
-        self.annotations_updated = True
+        data_view.edit_traits(kind='modal')
+
+        # FIXME: not editable at the moment
+
+        #self.annotations_container = AnnotationsContainer.from_array(
+        #    data_view.data,
+        #    name = self.annotations_container.name
+        #)
+        #self.annotations_updated = True
 
 
     ### View definition ###
