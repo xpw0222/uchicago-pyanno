@@ -76,8 +76,7 @@ class ThetaPlot(ModelView, PyannoPlotContainer):
         return range2d
 
 
-    @on_trait_change('model:theta,theta_samples,theta_samples_valid',
-                     post_init=True)
+    @on_trait_change('redraw', post_init=True)
     def _update_range2d(self):
         self.theta_plot.range2d = self._compute_range2d()
 

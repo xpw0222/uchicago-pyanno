@@ -67,6 +67,7 @@ class ModelAView(PyannoModelView):
     def plot_theta_samples(self, theta_samples):
         self.theta_plot.theta_samples = theta_samples
         self.theta_plot.theta_samples_valid = True
+        self.theta_plot.redraw = True
 
 
     #### UI traits
