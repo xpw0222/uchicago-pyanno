@@ -163,7 +163,7 @@ def _fleiss_kappa_nannotations(nannotations):
     nannotations_per_item = _nanno_sum[0]
     if not np.all(_nanno_sum == nannotations_per_item):
         raise PyannoValueError(
-            'Number of annotations per item should be constant.'
+            'Number of annotations per item is not constant.'
         )
 
     # empirical frequency of categories
