@@ -3,6 +3,7 @@
 # License: Apache license
 
 from traits.api import HasTraits, List, Str
+from traits.trait_types import Int
 from traitsui.api import View, Group, TabularEditor, OKButton, Item
 from pyanno.ui.arrayview import Array2DAdapter
 
@@ -17,19 +18,28 @@ class ParametersTabularView(HasTraits):
     # title of the view window
     title = Str
 
+    # format of displayed data
+    format = Str('%.4f')
+
+    # height of view
+    height = Int(200)
+
+    # width of view
+    width = Int(500)
+
     def traits_view(self):
         return View(
             Group(Item('data',
                        editor=TabularEditor(
                            adapter=Array2DAdapter(ncolumns=len(self.data[0]),
-                                                  format='%.4f',
+                                                  format=self.format,
                                                   show_index=False),
                            editable=False
                        ),
                        show_label=False)),
             title     = self.title,
-            width     = 500,
-            height    = 200,
+            width     = self.width,
+            height    = self.height,
             resizable = True,
             buttons   = [OKButton]
             )
