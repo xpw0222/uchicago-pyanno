@@ -1,6 +1,6 @@
 """Defines objects to create and manipulate raw annotations."""
 
-from traits.has_traits import HasStrictTraits
+from traits.has_traits import HasStrictTraits, cached_property
 from traits.trait_numeric import Array
 from traits.trait_types import Str, List, Int
 from traits.traits import Property
@@ -62,6 +62,8 @@ class AnnotationsContainer(HasStrictTraits):
 
     # annotations
     annotations = Property(Array, depends_on='raw_annotations')
+
+    @cached_property
     def _get_annotations(self):
         nitems, nannotators = len(self.raw_annotations), self.nannotators
         anno = np.empty((nitems, nannotators), dtype=int)
