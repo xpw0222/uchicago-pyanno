@@ -12,6 +12,9 @@ from pyanno.plots.matrix_plot import MatrixPlot
 
 
 # statistical measures for pairs of annotators
+from pyanno.util import PyannoValueError
+
+
 PAIRWISE_STATS = {
     "Scott's Pi": measures.scotts_pi,
     "Cohen's Kappa": measures.cohens_kappa,
@@ -65,15 +68,25 @@ class AnnotationsStatisticsView(HasTraits):
     def _update_stats_view(self):
         if self.statistics_name in GLOBAL_STATS:
             stat_func = GLOBAL_STATS[self.statistics_name]
-            res = stat_func(self.annotations, nclasses=self.nclasses)
+
+            try:
+                res = stat_func(self.annotations, nclasses=self.nclasses)
+            except PyannoValueError as e:
+                print 'INFO:', e
+                res = np.nan
 
             self.stats_view = _SingleStatView(value=res,
                                               name=self.statistics_name)
 
         else:
             stat_func = PAIRWISE_STATS[self.statistics_name]
-            res = measures.pairwise_matrix(stat_func, self.annotations,
-                                           nclasses=self.nclasses)
+
+            try:
+                res = measures.pairwise_matrix(stat_func, self.annotations,
+                                               nclasses=self.nclasses)
+            except PyannoValueError as e:
+                print 'INFO:', e
+                res = np.nan
 
             self.stats_view = MatrixPlot(matrix=res,
                                               colormap_low=-1.0,
