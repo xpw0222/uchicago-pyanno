@@ -179,7 +179,9 @@ class ThetaPlot(ModelView, PyannoPlotContainer):
             'xsamples':
                 [] if invalid else samples,
             'ysamples':
-                [] if invalid else np.zeros((nsamples,)) + idx + 1.2,
+                [] if invalid else (
+                    np.random.random(size=(nsamples,))*0.1-0.05 + idx + 1.2
+                    ),
             'min':
                 [] if invalid else [perc5],
             'max':
@@ -205,13 +207,14 @@ class ThetaPlot(ModelView, PyannoPlotContainer):
 
         plot_data = self.theta_plot_data
 
-        for idx, th in enumerate(theta):
-            plot_data.set_data('x%d' % idx, [th])
-            plot_data.set_data('y%d' % idx, [idx+1.2])
+        if plot_data is not None:
+            for idx, th in enumerate(theta):
+                plot_data.set_data('x%d' % idx, [th])
+                plot_data.set_data('y%d' % idx, [idx+1.2])
 
-            for name_value in self._samples_names_and_values(idx):
-                name, value = name_value
-                plot_data.set_data(name, value)
+                for name_value in self._samples_names_and_values(idx):
+                    name, value = name_value
+                    plot_data.set_data(name, value)
 
 
     #### View definition #####################################################
