@@ -197,7 +197,7 @@ class ModelDataView(HasTraits):
         self.model_update_suspended = False
 
 
-    def _action_sucess(self, result):
+    def _action_success(self, result):
         self._action_finally()
         self._fire_model_updated()
 
@@ -229,7 +229,7 @@ class ModelDataView(HasTraits):
         if args is None: args = []
         if kwargs is None: kwargs = {}
 
-        if on_success is None: on_success = self._action_sucess
+        if on_success is None: on_success = self._action_success
         if on_failure is None: on_failure = self._action_failure
 
         self.model_update_suspended = True
@@ -284,12 +284,10 @@ class ModelDataView(HasTraits):
 
         nsamples = params.nsamples
 
-        # TODO remove kwargs after test phase is over
         self._action_on_model(
             message,
             self.model.sample_posterior_over_accuracy,
             args=[self.annotations, nsamples],
-            kwargs={'step_optimization_nsamples': 100},
             on_success=self._sample_posterior_success
         )
 
