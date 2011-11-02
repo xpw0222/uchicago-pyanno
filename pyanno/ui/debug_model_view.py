@@ -1,6 +1,6 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Authors: Mark Dickinson and Martin Chilvers
-# License: Apache license
+# License: Modified BSD license (2-clause)
 
 """ Base class for Model/View's to provide a python shell for debugging. """
 

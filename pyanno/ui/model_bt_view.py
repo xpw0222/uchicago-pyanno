@@ -1,20 +1,17 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Pietro Berkes <pberkes@enthought.com>
-# License: Apache license
+# License: Modified BSD license (2-clause)
 
-from traits.has_traits import HasTraits, on_trait_change
+from traits.has_traits import on_trait_change
 from traits.trait_types import Button, List, CFloat, Str, Range
-from traitsui.api import View, Item, Group, VGroup, HGroup
-from traitsui.editors.tabular_editor import TabularEditor
+from traitsui.api import View, Item, VGroup
 from traitsui.group import VGrid
 from traitsui.include import Include
-from traitsui.item import  Spring
 from traitsui.menu import OKButton
 from traits.api import Instance
 import numpy as np
 from pyanno.modelBt import ModelBt
 
-from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.plots.theta_plot import ThetaPlot
 from pyanno.ui.model_view import PyannoModelView, NewModelDialog

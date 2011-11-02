@@ -1,11 +1,10 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Pietro Berkes <pberkes@enthought.com>
-# License: Apache license
+# License: Modified BSD license (2-clause)
 
 from traits.has_traits import on_trait_change, HasTraits
 from traits.trait_numeric import Array
 from traits.trait_types import Instance, Str, Range, Button, Int
-from traits.traits import Property
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.group import VGroup, VGrid
 from traitsui.include import Include

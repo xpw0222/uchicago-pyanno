@@ -1,6 +1,6 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Mark Dickinson and Martin Chilvers
-# License: Apache license
+# License: Modified BSD license (2-clause)
 
 
 """ A progress dialog that shows a 'pulse' as opposed to progress ;^) """

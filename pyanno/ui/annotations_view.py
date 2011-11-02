@@ -1,17 +1,16 @@
-from traits.has_traits import HasTraits, HasStrictTraits, on_trait_change
-from traits.trait_numeric import Array
-from traits.trait_types import Instance, Int, List, ListFloat, Str, Button, Event
-from traits.traits import Property
-from traitsui.api import ModelView, View, VGroup
-from traitsui.editors.tabular_editor import TabularEditor
+# Copyright (c) 2011, Enthought, Ltd.
+# Author: Pietro Berkes <pberkes@enthought.com>
+# License: Modified BSD license (2-clause)
+
+from traits.has_traits import HasTraits, on_trait_change
+from traits.trait_types import Instance, Int, ListFloat, Str, Button, Event
+from traitsui.api import  View, VGroup
 from traitsui.group import HGroup
 from traitsui.item import Item, Spring
 from pyanno.annotations import AnnotationsContainer
 from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
 from pyanno.util import labels_frequency, is_valid
-
-import numpy as np
 
 
 ANNOTATIONS_INFO_STR = """Annotations file {}
@@ -21,7 +20,7 @@ Number of classes: {}
 Labels: {}"""
 
 
-class AnnotationsView(HasStrictTraits):
+class AnnotationsView(HasTraits):
     """ Traits UI Model/View for annotations."""
 
     ### Model-related traits ###

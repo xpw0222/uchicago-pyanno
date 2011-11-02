@@ -1,6 +1,6 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Pietro Berkes <pberkes@enthought.com>
-# License: Apache
+# License: Modified BSD license (2-clause)
 
 from tables.array import Array
 from traits.has_traits import HasTraits

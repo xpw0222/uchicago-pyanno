@@ -1,6 +1,7 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Mark Dickinson and Martin Chilvers
-# License: Apache license
+# License: Modified BSD license (2-clause)
+
 
 """ A long running job (aka operation) that requires a progress bar. """
 

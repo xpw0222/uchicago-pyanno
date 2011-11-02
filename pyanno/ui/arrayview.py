@@ -1,4 +1,6 @@
-import numpy as np
+# Copyright (c) 2011, Enthought, Ltd.
+# Author: Pietro Berkes <pberkes@enthought.com>
+# License: Modified BSD license (2-clause)
 
 from traits.api import HasTraits, Property, Array
 from traits.trait_types import List, Int, Bool, Str

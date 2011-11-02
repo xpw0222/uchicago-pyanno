@@ -1,6 +1,7 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Pietro Berkes <pberkes@enthought.com>
-# License: Apache license
+# License: Modified BSD license (2-clause)
+
 from chaco.array_plot_data import ArrayPlotData
 from chaco.color_bar import ColorBar
 from chaco.data_range_1d import DataRange1D

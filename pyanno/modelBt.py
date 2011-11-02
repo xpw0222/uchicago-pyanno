@@ -1,3 +1,7 @@
+# Copyright (c) 2011, Enthought, Ltd.
+# Authors: Pietro Berkes <pberkes@enthought.com>, Andrey Rzhetsky
+# License: Modified BSD license (2-clause)
+
 """Definition of model B-with-theta."""
 
 from traits.api import HasStrictTraits, Int, Array

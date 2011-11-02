@@ -1,3 +1,8 @@
+# Copyright (c) 2011, Enthought, Ltd.
+# Authors: Pietro Berkes <pberkes@enthought.com>, Andrey Rzhetsky,
+#          Bob Carpenter
+# License: Modified BSD license (2-clause)
+
 import numpy as np
 from numpy import log
 from numpy.core import getlimits

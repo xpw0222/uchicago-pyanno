@@ -1,3 +1,7 @@
+# Copyright (c) 2011, Enthought, Ltd.
+# Authors: Pietro Berkes <pberkes@enthought.com>, Bob Carpenter
+# License: Modified BSD license (2-clause)
+
 """Definition of model B full."""
 
 from traits.api import HasStrictTraits, Int, Array

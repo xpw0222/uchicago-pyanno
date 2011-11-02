@@ -1,6 +1,6 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Pietro Berkes <pberkes@enthought.com>
-# License: Apache license
+# License: Modified BSD license (2-clause)
 
 """Plot tools to save plots and copy their data inside to the clipboard.
 """

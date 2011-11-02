@@ -1,6 +1,6 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Pietro Berkes <pberkes@enthought.com>
-# License: Apache license
+# License: Modified BSD license (2-clause)
 
 from traits.api import HasTraits, List, Str
 from traits.trait_types import Int

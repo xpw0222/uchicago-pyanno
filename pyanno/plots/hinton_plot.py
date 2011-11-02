@@ -1,6 +1,6 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Pietro Berkes <pberkes@enthought.com>
-# License: Apache license
+# License: Modified BSD license (2-clause)
 
 from chaco.data_range_2d import DataRange2D
 from chaco.label_axis import LabelAxis

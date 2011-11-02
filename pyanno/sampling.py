@@ -1,3 +1,7 @@
+# Copyright (c) 2011, Enthought, Ltd.
+# Authors: Pietro Berkes <pberkes@enthought.com>, Andrey Rzhetsky
+# License: Modified BSD license (2-clause)
+
 """This module defines functions to sample from a distribution given its
 log likelihood.
 """

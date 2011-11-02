@@ -1,6 +1,11 @@
+# Copyright (c) 2011, Enthought, Ltd.
+# Author: Pietro Berkes <pberkes@enthought.com>
+# License: Modified BSD license (2-clause)
+
 """View for model and data pair."""
 from traits.has_traits import HasTraits, on_trait_change
-from traits.trait_types import Any, File, Instance, Button, Enum, Str, Bool, Float, Event, Range, Int
+from traits.trait_types import (Any, File, Instance, Button, Enum, Str, Bool,
+                                Float, Event, Int)
 from traits.traits import Property
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.group import HGroup, VGroup

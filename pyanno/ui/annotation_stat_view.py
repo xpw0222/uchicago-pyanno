@@ -1,3 +1,7 @@
+# Copyright (c) 2011, Enthought, Ltd.
+# Author: Pietro Berkes <pberkes@enthought.com>
+# License: Modified BSD license (2-clause)
+
 from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_numeric import Array
 from traits.trait_types import Enum, Button, Instance, Int, Str, Float

@@ -1,5 +1,9 @@
+# Copyright (c) 2011, Enthought, Ltd.
+# Authors: Pietro Berkes <pberkes@enthought.com>, Andrey Rzhetsky
+# License: Modified BSD license (2-clause)
+
 """This modules defines the class ModelA, an implementation of model A from
-Rzhetsly et al., 2009.
+Rzhetsky et al., 2009.
 
 Reference
 ---------

@@ -1,3 +1,7 @@
+# Copyright (c) 2011, Enthought, Ltd.
+# Author: Pietro Berkes <pberkes@enthought.com>
+# License: Modified BSD license (2-clause)
+
 """Defines objects to create and manipulate raw annotations."""
 
 from traits.has_traits import HasStrictTraits, cached_property

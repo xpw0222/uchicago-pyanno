@@ -1,6 +1,6 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Pietro Berkes <pberkes@enthought.com>
-# License: Apache license
+# License: Modified BSD license (2-clause)
 
 from traits.has_traits import on_trait_change
 from traits.trait_types import Instance, Str, Range, Button
@@ -12,7 +12,6 @@ from traitsui.view import View
 
 from pyanno.modelA import ModelA
 from pyanno.plots.hinton_plot import HintonDiagramPlot
-from pyanno.plots.matrix_plot import MatrixPlot
 from pyanno.plots.theta_plot import ThetaPlot
 from pyanno.ui.model_view import PyannoModelView, NewModelDialog
 from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
