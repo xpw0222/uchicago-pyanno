@@ -428,9 +428,9 @@ class ModelB(HasStrictTraits):
 
     def sample_posterior_over_accuracy(self, annotations, nsamples):
 
-        logger.info('Start collecting samples...')
-
         self._raise_if_incompatible(annotations)
+
+        logger.info('Start collecting samples...')
 
         # use Gibbs sampling
         nitems, nannotators = annotations.shape
@@ -443,7 +443,7 @@ class ModelB(HasStrictTraits):
         label_curr = np.empty((nitems,), dtype=int)
 
         for sidx in xrange(nsamples):
-            if (sidx % 10) == 1:
+            if ((sidx+1) % 50) == 0:
                 logger.info('... collected {} samples'.format(sidx+1))
 
             ### sample categories given theta

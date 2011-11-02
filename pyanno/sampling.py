@@ -184,7 +184,7 @@ def optimize_step_size(likelihood, x0, arguments,
 
         # adjust step size every `recomputing cycle` steps
         if i % recomputing_cycle == 0 and i > 0:
-            logger.info('%{} samples, adapt step size'.format(i))
+            logger.info('{} samples, adapt step size'.format(i))
 
             logger.debug('Rejection rate: ' + repr(rejection_rate))
             logger.debug('Step size: ' +repr(step))
