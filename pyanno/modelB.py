@@ -6,6 +6,10 @@ from pyanno.util import (random_categorical, create_band_matrix,
                          warn_missing_vals, normalize, dirichlet_llhood,
                          is_valid, SMALLEST_FLOAT, MISSING_VALUE, PyannoValueError)
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 class ModelB(HasStrictTraits):
     """Implementation of Model B from Rzhetsky et al.
 
@@ -185,19 +189,27 @@ class ModelB(HasStrictTraits):
         if epsilon < 0.0: raise PyannoValueError("epsilon < 0.0")
         if max_epochs < 0: raise PyannoValueError("max_epochs < 0")
 
+        info_str = "Epoch={0:6d}  obj={1:+10.4f}   diff={2:10.4f}"
+
+        logger.info('Start parameters optimization...')
+
         epoch = 0
         obj_history = []
         diff = np.inf
         for objective, prev_est, cat_est, acc_est in learning_iterator:
-            print "  epoch={0:6d}  obj={1:+10.4f}   diff={2:10.4f}".format(epoch, objective, diff)
+            logger.debug(info_str.format(epoch, objective, diff))
+
             obj_history.append(objective)
+
             # stopping conditions
             if epoch > max_epochs: break
             if epoch > 10:
                 diff = (obj_history[epoch] - obj_history[epoch-10]) / 10.0
-                if abs(diff) < epsilon:
-                    break
+                if abs(diff) < epsilon: break
+
             epoch += 1
+
+        logger.info('Parameters optimization finished')
 
         # update internal parameters
         self.pi = prev_est
@@ -419,6 +431,8 @@ class ModelB(HasStrictTraits):
 
     def sample_posterior_over_accuracy(self, annotations, nsamples):
 
+        logger.info('Start collecting samples...')
+
         self._raise_if_incompatible(annotations)
 
         # use Gibbs sampling
@@ -432,7 +446,8 @@ class ModelB(HasStrictTraits):
         label_curr = np.empty((nitems,), dtype=int)
 
         for sidx in xrange(nsamples):
-            if (sidx % 10) == 1: print sidx
+            if (sidx % 10) == 1:
+                logger.info('... collected {} samples'.format(sidx+1))
 
             ### sample categories given theta
             # get posterior over labels

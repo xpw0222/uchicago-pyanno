@@ -9,6 +9,9 @@ from pyanno.util import (random_categorical, compute_counts,
                          SMALLEST_FLOAT, MISSING_VALUE, labels_frequency,
                          is_valid, ninf_to_num, PyannoValueError)
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 # map of `n` to list of all possible triplets of `n` elements
 _triplet_combinations = {}
@@ -166,6 +169,8 @@ class ModelBt(HasStrictTraits):
         params_start = self._random_initial_parameters(annotations,
                                                        estimate_gamma)
 
+        logger.info('Start parameters optimization...')
+
         # TODO: use gradient, constrained optimization
         params_best = scipy.optimize.fmin(objective,
                                           params_start,
@@ -173,6 +178,7 @@ class ModelBt(HasStrictTraits):
                                           xtol=1e-4, ftol=1e-4,
                                           disp=False, maxiter=10000)
 
+        logger.info('Parameters optimization finished')
 
         # parse arguments and update
         self.gamma, self.theta = self._vector_to_params(params_best)

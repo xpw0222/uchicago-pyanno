@@ -379,12 +379,13 @@ class ModelA(HasStrictTraits):
                                                               estimate_omega)
         self.omega = omega
 
-        logger.info('Start parameters optimization')
+        logger.info('Start parameters optimization...')
 
         params_best = scipy.optimize.fmin(objective,
                                           params_start,
                                           args=(counts,),
-                                          xtol=1e-4, ftol=1e-4, disp=False,
+                                          xtol=1e-4, ftol=1e-4,
+                                          disp=False,
                                           maxiter=10000)
 
         logger.info('Parameters optimization finished')
