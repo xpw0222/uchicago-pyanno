@@ -20,6 +20,7 @@ import numpy as np
 
 # TODO remember last setting of parameters
 from pyanno.ui.posterior_view import PosteriorView
+from pyanno.ui.pulse_progress_dialog import PulseProgressDialog
 
 
 class ModelDataView(HasTraits):
@@ -183,12 +184,24 @@ class ModelDataView(HasTraits):
             self.model_updated = True
 
 
-    def _action_on_model(self, method, *args, **kwargs):
+    def _action_on_model(self, message, method, *args, **kwargs):
         """Call method on model, taking care of exception handling"""
+
+        self.model_update_suspended = True
+
+        if self.parent is not None:
+            # In wx the progress dialog isn't really modal, so we just disable
+            # its parent!
+            self.parent.Enable(False)
+
+        progress_dialog = PulseProgressDialog(
+            title='Computing...',
+            message=message
+        )
+        progress_dialog.open()
 
         res = None
         try:
-            self.model_update_suspended = True
             # execute action
             res = method(*args, **kwargs)
 
@@ -204,6 +217,10 @@ class ModelDataView(HasTraits):
 
         finally:
             self.model_update_suspended = False
+            progress_dialog.close()
+            if self.parent is not None:
+                self.parent.Enable(True)
+
 
         self._fire_model_updated()
         return res
@@ -212,23 +229,24 @@ class ModelDataView(HasTraits):
     def _ml_estimate_fired(self):
         """Run ML estimation of parameters."""
 
-        print 'ML estimate...'
-        self._action_on_model(self.model.mle, self.annotations)
+        message = 'Computing ML estimate'
+        self._action_on_model(message, self.model.mle, self.annotations)
 
 
     def _map_estimate_fired(self):
         """Run ML estimation of parameters."""
 
-        print 'MAP estimate...'
-        self._action_on_model(self.model.map, self.annotations)
+        message = 'Computing MAP estimate'
+        self._action_on_model(message, self.model.map, self.annotations)
 
 
     def _sample_posterior_over_accuracy_fired(self):
         """Sample the posterior of the parameters `theta`."""
 
-        print 'Sample...'
+        message = 'Sampling from the posterior over accuracy'
         nsamples = 100
         samples = self._action_on_model(
+            message,
             self.model.sample_posterior_over_accuracy,
             self.annotations, nsamples
         )
@@ -241,9 +259,12 @@ class ModelDataView(HasTraits):
     def _estimate_labels_fired(self):
         """Compute the posterior over annotations and show it in a new window"""
 
-        print 'Estimating labels...'
-        posterior = self._action_on_model(self.model.infer_labels,
-                                          self.annotations)
+        message = 'Computing the posterior over classes'
+        posterior = self._action_on_model(
+            message,
+            self.model.infer_labels,
+            self.annotations
+        )
 
         if posterior is not None:
             post_plot = PosteriorPlot(posterior=posterior,
