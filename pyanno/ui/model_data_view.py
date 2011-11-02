@@ -12,6 +12,7 @@ from pyanno.annotations import AnnotationsContainer
 from pyanno.plots.annotations_plot import PosteriorPlot
 from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
 from pyanno.ui.annotations_view import AnnotationsView
+from pyanno.ui.appbase.long_running_call import LongRunningCall
 from pyanno.ui.model_a_view import ModelAView
 from pyanno.ui.model_bt_view import ModelBtView
 from pyanno.ui.model_b_view import ModelBView
@@ -20,7 +21,6 @@ import numpy as np
 
 # TODO remember last setting of parameters
 from pyanno.ui.posterior_view import PosteriorView
-from pyanno.ui.pulse_progress_dialog import PulseProgressDialog
 
 
 class ModelDataView(HasTraits):
@@ -184,60 +184,84 @@ class ModelDataView(HasTraits):
             self.model_updated = True
 
 
-    def _action_on_model(self, message, method, *args, **kwargs):
-        """Call method on model, taking care of exception handling"""
+    def _action_finally(self):
+        """Operations that need to be executed both in case of a success and
+        a failure of the long-running action.
+        """
+        self.model_update_suspended = False
+        self._fire_model_updated()
+
+
+    def _action_sucess(self, result):
+        self._action_finally()
+
+
+    def _action_failure(self, err):
+        self._action_finally()
+
+        if isinstance(err, ValueError):
+            errmsg = err.args[0]
+            if 'Annotations' in errmsg:
+                # raised when annotations are incompatible with the model
+                error('Error: ' + errmsg)
+            else:
+                # re-raise exception if it has not been handled
+                raise
+
+
+    def _action_on_model(self, message, method, args=None, kwargs=None,
+                         on_success=None, on_failure=None):
+        """Call long running method on model.
+
+        While the call is running, a window with a pulse progress bar is
+        displayed.
+
+        An error message is displayed if the call raises a ValueError
+        containing the string 'Annotations' (raised when annotations are
+        incompatible with the current model).
+        """
+
+        if args is None: args = []
+        if kwargs is None: kwargs = {}
+
+        if on_success is None: on_success = self._action_sucess
+        if on_failure is None: on_failure = self._action_failure
 
         self.model_update_suspended = True
 
-        if self.parent is not None:
-            # In wx the progress dialog isn't really modal, so we just disable
-            # its parent!
-            self.parent.Enable(False)
-
-        progress_dialog = PulseProgressDialog(
-            title='Computing...',
-            message=message
+        call = LongRunningCall(
+            parent     = None,
+            title      = 'Calculating...',
+            message    = message,
+            callable   = method,
+            args       = args,
+            kw         = kwargs,
+            on_success = on_success,
+            on_failure = on_failure,
         )
-        progress_dialog.open()
-
-        res = None
-        try:
-            # execute action
-            res = method(*args, **kwargs)
-
-        except ValueError as err:
-            # make sure that error belongs to pyanno
-            errmsg = err.args[0]
-            if 'Annotations' in errmsg:
-                error('Error: ' + errmsg)
-
-        except:
-            # re-raise exception if it has not been handled
-            raise
-
-        finally:
-            self.model_update_suspended = False
-            progress_dialog.close()
-            if self.parent is not None:
-                self.parent.Enable(True)
-
-
-        self._fire_model_updated()
-        return res
+        call()
 
 
     def _ml_estimate_fired(self):
         """Run ML estimation of parameters."""
 
-        message = 'Computing ML estimate'
-        self._action_on_model(message, self.model.mle, self.annotations)
+        message = 'Computing maximum likelihood estimate'
+        self._action_on_model(message, self.model.mle, args=[self.annotations])
 
 
     def _map_estimate_fired(self):
         """Run ML estimation of parameters."""
 
-        message = 'Computing MAP estimate'
-        self._action_on_model(message, self.model.map, self.annotations)
+        message = 'Computing maximum a posteriori estimate'
+        self._action_on_model(message, self.model.map, args=[self.annotations])
+
+
+    def _sample_posterior_success(self, samples):
+        if (samples is not None
+            and hasattr(self.model_view, 'plot_theta_samples')):
+            self.model_view.plot_theta_samples(samples)
+
+        self._action_finally()
 
 
     def _sample_posterior_over_accuracy_fired(self):
@@ -245,27 +269,15 @@ class ModelDataView(HasTraits):
 
         message = 'Sampling from the posterior over accuracy'
         nsamples = 100
-        samples = self._action_on_model(
+        self._action_on_model(
             message,
             self.model.sample_posterior_over_accuracy,
-            self.annotations, nsamples
+            args=[self.annotations, nsamples],
+            on_success=self._sample_posterior_success
         )
 
-        if (samples is not None
-            and hasattr(self.model_view, 'plot_theta_samples')):
-            self.model_view.plot_theta_samples(samples)
 
-
-    def _estimate_labels_fired(self):
-        """Compute the posterior over annotations and show it in a new window"""
-
-        message = 'Computing the posterior over classes'
-        posterior = self._action_on_model(
-            message,
-            self.model.infer_labels,
-            self.annotations
-        )
-
+    def _estimate_labels_success(self, posterior):
         if posterior is not None:
             post_plot = PosteriorPlot(posterior=posterior,
                                       title='Posterior over classes')
@@ -274,6 +286,20 @@ class ModelDataView(HasTraits):
                                       annotations=self.annotations)
 
             post_view.edit_traits()
+
+        self._action_finally()
+
+
+    def _estimate_labels_fired(self):
+        """Compute the posterior over annotations and show it in a new window"""
+
+        message = 'Computing the posterior over classes'
+        self._action_on_model(
+            message,
+            self.model.infer_labels,
+            args=[self.annotations],
+            on_success=self._estimate_labels_success
+        )
 
 
     ### Views ################################################################
