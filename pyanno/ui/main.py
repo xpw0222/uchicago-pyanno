@@ -22,6 +22,7 @@ def main():
     """Create and start the application."""
 
     setup_logging()
+    logging.info('Starting pyAnno')
 
     # create initial model
     model = ModelBt.create_initial_state(5)
@@ -33,6 +34,7 @@ def main():
     # display main window
     model_data_view.configure_traits()
 
+    logging.info('Closing pyAnno -- Goodbye!')
 
 if __name__ == '__main__':
     main()

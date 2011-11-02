@@ -3,7 +3,7 @@
 from traits.api import HasStrictTraits, Int, Array
 import numpy as np
 from pyanno.util import (random_categorical, create_band_matrix,
-                         warn_missing_vals, normalize, dirichlet_llhood,
+                         normalize, dirichlet_llhood,
                          is_valid, SMALLEST_FLOAT, MISSING_VALUE, PyannoValueError)
 
 import logging
@@ -236,9 +236,6 @@ class ModelB(HasStrictTraits):
 #                raise ValueError("len(alpha[k]) != K")
 #        if len(beta) != nclasses:
 #            raise ValueError("len(beta) != K")
-
-        # FIXME: at the moment, this check is rather pointless
-        warn_missing_vals("anno", annotations.flatten())
 
         # True if annotations is missing
         missing_mask_nclasses = self._missing_mask(annotations)

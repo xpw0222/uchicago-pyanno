@@ -9,6 +9,8 @@ import numpy as np
 import pyanno.measures as measures
 from pyanno.plots.matrix_plot import MatrixPlot
 
+import logging
+logger = logging.getLogger(__name__)
 
 
 # statistical measures for pairs of annotators
@@ -72,7 +74,7 @@ class AnnotationsStatisticsView(HasTraits):
             try:
                 res = stat_func(self.annotations, nclasses=self.nclasses)
             except PyannoValueError as e:
-                print 'INFO:', e
+                logger.info(e)
                 res = np.nan
 
             self.stats_view = _SingleStatView(value=res,
@@ -85,7 +87,7 @@ class AnnotationsStatisticsView(HasTraits):
                 res = measures.pairwise_matrix(stat_func, self.annotations,
                                                nclasses=self.nclasses)
             except PyannoValueError as e:
-                print 'INFO:', e
+                logger.info(e)
                 res = np.nan
 
             self.stats_view = MatrixPlot(matrix=res,

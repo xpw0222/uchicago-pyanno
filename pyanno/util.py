@@ -4,6 +4,10 @@ from numpy.core import getlimits
 from scipy.special import gammaln
 import time
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 MISSING_VALUE = -1
 SMALLEST_FLOAT = getlimits.finfo(np.float).min
 
@@ -60,12 +64,6 @@ def create_band_matrix(shape, diagonal_elements):
     return np.fromfunction(diag, shape)
 
 
-def warn_missing_vals(varname,xs):
-    missing = set(xs) - set(range(max(xs)+1))
-    if len(missing) > 0:
-        print "Missing values in ",varname,"=",missing
-
-
 # TODO clean up and simplify and rename
 def compute_counts(annotations, nclasses):
     """Transform annotation data in counts format.
@@ -107,7 +105,7 @@ def compute_counts(annotations, nclasses):
                annotations[i, ind[0][1]] * nclasses +\
                annotations[i, ind[0][2]]
 
-        # o is the index of possible combination of annotators in the loop design
+        # o = index of possible combination of annotators in the loop design
         o = -100
         for j in range(8):
             k = 0
@@ -120,7 +118,7 @@ def compute_counts(annotations, nclasses):
         if o >= 0:
             data[code, o] += 1
         else:
-            print str(code) + " " + str(ind) + " = homeless code"
+            logger.debug(str(code) + " " + str(ind) + " = homeless code")
 
     return data
 

@@ -142,7 +142,6 @@ def plot_hinton_diagram(data, **kwargs):
     title -- title for the resulting plot
     """
     hinton_diagram = HintonDiagramPlot(data=data, **kwargs)
-    print hinton_diagram.plot
     hinton_diagram.edit_traits(view='resizable_view')
     return hinton_diagram
 

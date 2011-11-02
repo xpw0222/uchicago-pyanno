@@ -25,6 +25,9 @@ import numpy as np
 from pyanno.ui.posterior_view import PosteriorView
 from pyanno.util import PyannoValueError
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class ModelDataView(HasTraits):
 
@@ -104,7 +107,7 @@ class ModelDataView(HasTraits):
 
     @on_trait_change('annotations_file')
     def _update_annotations_file(self):
-        print 'loading file', self.annotations_file
+        logger.info('Load file {}'.format(self.annotations_file))
         anno = AnnotationsContainer.from_file(self.annotations_file)
         self.annotations_view = AnnotationsView(annotations_container = anno,
                                                 nclasses = self.model.nclasses)
