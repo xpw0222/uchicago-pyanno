@@ -14,10 +14,13 @@ import scipy.stats
 from traits.has_traits import HasStrictTraits
 from traits.trait_numeric import Array
 from traits.trait_types import Int
-from pyanno.sampling import optimum_jump, sample_distribution
+from pyanno.sampling import optimize_step_size, sample_distribution
 from pyanno.util import (compute_counts, random_categorical,
                          labels_frequency, MISSING_VALUE, SMALLEST_FLOAT,
                          ninf_to_num, PyannoValueError)
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 _compatibility_tables_cache = {}
@@ -376,11 +379,16 @@ class ModelA(HasStrictTraits):
                                                               estimate_omega)
         self.omega = omega
 
+        logger.info('Start parameters optimization')
+
         params_best = scipy.optimize.fmin(objective,
                                           params_start,
                                           args=(counts,),
-                                          xtol=1e-4, ftol=1e-4, disp=True,
+                                          xtol=1e-4, ftol=1e-4, disp=False,
                                           maxiter=2000)
+
+        logger.info('Parameters optimization finished')
+
         self.theta = params_best
 
 
@@ -591,7 +599,7 @@ class ModelA(HasStrictTraits):
         # optimize step size
         counts = compute_counts(annotations, self.nclasses)
 
-        # wrap log likelihood function to give it to optimum_jump and
+        # wrap log likelihood function to give it to optimize_step_size and
         # sample_distribution
         _llhood_counts = self._log_likelihood_counts
         def _wrap_llhood(params, counts):
@@ -607,18 +615,18 @@ class ModelA(HasStrictTraits):
             params_start = self.theta.copy()
             params_upper = np.ones((self.nannotators,))
             params_lower = np.zeros((self.nannotators,))
-            step = optimum_jump(_wrap_llhood, params_start, counts,
-                                params_upper, params_lower,
+            step = optimize_step_size(_wrap_llhood, params_start, counts,
+                                params_lower, params_upper,
                                 step_optimization_nsamples,
                                 adjust_step_every,
                                 target_rejection_rate,
-                                rejection_rate_tolerance, 'Everything')
+                                rejection_rate_tolerance)
 
             # draw samples from posterior distribution over theta
             samples = sample_distribution(_wrap_llhood, params_start, counts,
                                           step, nsamples,
-                                          params_lower, params_upper,
-                                          'Everything')
+                                          params_lower, params_upper)
+
             return samples
         finally:
             # reset parameters

@@ -1,167 +1,261 @@
-"""This file contains functions to sample from a distribution given its
+"""This module defines functions to sample from a distribution given its
 log likelihood.
 """
 
 import numpy as np
-from pyanno.util import string_wrap, PyannoValueError
+from pyanno.util import PyannoValueError
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 # TODO add parameters for burn-in, thinning
-#     (evaluation only after sampling the *full* parameters space)
-def sample_distribution(likelihood, x0, arguments, dx,
-                        nsamples, x_lower, x_upper, report):
+def sample_distribution(likelihood, x0, arguments, step,
+                        nsamples, x_lower, x_upper):
     """General-purpose sampling routine for MCMC sampling.
 
-    Draw samples from a distribution given its unnormalized log likelihood.
+    Draw samples from a distribution given its unnormalized log likelihood
+    using the Metropolis-Hasting Monte Carlo algorithm.
 
-    Input:
-    likelihood -- unnormalized log likelihood function. the function accepts two
-                   arguments: likelihood(params, values); `params` is a vector
-                   containing a vector of parameters that will be sampled over
-                   by this function; `values` contains the observed values.
-                  The function should return the unnormalized log likelihood
-                  of data given the parameters
-    """
-    m = len(x0)
-    samples = np.zeros((nsamples, m), dtype=float)
+    It is recommended to optimize the step size, `step`, using the function
+    :func:`optimize_step_size` in order to reduce the autocorrelation between
+     successive samples.
+
+    Parameters
+    ----------
+    likelihood : function(params, arguments)
+        Function returning the *unnormalized* log likelihood of data given
+        the parameters. The function accepts two arguments:
+        `params` is the vector of parameters; `arguments` contains any
+        additional argument that is needed to compute the log likelihood.
+
+    x0 : ndarray, shape = (n_parameters, )
+        Initial parameters value.
+
+    arguments : any
+        Additional argument passed to the function `likelihood`.
+
+    step : ndarray, shape = (n_parameters, )
+        Width of the proposal distribution over the parameters.
+
+    nsamples : int
+         Number of samples to draw from the distribution.
+
+    x_lower : ndarray, shape = (n_parameters, )
+        Lower bound for the parameters.
+
+    x_upper : ndarray, shape = (n_parameters, )
+        Upper bound for the parameters.
+   """
+
+    logger.info('Start collecting samples...')
+
+    dim = len(x0)
+
+    # array of samples
+    samples = np.zeros((nsamples, dim))
+
+    # current sample
     x_curr = x0.copy()
+
+    # log likelihood of current sample
     llhood = likelihood(x0, arguments)
 
     for i in range(nsamples):
         if (i + 1) % 100 == 0:
-            if cmp(report, 'Nothing') != 0:
-                print string_wrap(str(i + 1), 4)
+            logger.info('... collected {} samples'.format(i+1))
 
-        q_tot = 0.
+        sum_log_q_ratio = 0.
         x_old = x_curr.copy()
-        for j in range(m):
-            xj, q = q_lower_upper(x_old[j], dx[j], x_lower[j], x_upper[j])
-            q_tot += q
+        for j in range(dim):
+            xj, log_q_ratio = sample_from_proposal_distribution(
+                x_old[j], step[j], x_lower[j], x_upper[j]
+            )
+            sum_log_q_ratio += log_q_ratio
             x_curr[j] = xj
 
         llhood_new = likelihood(x_curr, arguments)
 
         # rejection step; reject with probability `alpha`
-        alpha = min(1, np.exp(llhood_new - llhood + q_tot))
+        alpha = min(1, np.exp(llhood_new - llhood + sum_log_q_ratio))
         if np.random.random() < alpha:
+            # accept
             llhood = llhood_new
         else:
+            # reject
             x_curr = x_old
+
         samples[i,:] = x_curr
 
     return samples
 
 
-def optimum_jump(likelihood, x0, arguments,
-                 x_upper, x_lower,
-                 evaluation_jumps, recomputing_cycle, target_rejection_rate,
-                 delta, report):
+def optimize_step_size(likelihood, x0, arguments,
+                       x_lower, x_upper,
+                       n_samples,
+                       recomputing_cycle, target_rejection_rate, tolerance):
     """Compute optimum jump for MCMC estimation of credible intervals.
 
     Adjust jump size in Metropolis-Hasting MC to achieve target rejection rate.
-    Jump size is estimated for each argument separately.
+    Jump size is estimated for each parameter separately.
 
-    Input:
-    likelihood -- log likelihood function. the function accepts two
-                   arguments: likelihood(params, values); `params` is a vector
-                   containing a vector of parameters that will be sampled over
-                   by this function; `values` contains the observed values.
-                  The function should return the unnormalized log likelihood
-                  of data given the parameters
+    Parameters
+    ----------
+    likelihood : function(params, arguments)
+        Function returning the *unnormalized* log likelihood of data given
+        the parameters. The function accepts two arguments:
+        `params` is the vector of parameters; `arguments` contains any
+        additional argument that is needed to compute the log likelihood.
 
-    Output:
-    dx -- the final jump size
+    x0 : ndarray, shape = (n_parameters, )
+        Initial parameters value.
+
+    arguments : any
+        Additional argument passed to the function `likelihood`.
+
+    x_lower : ndarray, shape = (n_parameters, )
+        Lower bound for the parameters.
+
+    x_upper : ndarray, shape = (n_parameters, )
+        Upper bound for the parameters.
+
+    n_samples : int
+        Total number of samples to draw during the optimization.
+
+    recomputing_cycle : int
+        Number of samples over which the rejection rates are computed. After
+        `recomputing_cycle` samples, the step size is adapted and the
+        rejection rates are reset to 0.
+
+    target_rejection_rate : float
+        Target rejection rate. If the rejection rate over the latest cycle is
+        closer than `tolerance` to this target, the optimization phase is
+        concluded.
+
+    tolerance : float
+        Tolerated deviation from `target_rejection_rate`.
+
+    Returns
+    -------
+    step : ndarray, shape = (n_parameters, )
+        The final optimized step size.
     """
-    m = len(x0)
-    dx = np.zeros((m,), dtype=float)
-    rejection = np.zeros(m, float)
 
-    # initial jump sizes are random
-    for i in range(m):
-        dx[i] = (x_upper[i] - x_lower[i]) / 100.
+    logger.info('Estimate optimal step size')
 
-    # *x_curr* is the current version of arguments
+    dim = len(x0)
+
+    # rejection rate for each paramter separately
+    rejection_rate = np.zeros((dim,))
+
+    # initial jump sizes
+    step = (x_upper - x_lower) / 100.
+
+    # *x_curr* is the current samples of the parameters
     x_curr = x0.copy()
+
+    # log likelihood of current sample
     llhood = likelihood(x0, arguments)
 
-    for i in range(evaluation_jumps):
+    for i in range(n_samples):
+
         # we need to evaluate every dimension separately to have an estimate
         # of the rejection rate per parameter
-        for j in range(m):
+        for j in range(dim):
             xj_old = x_curr[j]
-            xj, q = q_lower_upper(xj_old, dx[j], x_lower[j], x_upper[j])
-            if xj < x_lower[j] or xj > x_upper[j]:
-                raise PyannoValueError('Parameter values out or range')
+
+            # draw new sample
+            xj, log_q_ratio = sample_from_proposal_distribution(
+                xj_old, step[j], x_lower[j], x_upper[j]
+            )
 
             x_curr[j] = xj
+
             llhood_new = likelihood(x_curr, arguments)
 
             # rejection step; accept with probability `alpha`
-            alpha = min(1, np.exp(llhood_new - llhood + q))
+            alpha = min(1, np.exp(llhood_new - llhood + log_q_ratio))
+
             if np.random.random() < alpha:
                 llhood = llhood_new
             else:
-                rejection[j] += 1. / recomputing_cycle
+                rejection_rate[j] += 1. / recomputing_cycle
                 x_curr[j] = xj_old
 
         # adjust step size every `recomputing cycle` steps
         if i % recomputing_cycle == 0 and i > 0:
-            if cmp(report, 'Nothing') != 0:
-                print i
-                print 'rejection rate', rejection
-                print 'step size', dx
-            dx, check = _adjust_jump(dx, rejection, target_rejection_rate, delta)
-            if check == True:
-                # all rejection rates within range
-                print i
-                print 'final rejection rate', rejection
-                print 'final step size', dx
-                return dx
+            logger.info('%{} samples, adapt step size'.format(i))
+
+            logger.debug('Rejection rate: ' + repr(rejection_rate))
+            logger.debug('Step size: ' +repr(step))
+
+            step, terminate = _adjust_jump(step,
+                                           rejection_rate,
+                                           target_rejection_rate,
+                                           tolerance)
+
+            if terminate == True:
+                logger.debug('Step size within accepted range -- '
+                             'exit optimization phase')
+                break
+
             # reset all rejection rates
-            rejection *= 0.
+            rejection_rate *= 0.
 
-    return dx
+    return step
 
 
-# TODO: simplify, move stopping condition ("check") to optimum_jump
-def _adjust_jump(dx, rejection, target_reject_rate, delta):
+# TODO: simplify, move stopping condition ("check") to optimize_step_size
+def _adjust_jump(step, rejection_rate, target_reject_rate, tolerance):
     """Adapt step size to get closer to target rejection rate.
 
     Output:
-    dx -- new step sizes
-    check -- True if all rejection rates are within the required limits
+    step -- new step sizes
+    terminate -- True if all rejection rates are within the required limits
     """
-    check = True
-    for j in xrange(dx.shape[0]):
-        if dx[j] == 0:
-            dx[j] = 0.000001
 
-        if rejection[j] != 0:
-            if abs(rejection[j] - target_reject_rate) > delta:
-                dx[j] *= (target_reject_rate / rejection[j])
-                check = False
-        elif rejection[j] == 0:
-            dx[j] *= 5.
-            check = False
+    terminate = True
+    for j in xrange(step.shape[0]):
+        step[j] = max(1e-6, step[j])
 
-    return dx, check
+        if rejection_rate[j] != 0:
+            if abs(rejection_rate[j] - target_reject_rate) > tolerance:
+                step[j] *= (target_reject_rate / rejection_rate[j])
+                terminate = False
+
+        elif rejection_rate[j] == 0:
+            step[j] *= 5.
+            terminate = False
+
+    return step, terminate
 
 
 # TODO vectorize this to sample from all dimensions at once
-def q_lower_upper(theta, psi, lower, upper):
-    """Returns a sample from the proposal distribution.
+def sample_from_proposal_distribution(theta, step, lower, upper):
+    """Returns one sample from the proposal distribution.
 
-    Input:
-    theta -- current parameter value (also, the new value on return)
-    psi -- MCMC max jump size with regard to *theta*
-    lower, upper -- lower/upper boundaries for the parameter
+    Parameters
+    ----------
+    theta : float
+        current parameter value
 
-     Output:
-    theta
-    q              -- log-ratio of probabilities of sampling
-                        *new value given old value*
-                                   to
-                        *old value given new value*
+    step : float
+        width of the proposal distribution over `theta`
+
+    lower : float
+        lower bound for `theta`
+
+    upper : float
+        upper bound for `theta`
+
+    Returns
+    -------
+    theta_new : float
+        new sample from the distribution over theta
+
+    log_q_ratio : float
+        log-ratio of probability of new value given old value
+        to probability of old value given new value
     """
 
     if theta < lower or theta > upper:
@@ -172,39 +266,39 @@ def q_lower_upper(theta, psi, lower, upper):
 
     # boundary conditions
     if theta == upper:
-        theta = upper - a * min(psi, upper - lower)
-        q_new_to_old = -np.log(2 * min(psi, upper - theta))
-        q_old_to_new = -np.log(min(psi, upper - lower))
-        q = q_new_to_old - q_old_to_new
-        return theta, q
+        theta = upper - a * min(step, upper - lower)
+        q_new_to_old = -np.log(2 * min(step, upper - theta))
+        q_old_to_new = -np.log(min(step, upper - lower))
+        log_q_ratio = q_new_to_old - q_old_to_new
+        return theta, log_q_ratio
 
     if theta == lower:
-        theta = lower + a * min(psi, upper - lower)
-        q_new_to_old = -np.log(2. * min(psi, theta - lower))
-        q_old_to_new = -np.log(min(psi, upper - lower))
-        q = q_new_to_old - q_old_to_new
-        return theta, q
+        theta = lower + a * min(step, upper - lower)
+        q_new_to_old = -np.log(2. * min(step, theta - lower))
+        q_old_to_new = -np.log(min(step, upper - lower))
+        log_q_ratio = q_new_to_old - q_old_to_new
+        return theta, log_q_ratio
 
     # go to the 'left'
     if  a > 0.5:
         theta_old = theta
 
         #jump interval is *theta*, choose uniformly
-        theta -= np.random.random() * min(psi, theta_old - lower)
+        theta -= np.random.random() * min(step, theta_old - lower)
 
         #transition probability from old to new
-        q_old_to_new = -np.log(min(psi, theta_old - lower))
-        q_new_to_old = -np.log(min(psi, upper - theta))
-        q = q_new_to_old - q_old_to_new
-        return theta, q
+        q_old_to_new = -np.log(min(step, theta_old - lower))
+        q_new_to_old = -np.log(min(step, upper - theta))
+        log_q_ratio = q_new_to_old - q_old_to_new
+        return theta, log_q_ratio
 
     # go to the 'right'
     else:
         # jump interval is *upper_limit*-*theta*, choose uniformly
         theta_old = theta
-        theta += np.random.random() * min(psi, upper - theta_old)
+        theta += np.random.random() * min(step, upper - theta_old)
 
-        q_old_to_new = -np.log(min(psi, upper - theta_old))
-        q_new_to_old = -np.log(min(psi, theta - lower))
-        q = q_new_to_old - q_old_to_new
-        return theta, q
+        q_old_to_new = -np.log(min(step, upper - theta_old))
+        q_new_to_old = -np.log(min(step, theta - lower))
+        log_q_ratio = q_new_to_old - q_old_to_new
+        return theta, log_q_ratio

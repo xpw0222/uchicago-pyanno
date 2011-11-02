@@ -4,7 +4,7 @@ from traits.api import HasStrictTraits, Int, Array
 import numpy as np
 import scipy.optimize
 import scipy.stats
-from pyanno.sampling import optimum_jump, sample_distribution
+from pyanno.sampling import optimize_step_size, sample_distribution
 from pyanno.util import (random_categorical, compute_counts,
                          SMALLEST_FLOAT, MISSING_VALUE, labels_frequency,
                          is_valid, ninf_to_num, PyannoValueError)
@@ -315,7 +315,7 @@ class ModelBt(HasStrictTraits):
         # optimize step size
         counts = compute_counts(annotations, self.nclasses)
 
-        # wrap log likelihood function to give it to optimum_jump and
+        # wrap log likelihood function to give it to optimize_step_size and
         # sample_distribution
         _llhood_counts = self._log_likelihood_counts
         def _wrap_llhood(params, counts):
@@ -331,18 +331,17 @@ class ModelBt(HasStrictTraits):
             params_start = self.theta.copy()
             params_upper = np.ones((self.nannotators,))
             params_lower = np.zeros((self.nannotators,))
-            step = optimum_jump(_wrap_llhood, params_start, counts,
-                                params_upper, params_lower,
+            step = optimize_step_size(_wrap_llhood, params_start, counts,
+                                params_lower, params_upper,
                                 step_optimization_nsamples,
                                 adjust_step_every,
                                 target_rejection_rate,
-                                rejection_rate_tolerance, 'Everything')
+                                rejection_rate_tolerance)
 
             # draw samples from posterior distribution over theta
             samples = sample_distribution(_wrap_llhood, params_start, counts,
                                           step, nsamples,
-                                          params_lower, params_upper,
-                                          'Everything')
+                                          params_lower, params_upper)
             return samples
         finally:
             # reset parameters

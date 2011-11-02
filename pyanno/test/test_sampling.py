@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 from numpy import testing
 import scipy.stats
-from pyanno.sampling import optimum_jump, sample_distribution
+from pyanno.sampling import optimize_step_size, sample_distribution
 
 class TestSampling(unittest.TestCase):
 
@@ -34,13 +34,13 @@ class TestSampling(unittest.TestCase):
         x_upper = np.zeros((nclasses*2,)) + 8.
         x0 = np.random.uniform(1., 7.5, size=(nclasses*2,))
 
-        dx = optimum_jump(beta_likelihood, x0.copy(), arguments,
-                          x_upper, x_lower,
-                          1000, 100, 0.3, 0.1, 'Everything')
+        dx = optimize_step_size(beta_likelihood, x0.copy(), arguments,
+                                x_lower, x_upper,
+                                1000, 100, 0.3, 0.1)
 
         njumps = 3000
         samples = sample_distribution(beta_likelihood, x0.copy(), arguments,
-                                      dx, njumps, x_lower, x_upper, 'Everything')
+                                      dx, njumps, x_lower, x_upper)
         samples = samples[100:]
 
         z = np.absolute((samples.mean(0) - np.r_[a,b]) / samples.std(0))
