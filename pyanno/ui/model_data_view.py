@@ -23,6 +23,7 @@ import numpy as np
 
 # TODO remember last setting of parameters
 from pyanno.ui.posterior_view import PosteriorView
+from pyanno.util import PyannoValueError
 
 
 class ModelDataView(HasTraits):
@@ -201,7 +202,7 @@ class ModelDataView(HasTraits):
     def _action_failure(self, err):
         self._action_finally()
 
-        if isinstance(err, ValueError):
+        if isinstance(err, PyannoValueError):
             errmsg = err.args[0]
             if 'Annotations' in errmsg:
                 # raised when annotations are incompatible with the model
@@ -218,9 +219,8 @@ class ModelDataView(HasTraits):
         While the call is running, a window with a pulse progress bar is
         displayed.
 
-        An error message is displayed if the call raises a ValueError
-        containing the string 'Annotations' (raised when annotations are
-        incompatible with the current model).
+        An error message is displayed if the call raises a PyannoValueError
+        (raised when annotations are incompatible with the current model).
         """
 
         if args is None: args = []

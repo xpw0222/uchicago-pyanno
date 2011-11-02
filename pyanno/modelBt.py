@@ -7,7 +7,7 @@ import scipy.stats
 from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import (random_categorical, compute_counts,
                          SMALLEST_FLOAT, MISSING_VALUE, labels_frequency,
-                         is_valid, ninf_to_num)
+                         is_valid, ninf_to_num, PyannoValueError)
 
 
 # map of `n` to list of all possible triplets of `n` elements
@@ -410,5 +410,5 @@ class ModelBt(HasStrictTraits):
 
     def _raise_if_incompatible(self, annotations):
         if not self.are_annotations_compatible(annotations):
-            raise ValueError('Annotations are incompatible with model '
-                             'parameters')
+            raise PyannoValueError('Annotations are incompatible with model '
+                                   'parameters')

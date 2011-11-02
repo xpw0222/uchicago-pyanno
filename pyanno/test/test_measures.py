@@ -9,7 +9,7 @@ import pyanno.measures.covariation as pmc
 import pyanno.measures.helpers as pmh
 import pyanno.measures.distances as pmd
 
-from pyanno.util import MISSING_VALUE as MV, is_valid
+from pyanno.util import MISSING_VALUE as MV, is_valid, PyannoValueError
 
 
 class Bunch(object):
@@ -251,7 +251,7 @@ class TestMeasures(unittest.TestCase):
 
         # unequal number of annotators per row
         fa.annotations[0,:] = MV
-        self.assertRaises(ValueError, pma.fleiss_kappa, fa.annotations)
+        self.assertRaises(PyannoValueError, pma.fleiss_kappa, fa.annotations)
 
 
     def test_krippendorffs_alpha(self):

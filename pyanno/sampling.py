@@ -3,7 +3,7 @@ log likelihood.
 """
 
 import numpy as np
-from pyanno.util import string_wrap
+from pyanno.util import string_wrap, PyannoValueError
 
 
 # TODO add parameters for burn-in, thinning
@@ -91,7 +91,7 @@ def optimum_jump(likelihood, x0, arguments,
             xj_old = x_curr[j]
             xj, q = q_lower_upper(xj_old, dx[j], x_lower[j], x_upper[j])
             if xj < x_lower[j] or xj > x_upper[j]:
-                raise ValueError('Parameter values out or range')
+                raise PyannoValueError('Parameter values out or range')
 
             x_curr[j] = xj
             llhood_new = likelihood(x_curr, arguments)
@@ -165,7 +165,7 @@ def q_lower_upper(theta, psi, lower, upper):
     """
 
     if theta < lower or theta > upper:
-        raise ValueError('Parameter values out or range')
+        raise PyannoValueError('Parameter values out or range')
 
     # *a* is a uniform random number
     a = np.random.random()

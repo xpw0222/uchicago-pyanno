@@ -8,6 +8,12 @@ MISSING_VALUE = -1
 SMALLEST_FLOAT = getlimits.finfo(np.float).min
 
 
+class PyannoValueError(ValueError):
+    """ValueError subclass raised by pyanno functions and methods.
+    """
+    pass
+
+
 def random_categorical(distr, nsamples):
     """Return an array of samples from a categorical distribution."""
     assert np.allclose(distr.sum(), 1., atol=1e-8)

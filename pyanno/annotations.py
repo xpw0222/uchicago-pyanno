@@ -6,7 +6,7 @@ from traits.trait_types import Str, List, Int
 from traits.traits import Property
 
 import numpy as np
-from pyanno.util import MISSING_VALUE
+from pyanno.util import MISSING_VALUE, PyannoValueError
 
 
 def _robust_isnan(x):
@@ -100,8 +100,9 @@ class AnnotationsContainer(HasStrictTraits):
             if nannotators is None: nannotators = len(row)
             else:
                 if len(row) != nannotators:
-                    raise ValueError('File has inconsistent number of entries '
-                                     'on separate lines (line {})'.format(n))
+                    raise PyannoValueError(
+                        'File has inconsistent number of entries '
+                        'on separate lines (line {})'.format(n))
 
             raw_annotations.append(row)
             labels_set.update(row)

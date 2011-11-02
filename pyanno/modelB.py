@@ -4,7 +4,7 @@ from traits.api import HasStrictTraits, Int, Array
 import numpy as np
 from pyanno.util import (random_categorical, create_band_matrix,
                          warn_missing_vals, normalize, dirichlet_llhood,
-                         is_valid, SMALLEST_FLOAT, MISSING_VALUE)
+                         is_valid, SMALLEST_FLOAT, MISSING_VALUE, PyannoValueError)
 
 class ModelB(HasStrictTraits):
     """Implementation of Model B from Rzhetsky et al.
@@ -182,8 +182,8 @@ class ModelB(HasStrictTraits):
 
     def _parameter_estimation(self, learning_iterator, epsilon, max_epochs):
 
-        if epsilon < 0.0: raise ValueError("epsilon < 0.0")
-        if max_epochs < 0: raise ValueError("max_epochs < 0")
+        if epsilon < 0.0: raise PyannoValueError("epsilon < 0.0")
+        if max_epochs < 0: raise PyannoValueError("max_epochs < 0")
 
         epoch = 0
         obj_history = []
@@ -508,5 +508,5 @@ class ModelB(HasStrictTraits):
 
     def _raise_if_incompatible(self, annotations):
         if not self.are_annotations_compatible(annotations):
-            raise ValueError('Annotations are incompatible with model '
-                             'parameters')
+            raise PyannoValueError('Annotations are incompatible with model '
+                                   'parameters')

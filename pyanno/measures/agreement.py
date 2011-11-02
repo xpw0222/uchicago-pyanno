@@ -1,6 +1,5 @@
 from __future__ import division
 
-from exceptions import ValueError
 import numpy as np
 
 from pyanno.measures.distances import diagonal_distance
@@ -10,7 +9,7 @@ from pyanno.measures.helpers import (compute_nclasses,
                                      chance_adjusted_agreement,
                                      chance_agreement_different_frequency,
                                      confusion_matrix, coincidence_matrix)
-from pyanno.util import labels_frequency, is_valid
+from pyanno.util import labels_frequency, is_valid, PyannoValueError
 
 
 def scotts_pi(annotations1, annotations2, nclasses=None):
@@ -163,7 +162,9 @@ def _fleiss_kappa_nannotations(nannotations):
     _nanno_sum = nannotations.sum(1)
     nannotations_per_item = _nanno_sum[0]
     if not np.all(_nanno_sum == nannotations_per_item):
-        raise ValueError('Number of annotations per item should be constant.')
+        raise PyannoValueError(
+            'Number of annotations per item should be constant.'
+        )
 
     # empirical frequency of categories
     freqs = nannotations.sum(0) / (nitems*nannotations_per_item)

@@ -2,7 +2,7 @@ from cStringIO import StringIO
 import numpy as np
 import unittest
 from pyanno.annotations import AnnotationsContainer
-from pyanno.util import MISSING_VALUE as MV
+from pyanno.util import MISSING_VALUE as MV, PyannoValueError
 
 
 class TestAnnotations(unittest.TestCase):
@@ -79,7 +79,9 @@ class TestAnnotations(unittest.TestCase):
         """
 
         buffer = StringIO(s)
-        self.assertRaises(ValueError, AnnotationsContainer._from_file_object, buffer)
+        self.assertRaises(PyannoValueError,
+                          AnnotationsContainer._from_file_object,
+                          buffer)
 
 
     def test_from_array(self):
@@ -113,7 +115,9 @@ class TestAnnotations(unittest.TestCase):
 
         # inconsistent number of elements
         x[1] = [1, 2]
-        self.assertRaises(ValueError, AnnotationsContainer.from_array, x)
+        self.assertRaises(PyannoValueError,
+                          AnnotationsContainer.from_array,
+                          x)
 
 
 if __name__ == '__main__':

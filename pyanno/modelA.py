@@ -17,7 +17,7 @@ from traits.trait_types import Int
 from pyanno.sampling import optimum_jump, sample_distribution
 from pyanno.util import (compute_counts, random_categorical,
                          labels_frequency, MISSING_VALUE, SMALLEST_FLOAT,
-                         ninf_to_num)
+                         ninf_to_num, PyannoValueError)
 
 
 _compatibility_tables_cache = {}
@@ -912,5 +912,5 @@ class ModelA(HasStrictTraits):
 
     def _raise_if_incompatible(self, annotations):
         if not self.are_annotations_compatible(annotations):
-            raise ValueError('Annotations are incompatible with model '
-                             'parameters')
+            raise PyannoValueError('Annotations are incompatible with model '
+                                   'parameters')

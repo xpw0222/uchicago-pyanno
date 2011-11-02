@@ -2,7 +2,8 @@ import unittest
 import numpy as np
 from numpy import testing
 from pyanno import ModelB
-from pyanno.util import MISSING_VALUE as MV
+from pyanno.util import MISSING_VALUE as MV, PyannoValueError
+
 
 def assert_is_distributions(distr, axis=0):
     """Check that input array represents a collection of distributions.
@@ -339,19 +340,19 @@ class TestModelB(unittest.TestCase):
         model = ModelB.create_initial_state(nclasses, nannotators)
         anno = np.array([[MV, MV, 0, 0, 7, MV, MV, MV]])
 
-        with self.assertRaisesRegexp(ValueError, 'nnotations'):
+        with self.assertRaises(PyannoValueError):
             model.mle(anno)
 
-        with self.assertRaisesRegexp(ValueError, 'nnotations'):
+        with self.assertRaises(PyannoValueError):
             model.map(anno)
 
-        with self.assertRaisesRegexp(ValueError, 'nnotations'):
+        with self.assertRaises(PyannoValueError):
             model.sample_posterior_over_accuracy(anno, 10)
 
-        with self.assertRaisesRegexp(ValueError, 'nnotations'):
+        with self.assertRaises(PyannoValueError):
             model.infer_labels(anno)
 
-        with self.assertRaisesRegexp(ValueError, 'nnotations'):
+        with self.assertRaises(PyannoValueError):
             model.log_likelihood(anno)
 
 
