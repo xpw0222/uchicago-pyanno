@@ -113,6 +113,21 @@ class ModelDataView(HasTraits):
     log_likelihood = Float
 
 
+    def set_annotations(self, annotations_container):
+        """Update window with a new set of annotations."""
+        self.annotations_view = AnnotationsView(
+            annotations_container = annotations,
+            nclasses = self.model.nclasses
+        )
+        self.annotations_stats_view = AnnotationsStatisticsView(
+            annotations = self.annotations,
+            nclasses = self.nclasses
+        )
+
+        self.annotations_are_defined = True
+        self.annotations_updated = True
+
+
     def _annotations_view_default(self):
         anno = AnnotationsContainer.from_array([[0]], name='<undefined>')
         return AnnotationsView(annotations_container = anno,
@@ -123,15 +138,7 @@ class ModelDataView(HasTraits):
     def _update_annotations_file(self):
         logger.info('Load file {}'.format(self.annotations_file))
         anno = AnnotationsContainer.from_file(self.annotations_file)
-        self.annotations_view = AnnotationsView(annotations_container = anno,
-                                                nclasses = self.model.nclasses)
-        self.annotations_stats_view = AnnotationsStatisticsView(
-            annotations = self.annotations,
-            nclasses = self.nclasses
-        )
-
-        self.annotations_are_defined = True
-        self.annotations_updated = True
+        self.set_annotations(anno)
 
 
     @on_trait_change('annotations_updated,model_updated')
