@@ -10,12 +10,14 @@ from traits.traits import Property
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.group import HGroup, VGroup
 from traitsui.handler import ModelView
-from traitsui.item import Item, Label
+from traitsui.item import Item, Label, Spring
 from traitsui.menu import OKCancelButtons
 from traitsui.view import View
 from traitsui.message import error
+import unicodedata
 from pyanno import ModelBt, ModelB, ModelA
 from pyanno.annotations import AnnotationsContainer
+from pyanno.database import PyannoDatabase
 from pyanno.plots.annotations_plot import PosteriorPlot
 from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
 from pyanno.ui.annotations_view import AnnotationsView
@@ -53,6 +55,14 @@ class ModelDataView(HasTraits):
         ModelB: ModelBView,
         ModelA: ModelAView
     }
+
+    #### Application-related traits
+
+    # reference to pyanno results database
+    database = Instance(PyannoDatabase)
+
+    # reference to database view
+    database_view = Any
 
     #### Model-related traits
 
@@ -204,6 +214,14 @@ class ModelDataView(HasTraits):
     estimate_labels = Button(label='Estimate labels...')
 
 
+    #### Database actions
+
+    # open database window
+    open_database = Button(label="Open database")
+
+    # add current results to database
+    add_to_database = Button(label="Add to database")
+
     def _new_model_fired(self):
         """Create new model."""
 
@@ -216,6 +234,35 @@ class ModelDataView(HasTraits):
         model = responsible_view.create_model_dialog()
         if model is not None:
             self.set_model(model)
+
+
+    def _open_database_fired(self):
+        """Open database window."""
+        # FIXME: define application object
+        from pyanno.ui.database_view import DatabaseView
+        database_view = DatabaseView(database=self.database,
+                                     model_data_view=self)
+        database_view.edit_traits(kind='live')
+        self.database_view = database_view
+
+
+    def _add_to_database_fired(self):
+        """Add current results to database."""
+        # file name may contain unicode characters
+        u_data_id = unicodedata.normalize('NFKD', self.annotations_file)
+        data_id = u_data_id.encode('ascii','ignore')
+        print data_id
+        print type(data_id)
+
+        self.database.store_result(
+            data_id,
+            self.annotations_view.annotations_container,
+            self.model,
+            self.log_likelihood
+        )
+
+        if self.database_view is not None:
+            self.database_view.db_updated = True
 
 
     def _action_finally(self):
@@ -418,17 +465,18 @@ class ModelDataView(HasTraits):
                 Item('log_likelihood', label='Log likelihood', style='readonly'),
                 HGroup(
                     Item('ml_estimate',
-                         enabled_when='annotations_are_defined',
-                         show_label=False),
+                         enabled_when='annotations_are_defined'),
                     Item('map_estimate',
-                         enabled_when='annotations_are_defined',
-                         show_label=False),
+                         enabled_when='annotations_are_defined'),
                     Item('sample_posterior_over_accuracy',
-                         enabled_when='annotations_are_defined',
-                         show_label=False),
+                         enabled_when='annotations_are_defined'),
                     Item('estimate_labels',
-                         enabled_when='annotations_are_defined',
-                         show_label=False),
+                         enabled_when='annotations_are_defined'),
+                    Spring(),
+                    Item('add_to_database',
+                         enabled_when='annotations_are_defined'),
+                    Item('open_database'),
+                    show_labels=False
                 ),
                 label = 'Model-data view'
             )
@@ -507,15 +555,12 @@ def main():
     from pyanno.ui.database_view import DatabaseView
     from pyanno.ui.model_data_view import ModelDataView
 
-    model = ModelBt.create_initial_state(5)
-    model_data_view = ModelDataView(model=model,
-                                    model_view=ModelBtView(model=model))
-
     # create database view
     db = create_database()
-    print model_data_view
-    database_view = DatabaseView(database=db, model_data_view=model_data_view)
-    database_view.edit_traits(view='traits_view', kind='live')
+
+    model = ModelBt.create_initial_state(5)
+    model_data_view = ModelDataView(database=db)
+    model_data_view.set_model(model)
 
     # open model_data_view
     model_data_view.configure_traits(view='traits_view')
