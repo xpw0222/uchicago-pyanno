@@ -34,11 +34,10 @@ setup(name = "pyanno",
                 'Andrey Rzhetsky', 'James Evans'],
       author_email = ['pberkes@enthought.com', 'carp@lingpipe.com'],
 
-      description = ['Package for curating data annotation efforts.'],
+      description = 'Package for curating data annotation efforts.',
 
-      url = ['https://github.com/enthought/uchicago-pyanno',
-             'http://alias-i.com/lingpipe/web/sandbox.html'],
-      download_url = ['https://github.com/enthought/uchicago-pyanno'],
+      url = 'https://github.com/enthought/uchicago-pyanno',
+      download_url = 'https://github.com/enthought/uchicago-pyanno',
 
       license='LICENSE.txt'
       )
