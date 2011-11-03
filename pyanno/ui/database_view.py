@@ -191,11 +191,11 @@ def main():
         _create_new_entry(modelb, annotations, 'test_id2', db)
 
         # create view
-        model_data_view = DatabaseView(database=db)
-        model_data_view.configure_traits(view='traits_view')
+        database_view = DatabaseView(database=db)
+        database_view.configure_traits(view='traits_view')
 
-    return model, model_data_view
+    return model, database_view
 
 
 if __name__ == '__main__':
-    m, mdv = main()
+    m, dv = main()
