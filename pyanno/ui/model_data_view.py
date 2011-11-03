@@ -469,30 +469,35 @@ class _SamplingParamsDialog(HasTraits):
 
 #### Testing and debugging ####################################################
 
+from pyanno.modelA import ModelA
+from pyanno.modelB import ModelB
+from pyanno.annotations import AnnotationsContainer
+
+def _create_new_entry(model, annotations, id, db):
+    value = model.log_likelihood(annotations)
+    ac = AnnotationsContainer.from_array(annotations)
+    db.store_result(id, ac, model, value)
+
+
 def create_database():
     from tempfile import mktemp
     from pyanno.database import PyannoDatabase
+    from pyanno.ui.database_view import DatabaseView
 
     # database filename
     tmp_filename = mktemp(prefix='tmp_pyanno_db_')
     db = PyannoDatabase(tmp_filename)
 
     # populate database
-    from pyanno.modelA import ModelA
-    from pyanno.modelB import ModelB
-
     model = ModelA.create_initial_state(5)
     annotations = model.generate_annotations(100)
-    value = model.log_likelihood(annotations)
-    db.store_result('test_id', annotations, model, value)
+    _create_new_entry(model, annotations, 'test_id', db)
 
     modelb = ModelB.create_initial_state(5, 8)
-    value = modelb.log_likelihood(annotations)
-    db.store_result('test_id', annotations, modelb, value)
+    _create_new_entry(modelb, annotations, 'test_id', db)
 
     annotations = model.generate_annotations(100)
-    value = model.log_likelihood(annotations)
-    db.store_result('test_id2', annotations, model, value)
+    _create_new_entry(modelb, annotations, 'test_id2', db)
 
     return db
 
@@ -514,6 +519,9 @@ def main():
 
     # open model_data_view
     model_data_view.configure_traits(view='traits_view')
+
+    # close database
+    db.close()
 
     return model, model_data_view
 
