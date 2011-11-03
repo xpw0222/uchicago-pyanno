@@ -9,6 +9,7 @@ from tempfile import TemporaryFile, tempdir, mktemp, gettempdir
 
 import unittest
 import pyanno
+from pyanno.annotations import AnnotationsContainer
 from pyanno.database import PyannoDatabase, PyannoResult
 from pyanno.util import PyannoValueError
 import numpy as np
@@ -23,11 +24,15 @@ class TestDatabase(unittest.TestCase):
         self.model1 = pyanno.ModelA.create_initial_state(4)
         self.annotations1 = self.model1.generate_annotations(100)
         self.value1 = self.model1.log_likelihood(self.annotations1)
+        self.anno_container1 = AnnotationsContainer.from_array(
+            self.annotations1)
         self.data_id1 = 'bogus.txt'
 
         self.model2 = pyanno.ModelA.create_initial_state(4)
         self.annotations2 = self.model2.generate_annotations(100)
         self.value2 = self.model2.log_likelihood(self.annotations2)
+        self.anno_container2 = AnnotationsContainer.from_array(
+            self.annotations2)
         self.data_id2 = 'bogus2.txt'
 
 
@@ -56,7 +61,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_storage(self):
         with closing(PyannoDatabase(self.tmp_filename)) as db:
-            db.store_result(self.data_id1, self.annotations1,
+            db.store_result(self.data_id1, self.anno_container1,
                             self.model1, self.value1)
             self.assertEqual(len(db.database), 1)
 
@@ -65,18 +70,19 @@ class TestDatabase(unittest.TestCase):
             self.assertEqual(len(results), 1)
             self.assert_(isinstance(results[0], PyannoResult))
 
-            np.testing.assert_equal(results[0].annotations, self.annotations1)
+            np.testing.assert_equal(results[0].anno_container.annotations,
+                                    self.anno_container1.annotations)
             self.assertEqual(results[0].model.nclasses, self.model1.nclasses)
             self.assertEqual(results[0].value, self.value1)
             self.assert_(isinstance(results[0].model, self.model1.__class__))
 
             # store new entry for different annotations
-            db.store_result(self.data_id2, self.annotations2,
+            db.store_result(self.data_id2, self.anno_container2,
                             self.model2, self.value2)
             self.assertEqual(len(db.database), 2)
 
             # add new result for same annotations
-            db.store_result(self.data_id1, self.annotations1,
+            db.store_result(self.data_id1, self.anno_container1,
                             self.model2, self.value2)
             results = db.retrieve_id(self.data_id1)
             self.assertEqual(len(results), 2)
@@ -86,22 +92,23 @@ class TestDatabase(unittest.TestCase):
     def test_conflict(self):
         # behavior: one cannot store two different annotations with same id
         with closing(PyannoDatabase(self.tmp_filename)) as db:
-            db.store_result(self.data_id1, self.annotations1,
+            db.store_result(self.data_id1, self.anno_container1,
                             self.model1, self.value1)
 
             with self.assertRaises(PyannoValueError):
-                db.store_result(self.data_id1, self.annotations2,
+                db.store_result(self.data_id1, self.anno_container2,
                                 self.model1, self.value1)
 
                 
     def test_persistence(self):
         with closing(PyannoDatabase(self.tmp_filename)) as db:
-            db.store_result(self.data_id1, self.annotations1,
+            db.store_result(self.data_id1, self.anno_container1,
                             self.model1, self.value1)
 
         with closing(PyannoDatabase(self.tmp_filename)) as db:
             results = db.retrieve_id(self.data_id1)
-            np.testing.assert_equal(results[0].annotations, self.annotations1)
+            np.testing.assert_equal(results[0].anno_container.annotations,
+                                    self.anno_container1.annotations)
 
 
 if __name__ == '__main__':
