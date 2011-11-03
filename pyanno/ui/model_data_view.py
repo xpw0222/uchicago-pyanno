@@ -454,12 +454,50 @@ class _SamplingParamsDialog(HasTraits):
 
 #### Testing and debugging ####################################################
 
+def create_database():
+    from tempfile import mktemp
+    from pyanno.database import PyannoDatabase
+
+    # database filename
+    tmp_filename = mktemp(prefix='tmp_pyanno_db_')
+    db = PyannoDatabase(tmp_filename)
+
+    # populate database
+    from pyanno.modelA import ModelA
+    from pyanno.modelB import ModelB
+
+    model = ModelA.create_initial_state(5)
+    annotations = model.generate_annotations(100)
+    value = model.log_likelihood(annotations)
+    db.store_result('test_id', annotations, model, value)
+
+    modelb = ModelB.create_initial_state(5, 8)
+    value = modelb.log_likelihood(annotations)
+    db.store_result('test_id', annotations, modelb, value)
+
+    annotations = model.generate_annotations(100)
+    value = model.log_likelihood(annotations)
+    db.store_result('test_id2', annotations, model, value)
+
+    return db
+
+
 def main():
     """ Entry point for standalone testing/debugging. """
+    from pyanno.ui.database_view import DatabaseView
+    from pyanno.ui.model_data_view import ModelDataView
 
     model = ModelBt.create_initial_state(5)
     model_data_view = ModelDataView(model=model,
                                     model_view=ModelBtView(model=model))
+
+    # create database view
+    db = create_database()
+    print model_data_view
+    database_view = DatabaseView(database=db, model_data_view=model_data_view)
+    database_view.edit_traits(view='traits_view', kind='live')
+
+    # open model_data_view
     model_data_view.configure_traits(view='traits_view')
 
     return model, model_data_view
