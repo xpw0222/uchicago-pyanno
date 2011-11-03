@@ -55,7 +55,7 @@ class PyannoModelView(ModelView):
 
     @classmethod
     def create_model_dialog(cls):
-        """Open a dialog to create a new model and model view."""
+        """Open a dialog to create a new model."""
 
         dialog = cls.new_model_dialog_class()
         dialog_ui = dialog.edit_traits()
@@ -63,10 +63,9 @@ class PyannoModelView(ModelView):
             # user pressed 'Ok'
             # create model and update view
             model = cls._create_model_from_dialog(dialog)
-            model_view = cls(model=model)
-            return model, model_view
+            return model
         else:
-            return None, None
+            return None
 
 
     info_group = VGroup(

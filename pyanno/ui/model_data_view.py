@@ -48,10 +48,10 @@ class ModelDataView(HasTraits):
         'Model A': ModelA
     }
 
-    _model_name_to_view = {
-        'Model B-with-theta': ModelBtView,
-        'Model B': ModelBView,
-        'Model A': ModelAView
+    _model_class_to_view = {
+        ModelBt: ModelBtView,
+        ModelB: ModelBView,
+        ModelA: ModelAView
     }
 
     #### Model-related traits
@@ -67,6 +67,15 @@ class ModelDataView(HasTraits):
 
     # parameters view should not update when this trait is False
     model_update_suspended = Bool(False)
+
+
+    def set_model(self, model):
+        """Update window with a new model.
+        """
+        self.model = model
+        model_view_class = self._model_class_to_view[model.__class__]
+        self.model_view = model_view_class(model=model)
+        self.model_update = True
 
 
     #### Annotation-related traits
@@ -185,14 +194,13 @@ class ModelDataView(HasTraits):
 
         # delegate creation to associated model_view
         model_name = self.model_name
-        responsible_view = self._model_name_to_view[model_name]
+        model_class = self._model_name_to_class[model_name]
+        responsible_view = self._model_class_to_view[model_class]
 
         # model == None if the user cancelled the action
-        model, model_view = responsible_view.create_model_dialog()
+        model = responsible_view.create_model_dialog()
         if model is not None:
-            self.model = model
-            self.model_view = model_view
-            self.model_updated = True
+            self.set_model(model)
 
 
     def _action_finally(self):
