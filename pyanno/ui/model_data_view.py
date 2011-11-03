@@ -69,15 +69,6 @@ class ModelDataView(HasTraits):
     model_update_suspended = Bool(False)
 
 
-    def set_model(self, model):
-        """Update window with a new model.
-        """
-        self.model = model
-        model_view_class = self._model_class_to_view[model.__class__]
-        self.model_view = model_view_class(model=model)
-        self.model_update = True
-
-
     #### Annotation-related traits
 
     # File trait to load a new annotations file
@@ -111,21 +102,6 @@ class ModelDataView(HasTraits):
 
     # used to display the current log likelihood
     log_likelihood = Float
-
-
-    def set_annotations(self, annotations_container):
-        """Update window with a new set of annotations."""
-        self.annotations_view = AnnotationsView(
-            annotations_container = annotations,
-            nclasses = self.model.nclasses
-        )
-        self.annotations_stats_view = AnnotationsStatisticsView(
-            annotations = self.annotations,
-            nclasses = self.nclasses
-        )
-
-        self.annotations_are_defined = True
-        self.annotations_updated = True
 
 
     def _annotations_view_default(self):
@@ -163,6 +139,38 @@ class ModelDataView(HasTraits):
             self.model_updated = True
             if self.model_view is not None:
                 self.model_view.model_updated = True
+
+
+    ### Control content #######################################################
+
+    def set_model(self, model):
+        """Update window with a new model.
+        """
+        self.model = model
+        model_view_class = self._model_class_to_view[model.__class__]
+        self.model_view = model_view_class(model=model)
+        self.model_update = True
+
+
+    def set_annotations(self, annotations_container):
+        """Update window with a new set of annotations."""
+        self.annotations_view = AnnotationsView(
+            annotations_container = annotations_container,
+            nclasses = self.model.nclasses
+        )
+        self.annotations_stats_view = AnnotationsStatisticsView(
+            annotations = self.annotations,
+            nclasses = self.nclasses
+        )
+
+        self.annotations_are_defined = True
+        self.annotations_updated = True
+
+
+    def set_from_database_record(self, record):
+        """Set main window model and annotations from a database record."""
+        self.set_model(record.model)
+        self.set_annotations(record.anno_container)
 
 
     ### Actions ##############################################################
