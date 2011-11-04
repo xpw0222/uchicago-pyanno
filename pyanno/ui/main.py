@@ -5,36 +5,17 @@
 """Entry point for pyanno UI application."""
 
 from enthought.etsconfig.api import ETSConfig
-ETSConfig.toolkit = 'wx'
+from pyanno.ui.pyanno_ui_application import pyanno_application
 
-from pyanno.modelBt import ModelBt
-from pyanno.ui.model_bt_view import ModelBtView
-from pyanno.ui.model_data_view import ModelDataView
+ETSConfig.toolkit = 'wx'
 
 import logging
 
 
-def setup_logging():
-    logging.basicConfig(level=logging.DEBUG)
-
-
 def main():
     """Create and start the application."""
-
-    setup_logging()
-    logging.info('Starting pyAnno')
-
-    # create initial model
-    model = ModelBt.create_initial_state(5)
-
-    # create main window
-    model_data_view = ModelDataView(model=model,
-                                    model_view=ModelBtView(model=model))
-
-    # display main window
-    model_data_view.configure_traits()
-
-    logging.info('Closing pyAnno -- Goodbye!')
+    with pyanno_application(logging_level=logging.DEBUG) as app:
+        app.open()
 
 if __name__ == '__main__':
     main()

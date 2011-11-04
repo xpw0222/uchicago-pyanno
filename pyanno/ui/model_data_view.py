@@ -10,12 +10,14 @@ from traits.traits import Property
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.group import HGroup, VGroup
 from traitsui.handler import ModelView
-from traitsui.item import Item, Label
+from traitsui.item import Item, Label, Spring
 from traitsui.menu import OKCancelButtons
 from traitsui.view import View
 from traitsui.message import error
+
 from pyanno import ModelBt, ModelB, ModelA
 from pyanno.annotations import AnnotationsContainer
+from pyanno.database import PyannoDatabase
 from pyanno.plots.annotations_plot import PosteriorPlot
 from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
 from pyanno.ui.annotations_view import AnnotationsView
@@ -48,11 +50,16 @@ class ModelDataView(HasTraits):
         'Model A': ModelA
     }
 
-    _model_name_to_view = {
-        'Model B-with-theta': ModelBtView,
-        'Model B': ModelBView,
-        'Model A': ModelAView
+    _model_class_to_view = {
+        ModelBt: ModelBtView,
+        ModelB: ModelBView,
+        ModelA: ModelAView
     }
+
+    #### Application-related traits
+
+    # reference to pyanno application
+    application = Any
 
     #### Model-related traits
 
@@ -114,15 +121,7 @@ class ModelDataView(HasTraits):
     def _update_annotations_file(self):
         logger.info('Load file {}'.format(self.annotations_file))
         anno = AnnotationsContainer.from_file(self.annotations_file)
-        self.annotations_view = AnnotationsView(annotations_container = anno,
-                                                nclasses = self.model.nclasses)
-        self.annotations_stats_view = AnnotationsStatisticsView(
-            annotations = self.annotations,
-            nclasses = self.nclasses
-        )
-
-        self.annotations_are_defined = True
-        self.annotations_updated = True
+        self.set_annotations(anno)
 
 
     @on_trait_change('annotations_updated,model_updated')
@@ -147,6 +146,38 @@ class ModelDataView(HasTraits):
             self.model_updated = True
             if self.model_view is not None:
                 self.model_view.model_updated = True
+
+
+    ### Control content #######################################################
+
+    def set_model(self, model):
+        """Update window with a new model.
+        """
+        self.model = model
+        model_view_class = self._model_class_to_view[model.__class__]
+        self.model_view = model_view_class(model=model)
+        self.model_update = True
+
+
+    def set_annotations(self, annotations_container):
+        """Update window with a new set of annotations."""
+        self.annotations_view = AnnotationsView(
+            annotations_container = annotations_container,
+            nclasses = self.model.nclasses,
+        )
+        self.annotations_stats_view = AnnotationsStatisticsView(
+            annotations = self.annotations,
+            nclasses = self.nclasses
+        )
+
+        self.annotations_are_defined = True
+        self.annotations_updated = True
+
+
+    def set_from_database_record(self, record):
+        """Set main window model and annotations from a database record."""
+        self.set_model(record.model)
+        self.set_annotations(record.anno_container)
 
 
     ### Actions ##############################################################
@@ -180,19 +211,38 @@ class ModelDataView(HasTraits):
     estimate_labels = Button(label='Estimate labels...')
 
 
+    #### Database actions
+
+    # open database window
+    open_database = Button(label="Open database")
+
+    # add current results to database
+    add_to_database = Button(label="Add to database")
+
     def _new_model_fired(self):
         """Create new model."""
 
         # delegate creation to associated model_view
         model_name = self.model_name
-        responsible_view = self._model_name_to_view[model_name]
+        model_class = self._model_name_to_class[model_name]
+        responsible_view = self._model_class_to_view[model_class]
 
         # model == None if the user cancelled the action
-        model, model_view = responsible_view.create_model_dialog()
+        model = responsible_view.create_model_dialog()
         if model is not None:
-            self.model = model
-            self.model_view = model_view
-            self.model_updated = True
+            self.set_model(model)
+
+
+    def _open_database_fired(self):
+        """Open database window."""
+        if self.application is not None:
+            self.application.open_database_window()
+
+
+    def _add_to_database_fired(self):
+        """Add current results to database."""
+        if self.application is not None:
+            self.application.add_current_state_to_database()
 
 
     def _action_finally(self):
@@ -395,17 +445,18 @@ class ModelDataView(HasTraits):
                 Item('log_likelihood', label='Log likelihood', style='readonly'),
                 HGroup(
                     Item('ml_estimate',
-                         enabled_when='annotations_are_defined',
-                         show_label=False),
+                         enabled_when='annotations_are_defined'),
                     Item('map_estimate',
-                         enabled_when='annotations_are_defined',
-                         show_label=False),
+                         enabled_when='annotations_are_defined'),
                     Item('sample_posterior_over_accuracy',
-                         enabled_when='annotations_are_defined',
-                         show_label=False),
+                         enabled_when='annotations_are_defined'),
                     Item('estimate_labels',
-                         enabled_when='annotations_are_defined',
-                         show_label=False),
+                         enabled_when='annotations_are_defined'),
+                    Spring(),
+                    Item('add_to_database',
+                         enabled_when='annotations_are_defined'),
+                    Item('open_database'),
+                    show_labels=False
                 ),
                 label = 'Model-data view'
             )
@@ -446,12 +497,16 @@ class _SamplingParamsDialog(HasTraits):
 
 #### Testing and debugging ####################################################
 
+
 def main():
     """ Entry point for standalone testing/debugging. """
+    from pyanno.ui.model_data_view import ModelDataView
 
     model = ModelBt.create_initial_state(5)
-    model_data_view = ModelDataView(model=model,
-                                    model_view=ModelBtView(model=model))
+    model_data_view = ModelDataView()
+    model_data_view.set_model(model)
+
+    # open model_data_view
     model_data_view.configure_traits(view='traits_view')
 
     return model, model_data_view
