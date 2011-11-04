@@ -75,7 +75,7 @@ class DatabaseView(HasTraits):
     delete_action = Button('Delete...')
 
     # button that closes the database window
-    #close_view = Button('Close window')
+    close_view = Button('Close window')
 
 
     @on_trait_change('results_table[]')
@@ -141,10 +141,10 @@ class DatabaseView(HasTraits):
             self.application.update_window_from_database_record(record)
 
 
-    #@on_trait_change('close_view')
-    #def close_database_view(self):
-    #    if self.application is not None:
-    #        self.application.close_database_window()
+    @on_trait_change('close_view')
+    def close_database_view(self):
+        if self.application is not None:
+            self.application.close_database_window()
 
 
     def track_selection(self, entry):
@@ -190,9 +190,9 @@ class DatabaseView(HasTraits):
                          show_label=False,
                          width=100),
                     Spring(),
-                    #Item('close_view',
-                    #     show_label=False,
-                    #     width=100)
+                    Item('close_view',
+                         show_label=False,
+                         width=100)
                 )
             ),
             title     = 'pyAnno results database',

@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from traits.has_traits import HasTraits
 from traits.trait_types import Instance, Bool
 import unicodedata
+from traitsui.ui import UI
 from pyanno.database import PyannoDatabase
 from pyanno.modelBt import ModelBt
 from pyanno.ui.database_view import DatabaseView
@@ -23,7 +24,7 @@ class PyannoApplication(HasTraits):
 
     database_window = Instance(DatabaseView)
 
-    db_window_open = Bool(False)
+    database_ui = Instance(UI)
 
 
     def open(self):
@@ -49,20 +50,27 @@ class PyannoApplication(HasTraits):
 
 
     def open_database_window(self):
-        if not self.db_window_open:
-            logger.debug('Open database window')
-            database_window = DatabaseView(database=self.database,
-                                           application=self)
-            database_window.edit_traits(kind='live')
+        if (self.database_ui is None
+            or self.database_ui.control is None):
+                # window was closed or not existent
+                logger.debug('Open database window')
+                database_window = DatabaseView(database=self.database,
+                                               application=self)
+                database_ui = database_window.edit_traits(kind='live')
 
-            self.database_window = database_window
-            self.db_window_open = True
-        else:
-            # TODO give focus
-            pass
+                self.database_window = database_window
+                self.database_ui = database_ui
+                self.db_window_open = True
+
+        if (self.database_ui is not None
+            and self.database_ui.control is not None):
+            # windows exists, raise
+            self.database_ui.control.Raise()
 
 
     def close_database_window(self):
+        # wx specific
+        self.database_ui.control.Close()
         self.db_window_open = False
 
 
