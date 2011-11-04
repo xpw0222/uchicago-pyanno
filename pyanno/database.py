@@ -1,12 +1,10 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Pietro Berkes <pberkes@enthought.com>
 # License: Modified BSD license (2-clause)
-from collections import namedtuple
-from contextlib import contextmanager
+
 import shelve
 from traits.has_traits import HasStrictTraits
-from traits.trait_numeric import Array
-from traits.trait_types import Str, Any, Float, Instance
+from traits.trait_types import Any, Float, Instance
 from pyanno.annotations import AnnotationsContainer
 from pyanno.util import PyannoValueError
 import numpy as np
