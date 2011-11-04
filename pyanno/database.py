@@ -67,6 +67,22 @@ class PyannoDatabase(object):
         return self.database[data_id]
 
 
+    def remove(self, data_id, idx):
+        """Remove entry from database.
+
+        Parameters
+        ----------
+        data_id : string
+            Readable **unique** identifier for the annotations set
+
+        idx : int
+            Index in the list of entries with id `data_id`
+        """
+        temp = self.database[data_id]
+        del temp[idx]
+        self.database[data_id] = temp
+
+
     def close(self):
         """Close database."""
         self.database.close()

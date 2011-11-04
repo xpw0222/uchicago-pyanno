@@ -28,8 +28,10 @@ class TestDatabase(unittest.TestCase):
             self.annotations1)
         self.data_id1 = 'bogus.txt'
 
-        self.model2 = pyanno.ModelA.create_initial_state(4)
-        self.annotations2 = self.model2.generate_annotations(100)
+        self.model2 = pyanno.ModelB.create_initial_state(4, 8)
+        self.annotations2 = self.model2.generate_annotations(
+            self.model2.generate_labels(100)
+        )
         self.value2 = self.model2.log_likelihood(self.annotations2)
         self.anno_container2 = AnnotationsContainer.from_array(
             self.annotations2)
@@ -99,7 +101,7 @@ class TestDatabase(unittest.TestCase):
                 db.store_result(self.data_id1, self.anno_container2,
                                 self.model1, self.value1)
 
-                
+
     def test_persistence(self):
         with closing(PyannoDatabase(self.tmp_filename)) as db:
             db.store_result(self.data_id1, self.anno_container1,
@@ -110,6 +112,29 @@ class TestDatabase(unittest.TestCase):
             np.testing.assert_equal(results[0].anno_container.annotations,
                                     self.anno_container1.annotations)
 
+
+    def test_remove(self):
+        # behavior: removing one item makes the item disappear,
+        # the rest of the database is intact
+        # deletion should be indexed by data id and index in the list of
+        # entries with the same if
+
+        with closing(PyannoDatabase(self.tmp_filename)) as db:
+            db.store_result(self.data_id1, self.anno_container1,
+                            self.model1, self.value1)
+            db.store_result(self.data_id1, self.anno_container1,
+                            self.model2, self.value2)
+            db.store_result(self.data_id2, self.anno_container2,
+                            self.model2, self.value2)
+
+            db.remove(self.data_id1, 1)
+
+            self.assertEqual(len(db.database), 2)
+            self.assertEqual(len(db.database[self.data_id1]), 1)
+            self.assertEqual(len(db.database[self.data_id2]), 1)
+
+            self.assertTrue(isinstance(db.database[self.data_id1][0].model,
+                                       self.model1.__class__))
 
 if __name__ == '__main__':
     unittest.main()
