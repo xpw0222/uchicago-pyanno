@@ -28,7 +28,7 @@ class DBEntry(HasTraits):
         return DBEntry(
             idx = idx,
             data_id = data_id,
-            model_name = str(result.model.__class__),
+            model_name = str(result.model.__class__.__name__),
             value = '%.4f' % result.value
         )
 
@@ -75,7 +75,7 @@ class DatabaseView(HasTraits):
     delete_action = Button('Delete...')
 
     # button that closes the database window
-    close_view = Button('Close window')
+    close_view = Button('Close')
 
 
     @on_trait_change('results_table[]')
@@ -156,7 +156,7 @@ class DatabaseView(HasTraits):
         db_table_editor = TableEditor(
             columns=[
                 ObjectColumn(name='data_id', label='Annotations ID',
-                             editable=False, width=0.20),
+                             editable=False, width=0.70),
                 ObjectColumn(name='model_name',
                              editable=False, width=0.20),
                 ObjectColumn(name='value', label='Log likelihood',
@@ -196,7 +196,7 @@ class DatabaseView(HasTraits):
                 )
             ),
             title     = 'pyAnno results database',
-            width     = 500,
+            width     = 800,
             height    = 400,
             resizable = True,
             #buttons   = [ 'OK' ],
