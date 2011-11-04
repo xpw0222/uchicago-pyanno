@@ -2,7 +2,7 @@
 # Author: Pietro Berkes <pberkes@enthought.com>
 # License: Modified BSD license (2-clause)
 from traits.has_traits import HasTraits, on_trait_change
-from traits.trait_types import List, Instance, Event, Str, Float, Button, Int
+from traits.trait_types import List, Instance, Event, Str, Float, Button, Int, Any
 from traitsui.editors.table_editor import TableEditor
 from traitsui.group import Group, VGroup, HGroup
 from traitsui.item import Item, Spring
@@ -10,7 +10,6 @@ from traitsui.table_column import ObjectColumn
 from traitsui.table_filter import TableFilter
 from traitsui.view import View
 from pyanno.database import PyannoDatabase
-from pyanno.ui.model_data_view import ModelDataView
 
 #import logging
 #logger = logging.getLogger(__name__)
@@ -51,8 +50,8 @@ class DatabaseView(HasTraits):
     # reference to pyanno database
     database = Instance(PyannoDatabase)
 
-    # reference to main window
-    model_data_view = Instance(ModelDataView)
+    # reference to pyanno application
+    application = Any
 
     # trait displayed in the TableView, it is synchronized with the actual db
     results_table = List(DBEntry)
@@ -97,11 +96,10 @@ class DatabaseView(HasTraits):
         # called on double click, it sets the model and the annotations in
         # the main window
 
-        mdv = self.model_data_view
-        if mdv is not None:
+        if self.application is not None:
             entry = self.current_selection
             record = self.find_database_record(entry)
-            mdv.set_from_database_record(record)
+            self.application.update_window_from_database_record(record)
 
 
     def track_selection(self, entry):

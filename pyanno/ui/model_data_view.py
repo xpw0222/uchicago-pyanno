@@ -14,7 +14,7 @@ from traitsui.item import Item, Label, Spring
 from traitsui.menu import OKCancelButtons
 from traitsui.view import View
 from traitsui.message import error
-import unicodedata
+
 from pyanno import ModelBt, ModelB, ModelA
 from pyanno.annotations import AnnotationsContainer
 from pyanno.database import PyannoDatabase
@@ -58,11 +58,8 @@ class ModelDataView(HasTraits):
 
     #### Application-related traits
 
-    # reference to pyanno results database
-    database = Instance(PyannoDatabase)
-
-    # reference to database view
-    database_view = Any
+    # reference to pyanno application
+    application = Any
 
     #### Model-related traits
 
@@ -166,7 +163,7 @@ class ModelDataView(HasTraits):
         """Update window with a new set of annotations."""
         self.annotations_view = AnnotationsView(
             annotations_container = annotations_container,
-            nclasses = self.model.nclasses
+            nclasses = self.model.nclasses,
         )
         self.annotations_stats_view = AnnotationsStatisticsView(
             annotations = self.annotations,
@@ -238,31 +235,14 @@ class ModelDataView(HasTraits):
 
     def _open_database_fired(self):
         """Open database window."""
-        # FIXME: define application object
-        from pyanno.ui.database_view import DatabaseView
-        database_view = DatabaseView(database=self.database,
-                                     model_data_view=self)
-        database_view.edit_traits(kind='live')
-        self.database_view = database_view
+        if self.application is not None:
+            self.application.open_database_window()
 
 
     def _add_to_database_fired(self):
         """Add current results to database."""
-        # file name may contain unicode characters
-        u_data_id = unicodedata.normalize('NFKD', self.annotations_file)
-        data_id = u_data_id.encode('ascii','ignore')
-        print data_id
-        print type(data_id)
-
-        self.database.store_result(
-            data_id,
-            self.annotations_view.annotations_container,
-            self.model,
-            self.log_likelihood
-        )
-
-        if self.database_view is not None:
-            self.database_view.db_updated = True
+        if self.application is not None:
+            self.application.add_current_state_to_database()
 
 
     def _action_finally(self):
@@ -517,56 +497,17 @@ class _SamplingParamsDialog(HasTraits):
 
 #### Testing and debugging ####################################################
 
-from pyanno.modelA import ModelA
-from pyanno.modelB import ModelB
-from pyanno.annotations import AnnotationsContainer
-
-def _create_new_entry(model, annotations, id, db):
-    value = model.log_likelihood(annotations)
-    ac = AnnotationsContainer.from_array(annotations)
-    db.store_result(id, ac, model, value)
-
-
-def create_database():
-    from tempfile import mktemp
-    from pyanno.database import PyannoDatabase
-    from pyanno.ui.database_view import DatabaseView
-
-    # database filename
-    tmp_filename = mktemp(prefix='tmp_pyanno_db_')
-    db = PyannoDatabase(tmp_filename)
-
-    # populate database
-    model = ModelA.create_initial_state(5)
-    annotations = model.generate_annotations(100)
-    _create_new_entry(model, annotations, 'test_id', db)
-
-    modelb = ModelB.create_initial_state(5, 8)
-    _create_new_entry(modelb, annotations, 'test_id', db)
-
-    annotations = model.generate_annotations(100)
-    _create_new_entry(modelb, annotations, 'test_id2', db)
-
-    return db
-
 
 def main():
     """ Entry point for standalone testing/debugging. """
-    from pyanno.ui.database_view import DatabaseView
     from pyanno.ui.model_data_view import ModelDataView
 
-    # create database view
-    db = create_database()
-
     model = ModelBt.create_initial_state(5)
-    model_data_view = ModelDataView(database=db)
+    model_data_view = ModelDataView()
     model_data_view.set_model(model)
 
     # open model_data_view
     model_data_view.configure_traits(view='traits_view')
-
-    # close database
-    db.close()
 
     return model, model_data_view
 
