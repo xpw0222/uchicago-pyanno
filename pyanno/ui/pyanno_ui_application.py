@@ -4,16 +4,21 @@
 
 from contextlib import contextmanager
 from traits.has_traits import HasTraits
-from traits.trait_types import Instance, Bool
+from traits.trait_types import Instance, Bool, Str, Int
 import unicodedata
 from traitsui.ui import UI
 from pyanno.database import PyannoDatabase
 from pyanno.modelBt import ModelBt
 from pyanno.ui.database_view import DatabaseView
 from pyanno.ui.model_data_view import ModelDataView
+import os.path
+import pyanno
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+DATABASE_FILENAME = 'pyanno_results.db'
 
 
 class PyannoApplication(HasTraits):
@@ -26,14 +31,29 @@ class PyannoApplication(HasTraits):
 
     database_ui = Instance(UI)
 
+    logging_level = Int(logging.INFO)
 
     def open(self):
+        self._start_logging()
         self._open_pyanno_database()
         self._open_main_window()
 
 
     def close(self):
         self.database.close()
+        logging.info('Closing pyAnno -- Goodbye!')
+
+
+    def _start_logging(self):
+        logging.basicConfig(level=logging.DEBUG)
+        logging.info('Starting pyAnno')
+
+
+    def _open_pyanno_database(self):
+        # database filename
+        db_filename = os.path.join(os.path.dirname(pyanno.__file__),
+                                   DATABASE_FILENAME)
+        self.database = PyannoDatabase(db_filename)
 
 
     def _open_main_window(self):
@@ -43,10 +63,6 @@ class PyannoApplication(HasTraits):
         self.main_window.set_model(model)
 
         self.main_window.configure_traits()
-
-
-    def _open_pyanno_database(self):
-        pass
 
 
     def open_database_window(self):
@@ -135,8 +151,8 @@ class PyannoApplication(HasTraits):
 
 
 @contextmanager
-def pyanno_application():
-    app = PyannoApplication()
+def pyanno_application(**traits):
+    app = PyannoApplication(**traits)
     yield app
     app.close()
 
