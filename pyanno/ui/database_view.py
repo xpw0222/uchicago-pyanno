@@ -2,17 +2,19 @@
 # Author: Pietro Berkes <pberkes@enthought.com>
 # License: Modified BSD license (2-clause)
 from traits.has_traits import HasTraits, on_trait_change
-from traits.trait_types import List, Instance, Event, Str, Float, Button, Int, Any
+from traits.trait_types import (List, Instance, Event, Str, Button,
+                                Int, Any)
 from traitsui.editors.table_editor import TableEditor
 from traitsui.group import Group, VGroup, HGroup
 from traitsui.item import Item, Spring
+from traitsui.message import message
 from traitsui.table_column import ObjectColumn
 from traitsui.table_filter import TableFilter
 from traitsui.view import View
 from pyanno.database import PyannoDatabase
 
-#import logging
-#logger = logging.getLogger(__name__)
+import logging
+logger = logging.getLogger(__name__)
 
 
 class DBEntry(HasTraits):
@@ -56,6 +58,8 @@ class DatabaseView(HasTraits):
     # trait displayed in the TableView, it is synchronized with the actual db
     results_table = List(DBEntry)
 
+    # used to track add and delete actions
+    results_table_len = Int
 
     # currently selected entry
     current_selection = Instance(DBEntry)
@@ -65,7 +69,41 @@ class DatabaseView(HasTraits):
     db_updated = Event
 
     # button that sends the currently selected row to the main window
-    open_to_main = Button('Open results...')
+    open_to_main = Button('Load results')
+
+    # button that deletes the currently selected row from the database
+    delete_action = Button('Delete...')
+
+    # button that closes the database window
+    #close_view = Button('Close window')
+
+
+    @on_trait_change('results_table[]')
+    def _database_content_modified(self):
+        """Track results_table to detect delete events."""
+        if self.results_table_len > len(self.results_table):
+            logger.debug('delete database entry event' +
+                         self.current_selection.data_id)
+
+            # delete current selection
+            self.database.remove(
+                self.current_selection.data_id,
+                self.current_selection.idx
+            )
+            self.results_table_len = len(self.results_table)
+
+
+    @on_trait_change('delete_action')
+    def _delete_action(self):
+        # open dialog asking are you sure
+        msg = 'Remove selected result from database?'
+        result = message(message=msg,
+                         title='Delete result from database',
+                         buttons = ['OK', 'Cancel'])
+
+        if result:
+            # remove from results_table
+            self.results_table.remove(self.current_selection)
 
 
     @on_trait_change('db_updated,database')
@@ -83,6 +121,7 @@ class DatabaseView(HasTraits):
         table.sort(key=lambda x: (x.data_id, x.value))
 
         self.results_table = table
+        self.results_table_len = len(table)
 
 
     def find_database_record(self, entry):
@@ -100,6 +139,12 @@ class DatabaseView(HasTraits):
             entry = self.current_selection
             record = self.find_database_record(entry)
             self.application.update_window_from_database_record(record)
+
+
+    #@on_trait_change('close_view')
+    #def close_database_view(self):
+    #    if self.application is not None:
+    #        self.application.close_database_window()
 
 
     def track_selection(self, entry):
@@ -141,7 +186,13 @@ class DatabaseView(HasTraits):
                     Item('open_to_main',
                          show_label=False,
                          width=100),
-                    Spring()
+                    Item('delete_action',
+                         show_label=False,
+                         width=100),
+                    Spring(),
+                    #Item('close_view',
+                    #     show_label=False,
+                    #     width=100)
                 )
             ),
             title     = 'pyAnno results database',
@@ -153,7 +204,6 @@ class DatabaseView(HasTraits):
         )
 
         return traits_view
-
 
 
 #### Testing and debugging ####################################################
@@ -190,7 +240,7 @@ def main():
 
         # create view
         database_view = DatabaseView(database=db)
-        database_view.configure_traits(view='traits_view')
+        database_view.edit_traits(view='traits_view')
 
     return model, database_view
 
