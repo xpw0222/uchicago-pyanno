@@ -21,16 +21,22 @@ class Array2DAdapter(TabularAdapter):
     alignment = 'right'
     format = data_format
     index_text = Property
+    index_alignment = Property
 
 
     def _get_index_text(self):
-        return str(self.row)
+        return '- {} -'.format(self.row)
+
+
+    def _get_index_alignment(self):
+        print self.item
+        return 'left'
 
 
     def _columns_default(self):
         columns = [('%d' % (i+1), i) for i in range(self.ncolumns)]
         if self.show_index:
-            columns.insert(0, ('row\col', 'index'))
+            columns.insert(0, ('items', 'index'))
         return columns
 
 

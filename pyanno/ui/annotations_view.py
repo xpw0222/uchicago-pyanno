@@ -8,7 +8,7 @@ from traits.trait_types import Instance, Int, ListFloat, Str, Button, Event
 from traitsui.api import  View, VGroup
 from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.group import HGroup
-from traitsui.item import Item, Spring
+from traitsui.item import Item, Spring, Label
 from traitsui.menu import OKCancelButtons
 from pyanno.annotations import AnnotationsContainer
 from pyanno.ui.arrayview import Array2DAdapter
@@ -28,14 +28,22 @@ class DataView(HasTraits):
 
     def traits_view(self):
         return View(
-            VGroup(Item('data',
-                        editor=TabularEditor
-                            (
-                            adapter=Array2DAdapter(ncolumns=len(self.data[0]),
-                                                   format='%s',
-                                                   show_index=False)),
-                        show_label=False)),
-            title='Annotations (-1 is missing value)',
+            VGroup(
+                HGroup(
+                    Spring(),
+                    Label('Annotators'),
+                    Spring()
+                ),
+                Item('data',
+                    editor=TabularEditor
+                        (
+                        adapter=Array2DAdapter(ncolumns=len(self.data[0]),
+                                               format='%s',
+                                               show_index=True)),
+                    show_label=False,
+                    width=600)
+            ),
+            title='Annotations',
             width=500,
             height=800,
             resizable=True,
