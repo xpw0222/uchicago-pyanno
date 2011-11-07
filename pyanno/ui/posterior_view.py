@@ -24,9 +24,9 @@ class PosteriorView(HasTraits):
         traits_view = View(
             VGroup(
                 Item('show_maximum',
-                     label='Show MAP estimate (triangle)'),
+                     label='Show MAP estimate (circle)'),
                 Item('show_majority_vote',
-                     label='Show majority vote (circle)'),
+                     label='Show majority vote (triangle)'),
                 VGroup(
                     Item('posterior_plot',
                          editor=InstanceEditor(),
@@ -34,9 +34,9 @@ class PosteriorView(HasTraits):
                          show_label=False),
                     scrollable=True
                 ),
-                padding=10,
+                padding=0,
             ),
-            height=800,
+            height=900,
             resizable=True
         )
 
@@ -47,7 +47,10 @@ class PosteriorView(HasTraits):
         if self.show_maximum:
             maximum = plot.posterior.argmax(1)
             plot.add_markings(maximum, 'MAP',
-                              'triangle', 0., 0., marker_size=5)
+                              'circle', 0., 0.,
+                              marker_size=3,
+                              line_width=2.,
+                              marker_color='gray')
         else:
             plot.remove_markings('MAP')
         plot.plot_posterior.request_redraw()
@@ -58,7 +61,10 @@ class PosteriorView(HasTraits):
         if self.show_majority_vote:
             majority = majority_vote(self.annotations)
             plot.add_markings(majority, 'majority',
-                              'circle', 0., 0., marker_size=7)
+                              'triangle', 0., 0.,
+                              marker_size=3,
+                              line_width=1.,
+                              marker_color='green')
         else:
             plot.remove_markings('majority')
         plot.plot_posterior.request_redraw()
@@ -82,7 +88,7 @@ def main():
         posterior_plot=post_plot,
         annotations=annotations
     )
-    post_view.edit_traits()
+    post_view.configure_traits()
     return post_view
 
 
