@@ -7,6 +7,7 @@ from traits.has_traits import HasTraits
 from traits.trait_types import Instance, Bool, Str, Int
 import unicodedata
 from traits.traits import Property
+from traitsui.message import error
 from traitsui.ui import UI
 from pyanno.database import PyannoDatabase
 from pyanno.modelBt import ModelBt
@@ -18,6 +19,9 @@ import os.path
 import pyanno
 
 import logging
+from pyanno.util import PyannoValueError
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -126,12 +130,17 @@ class PyannoApplication(HasTraits):
             u_data_id = unicodedata.normalize('NFKD', data_id)
             data_id = u_data_id.encode('ascii','ignore')
 
-        self.database.store_result(
-            data_id,
-            mdv.annotations_view.annotations_container,
-            mdv.model,
-            mdv.log_likelihood
-        )
+        try:
+            self.database.store_result(
+                data_id,
+                mdv.annotations_view.annotations_container,
+                mdv.model,
+                mdv.log_likelihood
+            )
+        except PyannoValueError as e:
+            logger.info(e)
+            errmsg = e.args[0]
+            error('Error: ' + errmsg)
 
         if self.db_window_open:
             self.database_window.db_updated = True
