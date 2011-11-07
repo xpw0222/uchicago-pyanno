@@ -92,7 +92,9 @@ class AnnotationsStatisticsView(HasTraits):
                                                nclasses=self.nclasses)
             except PyannoValueError as e:
                 logger.info(e)
-                res = np.nan
+                nannotators = self.annotations.shape[1]
+                res = np.empty((nannotators, nannotators))
+                res.fill(np.nan)
 
             self.stats_view = MatrixPlot(matrix=res,
                                               colormap_low=-1.0,

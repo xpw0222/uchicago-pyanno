@@ -4,16 +4,23 @@
 
 from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_numeric import Array
-from traits.trait_types import Instance, Int, ListFloat, Str, Button, Event
+from traits.trait_types import Instance, Int, ListFloat, Str, Button, Event, File, Any
 from traitsui.api import  View, VGroup
+from traitsui.editors.file_editor import FileEditor
+from traitsui.editors.range_editor import RangeEditor
 from traitsui.editors.tabular_editor import TabularEditor
+from traitsui.file_dialog import save_file
 from traitsui.group import HGroup
 from traitsui.item import Item, Spring, Label
 from traitsui.menu import OKCancelButtons
 from pyanno.annotations import AnnotationsContainer
 from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.plots.hinton_plot import HintonDiagramPlot
-from pyanno.util import labels_frequency, is_valid
+from pyanno.util import labels_frequency, is_valid, MISSING_VALUE, PyannoValueError
+import numpy as np
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 ANNOTATIONS_INFO_STR = """Annotations file {}
@@ -68,9 +75,15 @@ class AnnotationsView(HasTraits):
     @on_trait_change('annotations_container,annotations_updated,nclasses')
     def _update_frequency(self):
         nclasses = max(self.nclasses, self.annotations_container.nclasses)
-        self.frequency =  labels_frequency(
-            self.annotations_container.annotations,
-            nclasses).tolist()
+        try:
+            frequency =  labels_frequency(
+                self.annotations_container.annotations,
+                nclasses).tolist()
+        except PyannoValueError as e:
+            logger.info(e)
+            frequency = np.zeros((nclasses,)).tolist()
+
+        self.frequency = frequency
         self.frequency_plot = HintonDiagramPlot(
             data=self.frequency,
             title='Observed label frequencies')
