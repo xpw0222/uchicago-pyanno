@@ -3,8 +3,9 @@
 # License: Modified BSD license (2-clause)
 
 from traits.has_traits import on_trait_change
-from traits.trait_types import Button, List, CFloat, Str, Range
+from traits.trait_types import Button, List, CFloat, Str, Range, Int
 from traitsui.api import View, Item, VGroup
+from traitsui.editors.range_editor import RangeEditor
 from traitsui.group import VGrid
 from traitsui.include import Include
 from traitsui.menu import OKButton
@@ -23,11 +24,13 @@ MODEL_BT_NAME = 'Model B-with-theta'
 
 class NewModelBtDialog(NewModelDialog):
     model_name = Str(MODEL_BT_NAME)
-    nclasses = Range(low=3, high=50, value=5)
+    nclasses = Int(5)
 
     parameters_group = VGroup(
         Item(name='nclasses',
-             label='Number of annotation classes:')
+             editor=RangeEditor(mode='spinner', low=3, high=1000),
+             label='Number of annotation classes:',
+             width=100)
     )
 
 

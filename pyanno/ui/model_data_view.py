@@ -487,9 +487,10 @@ class _SamplingParamsDialog(HasTraits):
     traits_view = View(
         Item('nsamples',
              label  = 'Number of samples',
-             editor = RangeEditor(mode='xslider',
+             editor = RangeEditor(mode='spinner',
                                   low=100, high=50000,
-                                  is_float=False)
+                                  is_float=False),
+             width = 100
         ),
         buttons = OKCancelButtons
     )

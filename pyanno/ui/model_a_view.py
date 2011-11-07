@@ -3,7 +3,8 @@
 # License: Modified BSD license (2-clause)
 
 from traits.has_traits import on_trait_change
-from traits.trait_types import Instance, Str, Range, Button
+from traits.trait_types import Instance, Str, Range, Button, Int
+from traitsui.editors.range_editor import RangeEditor
 from traitsui.group import VGroup, VGrid
 from traitsui.include import Include
 from traitsui.item import Item
@@ -24,11 +25,13 @@ class NewModelADialog(NewModelDialog):
     """Create a dialog requesting the parameters to create Model A."""
 
     model_name = Str(MODEL_A_NAME)
-    nclasses = Range(low=3, high=20, value=5)
+    nclasses = Int(5)
 
     parameters_group = VGroup(
         Item(name='nclasses',
-             label='Number of annotation classes:'),
+             editor=RangeEditor(mode='spinner', low=3, high=1000),
+             label='Number of annotation classes:',
+             width=100),
     )
 
 

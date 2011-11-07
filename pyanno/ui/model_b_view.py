@@ -26,14 +26,18 @@ class NewModelBDialog(NewModelDialog):
     """Create a dialog requesting the parameters to create Model B."""
 
     model_name = Str(MODEL_B_NAME)
-    nclasses = Range(low=3, high=20, value=5)
-    nannotators = Range(low=2, high=20, value=8)
+    nclasses = Int(5)
+    nannotators = Int(8)
 
     parameters_group = VGroup(
         Item(name='nclasses',
-             label='Number of annotation classes:'),
+             editor=RangeEditor(mode='spinner', low=3, high=1000),
+             label='Number of annotation classes:',
+             width=100),
         Item(name='nannotators',
-             label='Number of annotators:')
+             editor=RangeEditor(mode='spinner', low=2, high=1000),
+             label='Number of annotators:',
+             width=100)
     )
 
 
