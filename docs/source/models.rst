@@ -1,6 +1,41 @@
 Model definitions
 =================
 
+At present, pyAnno implements three probabilistic models of data annotation:
+
+    1. `Model A`_ , a three-step generative model from the paper
+    [Rzhetsky2009]_.
+
+    2. `Model B-with-theta`_ , a multinomial generative model from the paper
+    [Rzhetsky2009]_.
+
+    3. `Model B`_, a Bayesian generalization of the model proposed in
+    [Dawid1979].
+
+.. [Rzhetsky2009] Rzhetsky A., Shatkay, H., and Wilbur,
+    W.J. (2009). "How to get the most from
+    your curation effort", PLoS Computational Biology, 5(5).
+
+.. [Dawid1979] Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
+    estimation of observer error-rates using the EM algorithm.  Applied
+    Statistics, 28(1):20--28.
+
+
+Model A
+-------
+
+descr
+
+Model B-with-theta
+------------------
+
+descr
+
+Model B
+-------
+
+descr
+
 DAWID AND SKENE'S MULTINOMIAL MODEL W. ARBITRARY DESIGN
 ------------------------------------------------------------
 

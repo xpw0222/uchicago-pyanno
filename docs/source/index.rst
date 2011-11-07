@@ -26,7 +26,7 @@ accuracy.
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    Installation guide <installation>
    User guide <user_guide>
