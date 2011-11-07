@@ -6,11 +6,14 @@ from contextlib import contextmanager
 from traits.has_traits import HasTraits
 from traits.trait_types import Instance, Bool, Str, Int
 import unicodedata
+from traits.traits import Property
 from traitsui.ui import UI
 from pyanno.database import PyannoDatabase
 from pyanno.modelBt import ModelBt
 from pyanno.ui.database_view import DatabaseView
 from pyanno.ui.model_data_view import ModelDataView
+import os
+import errno
 import os.path
 import pyanno
 
@@ -18,6 +21,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+PYANNO_PATH_NAME = '.pyanno'
 DATABASE_FILENAME = 'pyanno_results.db'
 
 
@@ -32,6 +36,14 @@ class PyannoApplication(HasTraits):
     database_ui = Instance(UI)
 
     logging_level = Int(logging.INFO)
+
+    pyanno_pathname = Str
+
+    db_window_open = Property(Bool)
+    def _get_db_window_open(self):
+        return (self.database_ui is not None
+                and self.database_ui.control is not None)
+
 
     def open(self):
         self._start_logging()
@@ -49,9 +61,21 @@ class PyannoApplication(HasTraits):
         logging.info('Starting pyAnno')
 
 
+    def _create_pyanno_directory(self):
+        """Create a pyanno directort in the user's home if it is missing."""
+        home_dir = os.getenv('HOME')
+        self.pyanno_pathname = os.path.join(home_dir, PYANNO_PATH_NAME)
+        try:
+            os.makedirs(self.pyanno_pathname)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
+
     def _open_pyanno_database(self):
         # database filename
-        db_filename = os.path.join(os.path.dirname(pyanno.__file__),
+        self._create_pyanno_directory()
+        db_filename = os.path.join(self.pyanno_pathname,
                                    DATABASE_FILENAME)
         self.database = PyannoDatabase(db_filename)
 
@@ -66,28 +90,23 @@ class PyannoApplication(HasTraits):
 
 
     def open_database_window(self):
-        if (self.database_ui is None
-            or self.database_ui.control is None):
-                # window was closed or not existent
-                logger.debug('Open database window')
-                database_window = DatabaseView(database=self.database,
-                                               application=self)
-                database_ui = database_window.edit_traits(kind='live')
-
-                self.database_window = database_window
-                self.database_ui = database_ui
-                self.db_window_open = True
-
-        if (self.database_ui is not None
-            and self.database_ui.control is not None):
+        if self.db_window_open:
             # windows exists, raise
             self.database_ui.control.Raise()
+        else:
+            # window was closed or not existent
+            logger.debug('Open database window')
+            database_window = DatabaseView(database=self.database,
+                                           application=self)
+            database_ui = database_window.edit_traits(kind='live')
+
+            self.database_window = database_window
+            self.database_ui = database_ui
 
 
     def close_database_window(self):
         # wx specific
         self.database_ui.control.Close()
-        self.db_window_open = False
 
 
     def update_window_from_database_record(self, record):
