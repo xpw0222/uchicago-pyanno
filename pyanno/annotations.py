@@ -204,6 +204,16 @@ class AnnotationsContainer(HasStrictTraits):
         return AnnotationsContainer._from_generator(array_rows_generator(),
                                            missing_values, name=name)
 
+    def save_to(self, filename, set_name=False):
+        """Save raw annotations to file."""
+        if set_name:
+            self.name = filename
+        with open(filename, 'w') as f:
+            f.writelines(
+                (' '.join(map(str, row))+'\n'
+                 for row in self.raw_annotations)
+            )
+
 
 def load_annotations(filename, missing_values=None):
     """Load annotations from file.
