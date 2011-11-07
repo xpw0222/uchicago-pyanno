@@ -20,7 +20,7 @@ from pyanno.annotations import AnnotationsContainer
 from pyanno.database import PyannoDatabase
 from pyanno.plots.annotations_plot import PosteriorPlot
 from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
-from pyanno.ui.annotations_view import AnnotationsView
+from pyanno.ui.annotations_view import AnnotationsView, CreateNewAnnotationsDialog
 from pyanno.ui.appbase.long_running_call import LongRunningCall
 from pyanno.ui.model_a_view import ModelAView
 from pyanno.ui.model_bt_view import ModelBtView
@@ -114,7 +114,8 @@ class ModelDataView(HasTraits):
     def _annotations_view_default(self):
         anno = AnnotationsContainer.from_array([[0]], name='<undefined>')
         return AnnotationsView(annotations_container = anno,
-                               nclasses = self.model.nclasses)
+                               nclasses = self.model.nclasses,
+                               application = self.application)
 
 
     @on_trait_change('annotations_file')
@@ -164,6 +165,7 @@ class ModelDataView(HasTraits):
         self.annotations_view = AnnotationsView(
             annotations_container = annotations_container,
             nclasses = self.model.nclasses,
+            application = self.application
         )
         self.annotations_stats_view = AnnotationsStatisticsView(
             annotations = self.annotations,
@@ -187,11 +189,17 @@ class ModelDataView(HasTraits):
     # FIXME tooltip begins with "specifies..."
 
     # create a new model
-    new_model = Button(label='New model...')
+    new_model = Button(label='Create...')
 
     # TODO: get_info shows docstring
     # show informations about the selected model
     get_info_on_model = Button(label='Info...')
+
+
+    #### Annotation creation actions
+
+    # create new annotations
+    new_annotations = Button(label='Create...')
 
 
     #### Model <-> data computations
@@ -231,6 +239,15 @@ class ModelDataView(HasTraits):
         model = responsible_view.create_model_dialog()
         if model is not None:
             self.set_model(model)
+
+
+    def _new_annotations_fired(self):
+        """Create an empty annotations set."""
+        annotations = CreateNewAnnotationsDialog.create_annotations_dialog()
+        if annotations is not None:
+            anno_cont = AnnotationsContainer.from_array(annotations,
+                                                        name='<new_model>')
+            self.set_annotations(anno_cont)
 
 
     def _open_database_fired(self):
@@ -383,7 +400,7 @@ class ModelDataView(HasTraits):
                     Item(name='model_name',show_label=False, width=200),
                     Item(name='new_model', show_label=False, width=100),
                     Item(name='get_info_on_model', show_label=False,
-                         enabled_when='False', width=100),
+                         width=100),
                     #show_border=True
                 ),
                 label = 'Create new model'
@@ -409,11 +426,15 @@ class ModelDataView(HasTraits):
         ## Data view
 
         data_create_group = VGroup(
-            Label('Open annotation file:', width=800),
-            Item('annotations_file', style='simple', label='Annotations file',
-                 show_label=False,
-                 width=400),
-            show_border = True,
+            #Label('Open annotation file:', width=800),
+            HGroup(
+                Item('annotations_file', style='simple', label='Open file:',
+                     show_label=True,
+                     width=400),
+                Item('new_annotations', show_label=False)
+            ),
+            label = 'Load/create annotations',
+            show_border = False,
         )
 
         data_info_group = VGroup(
@@ -426,14 +447,14 @@ class ModelDataView(HasTraits):
             Item('annotations_stats_view',
                  style='custom',
                  show_label=False,
-                 visible_when='annotations_are_defined')
+                 visible_when='annotations_are_defined'),
+            label = 'Data view'
         )
 
         data_group = (
             VGroup (
                 data_create_group,
                 data_info_group,
-                label = 'Data view',
             ),
         )
 

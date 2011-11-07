@@ -36,11 +36,11 @@ class DataView(HasTraits):
     def traits_view(self):
         return View(
             VGroup(
-                HGroup(
-                    Spring(),
-                    Label('Annotators'),
-                    Spring()
-                ),
+                #HGroup(
+                #    Spring(),
+                #    Label('Annotators'),
+                #    Spring()
+                #),
                 Item('data',
                     editor=TabularEditor
                         (
@@ -60,6 +60,9 @@ class DataView(HasTraits):
 
 class AnnotationsView(HasTraits):
     """ Traits UI Model/View for annotations."""
+
+    # reference to main application
+    Application = Any
 
     ### Model-related traits ###
 
@@ -114,6 +117,9 @@ class AnnotationsView(HasTraits):
     ## edit data button opens annotations editor
     edit_data = Button(label='Edit annotations...')
 
+    # save current annotations
+    save_data = Button(label='Save...')
+
     def _edit_data_fired(self):
         data_view = DataView(data=self.annotations_container.raw_annotations)
         data_view.edit_traits(kind='modal')
@@ -122,6 +128,15 @@ class AnnotationsView(HasTraits):
             name = self.annotations_container.name
         )
         self.annotations_updated = True
+
+
+    def _save_data_fired(self):
+        save_filename = SaveAnnotationsDialog.open()
+        if save_filename is not None:
+            self.annotations_container.save_to(save_filename, set_name=True)
+            if self.application is not None:
+                self.application.main_window.set_annotations(
+                    self.annotations_container)
 
 
     ### View definition ###
@@ -135,17 +150,90 @@ class AnnotationsView(HasTraits):
             Item('edit_data',
                  enabled_when='annotations_are_defined',
                  show_label=False),
+            Item('save_data',
+                 enabled_when='annotations_are_defined',
+                 show_label=False),
             Spring()
         ),
-        Item('frequency_plot',
-             style='custom',
-             resizable=False,
-             show_label=False
-        ),
+        HGroup(
+            Item('frequency_plot',
+                 style='custom',
+                 resizable=False,
+                 show_label=False
+            ),
+        )
     )
 
     traits_view = View(body)
 
+
+class SaveAnnotationsDialog(HasTraits):
+
+    filename = File
+
+    def _filename_default(self):
+        import os
+        home = os.getenv('HOME')
+        return  os.path.join(home, 'annotations.txt')
+
+    @staticmethod
+    def open():
+        dialog = SaveAnnotationsDialog()
+        dialog_ui = dialog.edit_traits(kind='modal')
+        if dialog_ui.result:
+            # user presser 'OK'
+            return dialog.filename
+        else:
+            return None
+
+    traits_view = View(
+        Item('filename', label='Save to:',
+             editor=FileEditor(allow_dir=False,
+                               dialog_style='save',
+                               entries=0),
+             style='simple'),
+        width = 400,
+        resizable = True,
+        buttons = ['OK', 'Cancel']
+    )
+
+class CreateNewAnnotationsDialog(HasTraits):
+
+    nannotators = Int(8)
+    nitems = Int(100)
+
+
+    @staticmethod
+    def create_annotations_dialog():
+        dialog = CreateNewAnnotationsDialog()
+        dialog_ui = dialog.edit_traits(kind='modal')
+        if dialog_ui.result:
+            # user pressed 'Ok'
+            annotations = np.empty((dialog.nitems, dialog.nannotators),
+                                   dtype=int)
+            annotations.fill(MISSING_VALUE)
+            return annotations
+        else:
+            return None
+
+
+    def traits_view(self):
+        view = View(
+            VGroup(
+                Item(
+                    'nannotators',
+                    editor=RangeEditor(mode='spinner', low=3, high=1000),
+                    label='Number of annotators:'
+                ),
+                Item(
+                    'nitems',
+                    editor=RangeEditor(mode='spinner', low=2, high=1000000),
+                    label='Number of items'
+                )
+            ),
+            buttons = ['OK', 'Cancel']
+        )
+        return view
 
 
 #### Testing and debugging ####################################################
