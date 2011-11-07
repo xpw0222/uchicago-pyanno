@@ -156,11 +156,11 @@ class DatabaseView(HasTraits):
         db_table_editor = TableEditor(
             columns=[
                 ObjectColumn(name='data_id', label='Annotations ID',
-                             editable=False, width=0.70),
+                             editable=False, width=0.65),
                 ObjectColumn(name='model_name',
                              editable=False, width=0.20),
                 ObjectColumn(name='value', label='Log likelihood',
-                             editable=False, width=0.10)
+                             editable=False, width=0.15)
             ],
             search      = SearchIDFilter(),
             editable    = True,
