@@ -82,7 +82,7 @@ def main():
     posterior = model.infer_labels(annotations)
 
     post_plot = PosteriorPlot(posterior=posterior,
-                               title='Posterior over classes')
+                              title='Posterior over classes')
 
     post_view = PosteriorView(
         posterior_plot=post_plot,

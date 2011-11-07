@@ -74,10 +74,14 @@ class PosteriorPlot(PyannoPlotContainer):
         img_plot.y_mapper.domain_limits=((0, nannotations))
 
         self._set_title(plot)
+        plot.padding_top = 100
 
         # create x axis for labels
         label_axis = self._create_increment_one_axis(plot, 0.5, nclasses, 'top')
+        label_axis.title = 'classes'
         self._add_index_axis(plot, label_axis)
+
+        plot.y_axis.title = 'items'
 
         # tweak plot aspect
         goal_aspect_ratio = 2.0
@@ -108,9 +112,7 @@ class PosteriorPlot(PyannoPlotContainer):
         container.add(colorbar)
         container.bgcolor = "lightgray"
 
-        # add zoom and pan tools
-
-        # Add pan and zoom
+        # add pan tools
         img_plot.tools.append(PanTool(img_plot, constrain=True,
                                       constrain_direction="y", speed=7.))
 
