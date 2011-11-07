@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 
 setup(name = "pyanno",
-      version = "2.0dev",
+      version = "2.0dev-2",
       packages = find_packages(),
 
       package_data = {
