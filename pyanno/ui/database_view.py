@@ -104,6 +104,7 @@ class DatabaseView(HasTraits):
         if result:
             # remove from results_table
             self.results_table.remove(self.current_selection)
+            self.current_selection = None
 
 
     @on_trait_change('db_updated,database')
@@ -188,6 +189,7 @@ class DatabaseView(HasTraits):
                          width=100),
                     Item('delete_action',
                          show_label=False,
+                         enabled_when='current_selection is not None',
                          width=100),
                     Spring(),
                     Item('close_view',
