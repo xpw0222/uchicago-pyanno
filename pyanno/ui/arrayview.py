@@ -29,7 +29,6 @@ class Array2DAdapter(TabularAdapter):
 
 
     def _get_index_alignment(self):
-        print self.item
         return 'left'
 
 
