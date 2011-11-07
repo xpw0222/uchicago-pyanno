@@ -71,19 +71,13 @@ class PosteriorPlot(PyannoPlotContainer):
                                  colormap=self._create_colormap())[0]
         ndisp = 60
         img_plot.y_mapper.range.high = ndisp
+        img_plot.y_mapper.domain_limits=((0, nannotations))
 
         self._set_title(plot)
-        #self._remove_grid_and_axes(plot)
 
         # create x axis for labels
         label_axis = self._create_increment_one_axis(plot, 0.5, nclasses, 'top')
         self._add_index_axis(plot, label_axis)
-
-        # create y axis for annotation numbers
-        #value_axis_ticks = [str(id) for id in range(nannotations-1, -1, -1)]
-        #value_axis = self._create_increment_one_axis(plot, 0.5, nannotations,
-        #                                             'left', value_axis_ticks)
-        #self._add_value_axis(plot, value_axis)
 
         # tweak plot aspect
         goal_aspect_ratio = 2.0
