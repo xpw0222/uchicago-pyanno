@@ -93,10 +93,11 @@ class PyannoDatabase(object):
         """Make sure that all entries with same ID have the same annotations.
         """
         if self.database.has_key(data_id):
-            previous = self.database[data_id][0]
-            # check that the new annotations are the same as the previous ones
-            if not np.all(previous.anno_container.annotations ==
-                          anno_container.annotations):
-                msg = ('Conflicting annotations with same ID. Please '
-                       'rename the new entry.')
-                raise PyannoValueError(msg)
+            previous = self.database[data_id]
+            if len(previous) > 0:
+                # check if the new annotations are the same as the previous
+                if not np.all(previous[0].anno_container.annotations ==
+                              anno_container.annotations):
+                    msg = ('Conflicting annotations with same ID. Please '
+                           'rename the new entry.')
+                    raise PyannoValueError(msg)
