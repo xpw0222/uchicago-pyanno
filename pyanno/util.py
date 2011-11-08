@@ -135,7 +135,7 @@ def labels_count(annotations, nclasses, missing_val=MISSING_VALUE):
 
     if nobservations == 0:
         # no valid observations
-        raise PyannoValueError('No valid observations')
+        raise PyannoValueError('No valid annotations')
 
     return np.bincount(annotations[valid], minlength=nclasses)
 
@@ -147,7 +147,7 @@ def labels_frequency(annotations, nclasses, missing_val=MISSING_VALUE):
 
     if nobservations == 0:
         # no valid observations
-        raise PyannoValueError('No valid observations')
+        raise PyannoValueError('No valid annotations')
 
     return (np.bincount(annotations[valid], minlength=nclasses)
             / float(nobservations))
