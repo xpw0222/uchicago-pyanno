@@ -29,9 +29,31 @@ def _get_triplet_combinations(n):
 
 
 class ModelBt(HasStrictTraits):
-    """
-    At the moment the model assumes 1) a total of 8 annotators, and 2) each
-    item is annotated by 3 annotators.
+    """Implementation of Model B-with-theta from (Rzhetsky et al., 2009).
+
+    The model assumes the existence of "true" underlying labels for each item,
+    which are drawn from a categorical distribution, gamma. Annotators report
+    this labels with some noise. Crucially, the noise distribution is
+    described by a small number of parameters (one per annotator),
+    which their estimation efficient and less sensitive to local optima.
+
+    The model parameters are:
+
+    - gamma[k] is the probability of label k
+
+    - theta[j] parametrized the probability that annotator j reports label k'.
+      More specifically, P( annotator j chooses k' | real label = k) is
+      theta[j] for k' = k, or (1 - theta[j]) / sum(theta) if k' != k .
+
+    At the moment the implementation of the model assumes 1) a total of 8
+    annotators, and 2) each item is annotated by exactly 3 annotators.
+
+    See the documentation for a more detailed description of the model.
+
+    Reference
+    ---------
+    Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most from
+    your curation effort", PLoS Computational Biology, 5(5).
     """
 
     nclasses = Int

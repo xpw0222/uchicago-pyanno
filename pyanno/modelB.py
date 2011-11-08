@@ -15,12 +15,38 @@ logger = logging.getLogger(__name__)
 
 
 class ModelB(HasStrictTraits):
-    """Implementation of Model B from Rzhetsky et al.
+    """Bayesian generalization of the model proposed in (Dawid et al., 1979).
 
-    See the documentations for a description of the model.
+    Model B is a hierarchical generative model over annotations. The model
+    assumes the existence of "true" underlying labels for each item,
+    which are drawn from a categorical distribution, pi. Annotators report
+    this labels with some noise.
 
-    At the moment the model assumes 1) a total of 8 annotators, and 2) each
-    item is annotated by 3 annotators.
+    The model parameters are:
+
+        - pi[k] is the probability of label k
+
+        - theta[j,k,k'] is the probability that annotator j reports label k'
+          for an item whose real label is k, i.e.
+          P( annotator j chooses k' | real label = k)
+
+    The parameters themselves are random variables with hyperparameters
+
+        - beta are the parameters of a Dirichlet distribution over pi
+
+        - alpha[k,:] are the parameters of Dirichlet distributions over
+          theta[j,k,:]
+
+    See the documentation for a more detailed description of the model.
+
+    Reference
+    ---------
+    Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
+    estimation of observer error-rates using the EM algorithm.  Applied
+    Statistics, 28(1):20--28.
+
+    Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most from
+    your curation effort", PLoS Computational Biology, 5(5).
     """
 
 

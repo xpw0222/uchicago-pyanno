@@ -256,6 +256,13 @@ class ModelDataView(HasTraits):
             self.application.open_database_window()
 
 
+    def _get_info_on_model_fired(self):
+        """Open dialog with model description."""
+        from traitsui.message import message
+        model_class = self._model_name_to_class[self.model_name]
+        message(message = model_class.__doc__, title='Model info')
+
+
     def _add_to_database_fired(self):
         """Add current results to database."""
         if self.application is not None:

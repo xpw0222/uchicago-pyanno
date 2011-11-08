@@ -84,10 +84,34 @@ def _triplet_to_counts_index(triplet, nclasses):
 
 
 class ModelA(HasStrictTraits):
-    """Implementation of Model A in Rzhetsky et al., 2009.
+    """Implementation of Model A from (Rzhetsky et al., 2009).
 
-    At the moment the model assumes 1) a total of 8 annotators, and 2) each
-    item is annotated by 3 annotators.
+    The model defines a probability distribution over data annotations
+    in which each item is annotated by three users. The distributions is
+    described according to a three-steps generative model:
+
+        1. First, the model independently generates correctness values for the
+        triplet of annotators (e.g., CCI where C=correct, I=incorrect)
+
+        2. Second, the model generates an agreement pattern compatible with
+        the correctness values (e.g., CII is compatible with the agreement
+        patterns 'abb' and 'abc', where different letters correspond to
+        different annotations
+
+        3. Finally, the model generates actual observations compatible with
+        the agreement patterns
+
+    The model has two main sets of parameters:
+
+        - theta[j] is the probability that annotator j is correct
+
+        - omega[k] is the probability of observing an annotation of class `k`
+          over all items and annotators
+
+    At the moment the implementation of the model assumes 1) a total of 8
+    annotators, and 2) each item is annotated by exactly 3 annotators.
+
+    See the documentation for a more detailed description of the model.
 
     Reference
     ---------
