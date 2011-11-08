@@ -12,8 +12,11 @@ from pyanno.measures.helpers import (compute_nclasses,
                                      observed_agreement_frequency,
                                      chance_adjusted_agreement,
                                      chance_agreement_different_frequency,
-                                     confusion_matrix, coincidence_matrix)
+                                     confusion_matrix, coincidence_matrix, all_invalid)
 from pyanno.util import labels_frequency, is_valid, PyannoValueError
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 def scotts_pi(annotations1, annotations2, nclasses=None):
@@ -27,6 +30,10 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
     Scott 1955
     http://en.wikipedia.org/wiki/Scott%27s_Pi
     """
+
+    if all_invalid(annotations1, annotations2):
+        logger.warning('No valid annotations')
+        return np.nan
 
     if nclasses is None:
         nclasses = compute_nclasses(annotations1, annotations2)
@@ -54,6 +61,10 @@ def cohens_kappa(annotations1, annotations2, nclasses=None):
 
     http://en.wikipedia.org/wiki/Cohen%27s_kappa
     """
+
+    if all_invalid(annotations1, annotations2):
+        logger.warning('No valid annotations')
+        return np.nan
 
     if nclasses is None:
         nclasses = compute_nclasses(annotations1, annotations2)
@@ -109,6 +120,10 @@ def cohens_weighted_kappa(annotations1, annotations2,
     http://en.wikipedia.org/wiki/Cohen%27s_kappa
     """
 
+    if all_invalid(annotations1, annotations2):
+        logger.warning('No valid annotations')
+        return np.nan
+
     if nclasses is None:
         nclasses = compute_nclasses(annotations1, annotations2)
 
@@ -140,6 +155,10 @@ def fleiss_kappa(annotations, nclasses=None):
 
     http://en.wikipedia.org/wiki/Fleiss%27_kappa
     """
+
+    if all_invalid(annotations):
+        logger.warning('No valid annotations')
+        return np.nan
 
     if nclasses is None:
         nclasses = compute_nclasses(annotations)
@@ -214,6 +233,10 @@ def krippendorffs_alpha(annotations, metric_func=diagonal_distance,
 
     http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha
     """
+
+    if all_invalid(annotations):
+        logger.warning('No valid annotations')
+        return np.nan
 
     if nclasses is None:
         nclasses = compute_nclasses(annotations)

@@ -110,8 +110,13 @@ class TestMeasures(unittest.TestCase):
             ]
         ).T - 1
         self.cohen_example = Bunch(annotations = annotations,
-                                   nclasses=3,
+                                   nclasses = 3,
                                    kappa = 0.6)
+
+        # ---- Test for annotations with no valid entry
+        annotations = np.empty((10, 8), dtype=int)
+        annotations.fill(MV)
+        self.invalid_test = Bunch(annotations = annotations)
 
 
     def test_confusion_matrix(self):
@@ -331,6 +336,46 @@ class TestMeasures(unittest.TestCase):
         self.assertAlmostEqual(mat[1,1], 1., 6)
         kappa = pma.cohens_kappa(ke.annotations[:,2], ke.annotations[:,0])
         self.assertAlmostEqual(mat[2,0], kappa)
+
+
+    def test_all_invalid(self):
+        # behavior: all measures should return np.nan for a set of
+        # annotations with no valid entry
+
+        anno = self.invalid_test.annotations
+
+        self.assert_(
+            np.isnan(pma.scotts_pi(anno[:,0], anno[:,1], nclasses=4))
+        )
+
+        self.assert_(
+            np.isnan(pma.cohens_kappa(anno[:,0], anno[:,1], nclasses=3))
+        )
+
+        self.assert_(
+            np.isnan(pma.cohens_weighted_kappa(anno[:,0], anno[:,1],
+                                               nclasses=5))
+        )
+
+        self.assert_(
+            np.isnan(pma.fleiss_kappa(anno, nclasses=4))
+        )
+
+        self.assert_(
+            np.isnan(pma.krippendorffs_alpha(anno, nclasses=7))
+        )
+
+        self.assert_(
+            np.isnan(pmc.pearsons_rho(anno[:,0], anno[:,1], nclasses=4))
+        )
+
+        self.assert_(
+            np.isnan(pmc.spearmans_rho(anno[:,0], anno[:,1], nclasses=4))
+        )
+
+        self.assert_(
+            np.isnan(pmc.cronbachs_alpha(anno, nclasses=4))
+        )
 
 
 if __name__ == '__main__':

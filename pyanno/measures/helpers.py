@@ -184,3 +184,11 @@ def chance_agreement_different_frequency(annotations1, annotations2, nclasses):
 def compute_nclasses(*annotations):
     max_ = np.amax(map(np.amax, annotations))
     return max_ + 1
+
+
+def all_invalid(*annotations):
+    """Return True if all annotations are invalid."""
+    for anno in annotations:
+        if np.any(is_valid(anno)):
+            return False
+    return True
