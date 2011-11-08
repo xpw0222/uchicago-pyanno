@@ -127,7 +127,9 @@ class AnnotationsView(HasTraits):
             data_view.data,
             name = self.annotations_container.name
         )
-        self.annotations_updated = True
+        if self.application is not None:
+            self.application.main_window.set_annotations(
+                self.annotations_container)
 
 
     def _save_data_fired(self):
