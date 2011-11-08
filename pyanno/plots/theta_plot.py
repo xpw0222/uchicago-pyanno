@@ -240,7 +240,7 @@ class ThetaPlot(ModelView, PyannoPlotContainer):
 
 
 def plot_theta_parameters(modelBt, theta_samples=None, **kwargs):
-    """Display a Chaco plot of of the annotator accuracy parameters, theta.
+    """Display a Chaco plot of the annotator accuracy parameters, theta.
 
     The component allows saving the plot (with Ctrl-S), and copying the matrix
     data to the clipboard (with Ctrl-C).
