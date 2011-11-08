@@ -71,14 +71,11 @@ class PyannoModelView(ModelView):
     info_group = VGroup(
         Item('model_name',
              label='Model name:',
-             style='readonly',
-             emphasized=True),
+             style='readonly'),
         Item('model.nclasses',
              label='Number of labels',
-             style='readonly',
-             emphasized=True),
+             style='readonly'),
         Item('model.nannotators',
              label='Number of annotators',
-             style='readonly',
-             emphasized=True),
+             style='readonly'),
     )
