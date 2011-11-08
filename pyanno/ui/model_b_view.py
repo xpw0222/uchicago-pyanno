@@ -87,7 +87,9 @@ class ModelB_MultipleThetaView(HasTraits):
                          show_label=False)
                 )
             ),
-            resizable=False
+            width = 500,
+            height = 400,
+            resizable = True
         )
         return traits_view
 
