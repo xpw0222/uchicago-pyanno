@@ -183,6 +183,8 @@ class ThetaTensorPlot(PyannoPlotContainer):
         plot.padding_left = 0
         container.add(plot)
 
+        self.decorate_plot(container, theta)
+
         return container
 
 
@@ -193,8 +195,7 @@ class ThetaTensorPlot(PyannoPlotContainer):
         editor=ComponentEditor(),
         resizable=True,
         show_label=False,
-        width=600,
-        height=400
+        height=-300
         )
 
     traits_plot_item = Item(
@@ -204,3 +205,67 @@ class ThetaTensorPlot(PyannoPlotContainer):
         show_label=False,
         height=-250,
         )
+
+
+def plot_theta_tensor(modelB, annotator_idx, theta_samples=None, **kwargs):
+    """Display a Chaco plot of model B's accuracy tensor, theta.
+
+    The tensor theta[annotator_idx,:,:] is shown for one annotator as a
+    set of line plots, each depicting the distribution
+    theta[annotator_idx,k,:] = P(annotator_idx outputs : | real class is k).
+
+    The component allows saving the plot (with Ctrl-S), and copying the matrix
+    data to the clipboard (with Ctrl-C).
+
+    Parameters
+    ----------
+    modelB : ModelB instance
+        An instance of ModelB.
+
+    annotator_idx : int
+        Index of the annotator for which the parameters are displayed.
+
+    theta_samples : ndarray, shape = (n_samples x n_annotators x n_classes x n_classes)
+        Array of samples over the posterior of theta.
+
+    **kwargs : dictionary
+        Additional keyword arguments passed to the plot. The argument 'title'
+        sets the title of the plot.
+
+    Returns
+    -------
+    theta_view : ThetaTensorPlot instance
+        Reference to the plot.
+    """
+    samples = None
+    if theta_samples is not None:
+        samples = theta_samples[:,annotator_idx,:,:]
+
+    theta_view = ThetaTensorPlot(
+        theta = modelB.theta[annotator_idx,:,:],
+        annotator_idx = annotator_idx,
+        theta_samples = samples
+    )
+    theta_view.configure_traits(view='resizable_view')
+    return theta_view
+
+
+#### Testing and debugging ####################################################
+
+def main():
+    """ Entry point for standalone testing/debugging. """
+
+    from pyanno import ModelB
+
+    model = ModelB.create_initial_state(4, 5)
+    anno = model.generate_annotations(model.generate_labels(100))
+    samples = model.sample_posterior_over_accuracy(anno, 10)
+
+    theta_view = plot_theta_tensor(model, 2, samples,
+                                   title='Debug plot_theta_parameters')
+
+    return model, theta_view
+
+
+if __name__ == '__main__':
+    model, theta_view = main()
