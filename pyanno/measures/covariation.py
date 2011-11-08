@@ -20,7 +20,7 @@ def pearsons_rho(annotations1, annotations2, nclasses=None):
 
     valid = is_valid(annotations1) & is_valid(annotations2)
     if all(~valid):
-        logger.warning('No valid annotations')
+        logger.debug('No valid annotations')
         return np.nan
 
     rho, pval = scipy.stats.pearsonr(annotations1[valid], annotations2[valid])
@@ -32,7 +32,7 @@ def spearmans_rho(annotations1, annotations2, nclasses=None):
 
     valid = is_valid(annotations1) & is_valid(annotations2)
     if all(~valid):
-        logger.warning('No valid annotations')
+        logger.debug('No valid annotations')
         return np.nan
 
     rho, pval = scipy.stats.spearmanr(annotations1[valid], annotations2[valid])
@@ -43,7 +43,7 @@ def cronbachs_alpha(annotations, nclasses=None):
     """Compute Cronbach's alpha."""
 
     if all_invalid(annotations):
-        logger.warning('No valid annotations')
+        logger.debug('No valid annotations')
         return np.nan
 
     nitems = annotations.shape[0]

@@ -32,7 +32,7 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
     """
 
     if all_invalid(annotations1, annotations2):
-        logger.warning('No valid annotations')
+        logger.debug('No valid annotations')
         return np.nan
 
     if nclasses is None:
@@ -63,7 +63,7 @@ def cohens_kappa(annotations1, annotations2, nclasses=None):
     """
 
     if all_invalid(annotations1, annotations2):
-        logger.warning('No valid annotations')
+        logger.debug('No valid annotations')
         return np.nan
 
     if nclasses is None:
@@ -121,7 +121,7 @@ def cohens_weighted_kappa(annotations1, annotations2,
     """
 
     if all_invalid(annotations1, annotations2):
-        logger.warning('No valid annotations')
+        logger.debug('No valid annotations')
         return np.nan
 
     if nclasses is None:
@@ -157,7 +157,7 @@ def fleiss_kappa(annotations, nclasses=None):
     """
 
     if all_invalid(annotations):
-        logger.warning('No valid annotations')
+        logger.debug('No valid annotations')
         return np.nan
 
     if nclasses is None:
@@ -235,7 +235,7 @@ def krippendorffs_alpha(annotations, metric_func=diagonal_distance,
     """
 
     if all_invalid(annotations):
-        logger.warning('No valid annotations')
+        logger.debug('No valid annotations')
         return np.nan
 
     if nclasses is None:
