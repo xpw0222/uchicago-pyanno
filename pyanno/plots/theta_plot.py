@@ -135,7 +135,7 @@ class ThetaPlot(ModelView, PyannoPlotContainer):
         # remove horizontal grid and axis
         theta_plot.underlays = [theta_plot.x_grid, theta_plot.y_axis]
 
-        # create new vertical axis
+        # create new horizontal axis
         label_list = [str(i) for i in range(1, theta_len+1)]
 
         label_axis = LabelAxis(
