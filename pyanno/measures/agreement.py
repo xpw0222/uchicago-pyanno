@@ -78,7 +78,7 @@ def cohens_kappa(annotations1, annotations2, nclasses=None):
                                                       nclasses)
 
     return chance_adjusted_agreement(observed_agreement.sum(),
-                                      chance_agreement.sum())
+                                     chance_agreement.sum())
 
 
 def cohens_weighted_kappa(annotations1, annotations2,
