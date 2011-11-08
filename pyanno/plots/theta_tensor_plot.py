@@ -138,7 +138,7 @@ class ThetaTensorPlot(PyannoPlotContainer):
         plot_data.set_data('classes', range(nclasses))
 
         # create the plot
-        plot = Plot(plot_data, fill_padding=True)
+        plot = Plot(plot_data)
 
         # --- plot theta samples
         if self.theta_samples is not None:
@@ -182,6 +182,7 @@ class ThetaTensorPlot(PyannoPlotContainer):
         plot.padding_top = 10
         plot.padding_left = 0
         container.add(plot)
+        container.bgcolor = 0xEEEEEE
 
         self.decorate_plot(container, theta)
 

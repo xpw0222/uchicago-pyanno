@@ -110,7 +110,7 @@ class PosteriorPlot(PyannoPlotContainer):
         container = HPlotContainer(use_backbuffer=True)
         container.add(plot)
         container.add(colorbar)
-        container.bgcolor = "lightgray"
+        container.bgcolor = 0xEEEEEE
 
         # add pan tools
         img_plot.tools.append(PanTool(img_plot, constrain=True,
