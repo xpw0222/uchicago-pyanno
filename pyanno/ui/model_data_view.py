@@ -366,7 +366,9 @@ class ModelDataView(HasTraits):
         self._action_on_model(
             message,
             self.model.sample_posterior_over_accuracy,
-            args=[self.annotations, nsamples],
+            args   = [self.annotations, nsamples],
+            kwargs = {'burn_in_samples': params.burn_in_samples,
+                    'thin_samples'   : params.thin_samples},
             on_success=self._sample_posterior_success
         )
 
@@ -512,13 +514,32 @@ class ModelDataView(HasTraits):
 
 class _SamplingParamsDialog(HasTraits):
     nsamples = Int(200)
+    burn_in_samples = Int(100)
+    thin_samples = Int(1)
+
     traits_view = View(
-        Item('nsamples',
-             label  = 'Number of samples',
-             editor = RangeEditor(mode='spinner',
-                                  low=100, high=50000,
-                                  is_float=False),
-             width = 100
+        VGroup(
+            Item('nsamples',
+                 label  = 'Number of samples',
+                 editor = RangeEditor(mode='spinner',
+                                      low=100, high=50000,
+                                      is_float=False),
+                 width = 100
+            ),
+            Item('burn_in_samples',
+                 label  = 'Number of samples in burn-in phase',
+                 editor = RangeEditor(mode='spinner',
+                                      low=1, high=50000,
+                                      is_float=False),
+                 width = 100
+            ),
+            Item('thin_samples',
+                 label  = 'Thinning (keep 1 samples every N)',
+                 editor = RangeEditor(mode='spinner',
+                                      low=1, high=50000,
+                                      is_float=False),
+                 width = 100
+            ),
         ),
         buttons = OKCancelButtons
     )

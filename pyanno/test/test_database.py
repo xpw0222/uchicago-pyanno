@@ -29,9 +29,7 @@ class TestDatabase(unittest.TestCase):
         self.data_id1 = 'bogus.txt'
 
         self.model2 = pyanno.ModelB.create_initial_state(4, 8)
-        self.annotations2 = self.model2.generate_annotations(
-            self.model2.generate_labels(100)
-        )
+        self.annotations2 = self.model2.generate_annotations(100)
         self.value2 = self.model2.log_likelihood(self.annotations2)
         self.anno_container2 = AnnotationsContainer.from_array(
             self.annotations2)

@@ -270,9 +270,11 @@ def main():
     from pyanno import ModelBt
 
     model = ModelBt.create_initial_state(5)
-    annotations = model.generate_annotations(model.generate_labels(100))
-    theta_samples = model.sample_posterior_over_accuracy(annotations, 100,
-                                                      step_optimization_nsamples=3)
+    annotations = model.generate_annotations(100)
+    theta_samples = model.sample_posterior_over_accuracy(
+        annotations, 100,
+        step_optimization_nsamples = 3
+    )
 
     theta_view = plot_theta_parameters(model, theta_samples,
                                        title='Debug plot_theta_parameters')

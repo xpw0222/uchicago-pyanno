@@ -4,14 +4,15 @@
 
 """Definition of model B-with-theta."""
 
-from traits.api import HasStrictTraits, Int, Array
 import numpy as np
 import scipy.optimize
 import scipy.stats
+from traits.api import Int, Array
+from pyanno.abstract_model import AbstractModel
 from pyanno.sampling import optimize_step_size, sample_distribution
 from pyanno.util import (random_categorical, compute_counts,
                          SMALLEST_FLOAT, MISSING_VALUE, labels_frequency,
-                         is_valid, ninf_to_num, PyannoValueError)
+                         is_valid, ninf_to_num)
 
 import logging
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ def _get_triplet_combinations(n):
     return _triplet_combinations[n]
 
 
-class ModelBt(HasStrictTraits):
+class ModelBt(AbstractModel):
     """Implementation of Model B-with-theta from (Rzhetsky et al., 2009).
 
     The model assumes the existence of "true" underlying labels for each item,
@@ -75,7 +76,7 @@ class ModelBt(HasStrictTraits):
 
     @staticmethod
     def create_initial_state(nclasses, gamma=None, theta=None):
-        """Factory method returning a random model.
+        """Factory method returning a model with random initial parameters.
 
         <behaviour>
 
@@ -126,7 +127,7 @@ class ModelBt(HasStrictTraits):
         return random_categorical(self.gamma, nitems)
 
 
-    def generate_annotations(self, labels):
+    def generate_annotations_from_labels(self, labels):
         """Generate random annotations given labels."""
         theta = self.theta
         nannotators = self.nannotators
@@ -146,6 +147,26 @@ class ModelBt(HasStrictTraits):
                         label_idx] = MISSING_VALUE
 
         return annotations
+
+
+    def generate_annotations(self, nitems):
+        """Generate a random annotation set from the model.
+
+        Sample a random set of annotations from the probability distribution
+        defined the current model parameters.
+
+        Arguments
+        ---------
+        nitems : int
+            Number of items to sample
+
+        Returns
+        -------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+        """
+        labels = self.generate_labels(nitems)
+        return self.generate_annotations_from_labels(labels)
 
 
     def _theta_to_categorical(self, theta, psi):
@@ -336,14 +357,62 @@ class ModelBt(HasStrictTraits):
 
     # TODO arguments for burn-in, thinning
     def sample_posterior_over_accuracy(self, annotations, nsamples,
-                                    target_rejection_rate = 0.3,
-                                    rejection_rate_tolerance = 0.2,
-                                    step_optimization_nsamples = 500,
-                                    adjust_step_every = 100):
+                                       burn_in_samples = 0,
+                                       thin_samples = 1,
+                                       target_rejection_rate = 0.3,
+                                       rejection_rate_tolerance = 0.2,
+                                       step_optimization_nsamples = 500,
+                                       adjust_step_every = 100):
         """Return samples from posterior distribution over theta given data.
+
+        Draw samples from P(theta | data, model parameters).
+        The accuracy parameters, theta, control the probability of an annotator
+        reporting the correct label (see :class:`~ModelBt`).
+
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+
+        nsamples : int
+            Number of samples to return (i.e., burn-in and thinning samples
+            are not included)
+
+        burn_in_samples : int
+            Discard the first `burn_in_samples` during the initial burn-in
+            phase, where the Monte Carlo chain converges to the posterior
+
+        thin_samples : int
+            Only return one every `thin_samples` samples in order to reduce
+            the auto-correlation in the sampling chain. This is called
+            "thinning" in MCMC parlance.
+
+        target_rejection_rate : float
+            target rejection rate for the step size estimation phase
+
+        rejection_rate_tolerance : float
+            the step size estimation phase is ended when the rejection rate for
+            all parameters is within `rejection_rate_tolerance` from
+            `target_rejection_rate`
+
+        step_optimization_nsamples : int
+            number of samples to draw in the step size estimation phase
+
+        adjust_step_every : int
+            number of samples after which the step size is adjusted during
+            the step size estimation pahse
+
+        Returns
+        -------
+        samples : ndarray, shape = (n_samples, n_annotators)
+            samples[i,:] is one sample from the posterior distribution over the
+            parameters `theta`
         """
 
         self._raise_if_incompatible(annotations)
+        nsamples = self._compute_total_nsamples(nsamples,
+                                                burn_in_samples,
+                                                thin_samples)
 
         # optimize step size
         counts = compute_counts(annotations, self.nclasses)
@@ -375,7 +444,8 @@ class ModelBt(HasStrictTraits):
             samples = sample_distribution(_wrap_llhood, params_start, counts,
                                           step, nsamples,
                                           params_lower, params_upper)
-            return samples
+            return self._post_process_samples(samples, burn_in_samples,
+                                              thin_samples)
         finally:
             # reset parameters
             self.gamma, self.theta = save_params
@@ -421,16 +491,11 @@ class ModelBt(HasStrictTraits):
     def are_annotations_compatible(self, annotations):
         """Check if the annotations are compatible with the models' parameters.
         """
+
+        if not super(ModelBt, self).are_annotations_compatible(annotations):
+            return False
+
         masked_annotations = np.ma.masked_equal(annotations, MISSING_VALUE)
-
-        if annotations.shape[1] != self.nannotators:
-            return False
-
-        if annotations.max() >= self.nclasses:
-            return False
-
-        if masked_annotations.min() < 0:
-            return False
 
         # exactly 3 annotations per row
         nvalid = (~masked_annotations.mask).sum(1)
@@ -438,9 +503,3 @@ class ModelBt(HasStrictTraits):
             return False
 
         return True
-
-
-    def _raise_if_incompatible(self, annotations):
-        if not self.are_annotations_compatible(annotations):
-            raise PyannoValueError('Annotations are incompatible with model '
-                                   'parameters')

@@ -9,6 +9,14 @@ pyanno Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`abstract_model` Module
+--------------------
+
+.. automodule:: pyanno.abstract_model
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`modelA` Module
 --------------------
 
@@ -45,6 +53,14 @@ pyanno Package
 ----------------------
 
 .. automodule:: pyanno.sampling
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`database` Module
+----------------------
+
+.. automodule:: pyanno.database
     :members:
     :undoc-members:
     :show-inheritance:

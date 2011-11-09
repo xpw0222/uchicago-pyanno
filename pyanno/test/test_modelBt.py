@@ -16,8 +16,7 @@ class TestModelBt(unittest.TestCase):
         nclasses, nitems = 3, 500*8
         # create random model and data (this is our ground truth model)
         true_model = ModelBt.create_initial_state(nclasses)
-        labels = true_model.generate_labels(nitems)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations(nitems)
 
         # create a new, empty model and infer back the parameters
         model = ModelBt.create_initial_state(nclasses)
@@ -35,8 +34,7 @@ class TestModelBt(unittest.TestCase):
         nclasses, nitems = 3, 500*8
         # create random model and data (this is our ground truth model)
         true_model = ModelBt.create_initial_state(nclasses)
-        labels = true_model.generate_labels(nitems)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations(nitems)
 
         # create a new, empty model and infer back the parameters
         model = ModelBt.create_initial_state(nclasses)
@@ -54,8 +52,7 @@ class TestModelBt(unittest.TestCase):
         nclasses, nitems = 3, 1500*8
         # create random model and data (this is our ground truth model)
         true_model = ModelBt.create_initial_state(nclasses)
-        labels = true_model.generate_labels(nitems)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations(nitems)
 
         max_llhood = true_model.log_likelihood(annotations)
         # perturb gamma
@@ -85,8 +82,7 @@ class TestModelBt(unittest.TestCase):
         # create random model (this is our ground truth model)
         true_model = ModelBt.create_initial_state(nclasses)
         # create random data
-        labels = true_model.generate_labels(nitems)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations(nitems)
 
         # create a new model
         model = ModelBt.create_initial_state(nclasses)
@@ -98,7 +94,12 @@ class TestModelBt(unittest.TestCase):
         model.theta = model._random_theta(model.nannotators)
         # save current parameters
         gamma_before, theta_before = model.gamma.copy(), model.theta.copy()
-        samples = model.sample_posterior_over_accuracy(annotations, nsamples)
+        samples = model.sample_posterior_over_accuracy(
+            annotations,
+            nsamples,
+            burn_in_samples=100,
+            thin_samples=2
+        )
         # test: the mean of the sampled parameters is the same as the MLE one
         # (up to 3 standard deviations of the estimate sample distribution)
         testing.assert_array_less(np.absolute(samples.mean(0)-real_theta),
@@ -119,7 +120,7 @@ class TestModelBt(unittest.TestCase):
         true_model = ModelBt(nclasses, gamma, theta)
         # create random data
         labels = true_model.generate_labels(nitems)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations_from_labels(labels)
 
         posterior = true_model.infer_labels(annotations)
         testing.assert_allclose(posterior.sum(1), 1., atol=1e-6, rtol=0.)
@@ -144,8 +145,7 @@ class TestModelBt(unittest.TestCase):
         nclasses, nitems = 5, 8*30+3
 
         model = ModelBt.create_initial_state(nclasses)
-        labels = model.generate_labels(nitems)
-        annotations = model.generate_annotations(labels)
+        annotations = model.generate_annotations(nitems)
 
         valid = is_valid(annotations)
         # check that on every row there are exactly 3 annotations

@@ -4,17 +4,18 @@
 
 """Definition of model B full."""
 
-from traits.api import HasStrictTraits, Int, Array
+from traits.api import Int, Array
 import numpy as np
+from pyanno.abstract_model import AbstractModel
 from pyanno.util import (random_categorical, create_band_matrix,
                          normalize, dirichlet_llhood,
-                         is_valid, SMALLEST_FLOAT, MISSING_VALUE, PyannoValueError)
+                         is_valid, SMALLEST_FLOAT, PyannoValueError)
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class ModelB(HasStrictTraits):
+class ModelB(AbstractModel):
     """Bayesian generalization of the model proposed in (Dawid et al., 1979).
 
     Model B is a hierarchical generative model over annotations. The model
@@ -109,18 +110,25 @@ class ModelB(HasStrictTraits):
 
     @staticmethod
     def create_initial_state(nclasses, nannotators, alpha=None, beta=None):
-        """Factory method that returns a random model.
+        """FFactory method returning a model with random initial parameters.
 
-        Input:
-        nclasses -- number of categories
-        nannotators -- number of annotators
-        alpha -- Parameters of Dirichlet prior over annotator choices
-                 Default: peaks at correct annotation, decays to 1
-        beta -- Parameters of Dirichlet prior over model categories
-                Default: beta[i] = 1.0
+        Arguments
+        ---------
+        nclasses : int
+            Number of label classes
+
+        nannotators : int
+            Number of annotators
+
+        alpha : ndarray
+            Parameters of Dirichlet prior over annotator choices
+            Default: peaks at correct annotation, decays to 1
+
+        beta : ndarray
+            Parameters of Dirichlet prior over model categories
+            Default: beta[i] = 2.0
         """
 
-        # TODO more meaningful choice for priors
         if alpha is None:
             alpha = np.empty((nclasses, nclasses))
             for k1 in xrange(nclasses):
@@ -152,7 +160,8 @@ class ModelB(HasStrictTraits):
         """Generate random labels from the model."""
         return random_categorical(self.pi, nitems)
 
-    def generate_annotations(self, labels):
+
+    def generate_annotations_from_labels(self, labels):
         """Generate random annotations given labels."""
         nitems = labels.shape[0]
         annotations = np.empty((nitems, self.nannotators), dtype=int)
@@ -163,10 +172,29 @@ class ModelB(HasStrictTraits):
         return annotations
 
 
+    def generate_annotations(self, nitems):
+        """Generate a random annotation set from the model.
+
+        Sample a random set of annotations from the probability distribution
+        defined the current model parameters.
+
+        Arguments
+        ---------
+        nitems : int
+            Number of items to sample
+
+        Returns
+        -------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+        """
+        labels = self.generate_labels(nitems)
+        return self.generate_annotations_from_labels(labels)
+
+
     ##### Parameters estimation methods #######################################
 
     # TODO start from sample frequencies
-    # TODO argument verbose=False
     def map(self, annotations,
             epsilon=0.00001, init_accuracy=0.6, max_epochs=1000):
         """Computes maximum a posteriori (MAP) estimate of parameters.
@@ -419,6 +447,20 @@ class ModelB(HasStrictTraits):
     ##### Model likelihood methods ############################################
 
     def log_likelihood(self, annotations):
+        """Compute the log likelihood of a set of annotations given the model.
+
+        Returns log P(annotations | current model parameters).
+
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+
+        Returns
+        -------
+        log_lhood : float
+            log likelihood of `annotations`
+        """
 
         self._raise_if_incompatible(annotations)
 
@@ -456,9 +498,14 @@ class ModelB(HasStrictTraits):
 
     ##### Sampling posterior over parameters ##################################
 
-    def sample_posterior_over_accuracy(self, annotations, nsamples):
+    def sample_posterior_over_accuracy(self, annotations, nsamples,
+                                       burn_in_samples=0,
+                                       thin_samples=1):
 
         self._raise_if_incompatible(annotations)
+        nsamples = self._compute_total_nsamples(nsamples,
+                                                burn_in_samples,
+                                                thin_samples)
 
         logger.info('Start collecting samples...')
 
@@ -482,9 +529,10 @@ class ModelB(HasStrictTraits):
                                                     self.pi,
                                                     theta_curr)
 
-            # sample from the categorical distribution over labels
+            ### sample from the categorical distribution over labels
             # 1) precompute cumulative distributions
             cum_distr = category_distr.cumsum(1)
+
             # 2) precompute random values
             rand = np.random.random(nitems)
             for i in xrange(nitems):
@@ -507,7 +555,8 @@ class ModelB(HasStrictTraits):
 
             theta_samples[sidx,...] = theta_curr
 
-        return theta_samples
+        return self._post_process_samples(theta_samples, burn_in_samples,
+                                          thin_samples)
 
 
     ##### Posterior distributions #############################################
@@ -526,29 +575,3 @@ class ModelB(HasStrictTraits):
                                           self.theta)
 
         return category
-
-
-    ##### Verify input ########################################################
-
-    def are_annotations_compatible(self, annotations):
-        """Check if the annotations are compatible with the models' parameters.
-        """
-
-        masked_annotations = np.ma.masked_equal(annotations, MISSING_VALUE)
-
-        if annotations.shape[1] != self.nannotators:
-            return False
-
-        if annotations.max() >= self.nclasses:
-            return False
-
-        if masked_annotations.min() < 0:
-            return False
-
-        return True
-
-
-    def _raise_if_incompatible(self, annotations):
-        if not self.are_annotations_compatible(annotations):
-            raise PyannoValueError('Annotations are incompatible with model '
-                                   'parameters')

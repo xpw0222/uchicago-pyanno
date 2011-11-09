@@ -39,7 +39,7 @@ def main():
 
     import pyanno
     model = pyanno.ModelBt.create_initial_state(4)
-    annotations = model.generate_annotations(model.generate_labels(100))
+    annotations = model.generate_annotations(100)
     mv = plot_pairwise_statistics(measures.cohens_kappa, annotations)
     return mv
 

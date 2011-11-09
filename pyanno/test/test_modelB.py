@@ -84,12 +84,18 @@ class TestModelB(unittest.TestCase):
         nitems = 4
         model = ModelB.create_initial_state(nclasses, nannotators)
 
+        # test functionality of generate_annotations method
+        anno = model.generate_annotations(100)
+        self.assertEqual(anno.shape[0], 100)
+        self.assert_(model.are_annotations_compatible(anno))
+
+        # check that returned annotations match the prior
         nsamples = 3000
         labels = np.arange(nclasses)
 
         annotations = np.empty((nsamples, nitems, nannotators), dtype=int)
         for i in xrange(nsamples):
-            annotations[i,:,:] = model.generate_annotations(labels)
+            annotations[i,:,:] = model.generate_annotations_from_labels(labels)
 
         for j in xrange(nannotators):
             for i in xrange(nitems):
@@ -107,8 +113,7 @@ class TestModelB(unittest.TestCase):
         nclasses, nannotators, nitems = 2, 3, 10000
         # create random model and data (this is our ground truth model)
         true_model = ModelB.create_initial_state(nclasses, nannotators)
-        labels = true_model.generate_labels(nitems)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations(nitems)
 
         # create a new, empty model and infer back the parameters
         model = ModelB(nclasses, nannotators)
@@ -128,8 +133,7 @@ class TestModelB(unittest.TestCase):
         nclasses, nannotators, nitems = 4, 10, 10000
         # create random model and data (this is our ground truth model)
         true_model = ModelB.create_initial_state(nclasses, nannotators)
-        labels = true_model.generate_labels(nitems)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations(nitems)
 
         # create a new model with the true parameters, plus noise
         theta = true_model.theta + np.random.normal(loc=true_model.theta,
@@ -149,8 +153,7 @@ class TestModelB(unittest.TestCase):
         nclasses, nannotators, nitems = 2, 3, 10000
         # create random model and data (this is our ground truth model)
         true_model = ModelB.create_initial_state(nclasses, nannotators)
-        labels = true_model.generate_labels(nitems)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations(nitems)
 
         # create a new, empty model and infer back the parameters
         model = ModelB(nclasses, nannotators)
@@ -169,8 +172,7 @@ class TestModelB(unittest.TestCase):
         nclasses, nannotators, nitems = 2, 3, 10000
         # create random model and data (this is our ground truth model)
         true_model = ModelB.create_initial_state(nclasses, nannotators)
-        labels = true_model.generate_labels(nitems)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations(nitems)
         # remove about 10% of the annotations
         for _ in range(nitems*nannotators//10):
             i = np.random.randint(nitems)
@@ -195,8 +197,7 @@ class TestModelB(unittest.TestCase):
         nclasses, nannotators, nitems = 3, 5, 1500*8
         # create random model and data (this is our ground truth model)
         true_model = ModelB.create_initial_state(nclasses, nannotators)
-        labels = true_model.generate_labels(nitems)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations(nitems)
 
         max_llhood = true_model.log_likelihood(annotations)
         # perturb pi
@@ -237,7 +238,7 @@ class TestModelB(unittest.TestCase):
 
         # create random data
         labels = true_model.generate_labels(nitems)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations_from_labels(labels)
 
         posterior = true_model.infer_labels(annotations)
         testing.assert_allclose(posterior.sum(1), 1., atol=1e-6, rtol=0.)
@@ -265,8 +266,7 @@ class TestModelB(unittest.TestCase):
         # create random model (this is our ground truth model)
         true_model = ModelB.create_initial_state(nclasses, nannotators)
         # create random data
-        labels = true_model.generate_labels(nitems)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations(nitems)
         # remove about 1/3 of the annotations
         for _ in range(nitems*nannotators//3):
             i = np.random.randint(nitems)
@@ -283,7 +283,15 @@ class TestModelB(unittest.TestCase):
         model.theta = model._random_theta(nclasses, nannotators, model.alpha)
         # save current parameters
         pi_before, theta_before = model.pi.copy(), model.theta.copy()
-        samples = model.sample_posterior_over_accuracy(annotations, nsamples)
+        samples = model.sample_posterior_over_accuracy(
+            annotations,
+            nsamples,
+            burn_in_samples = 100,
+            thin_samples = 2
+        )
+
+        self.assertEqual(samples.shape[0], nsamples)
+
         # eliminate bootstrap samples
         samples = samples[5:]
 
@@ -305,8 +313,7 @@ class TestModelB(unittest.TestCase):
         true_nclasses = 3
         nannotators = 5
         true_model = ModelB.create_initial_state(true_nclasses, nannotators)
-        labels = true_model.generate_labels(100)
-        annotations = true_model.generate_annotations(labels)
+        annotations = true_model.generate_annotations(100)
 
         nclasses = 4
         model = ModelB.create_initial_state(nclasses, nannotators)
