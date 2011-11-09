@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 from numpy import testing
 from pyanno import ModelB
-from pyanno.util import MISSING_VALUE as MV, PyannoValueError
+from pyanno.util import MISSING_VALUE as MV, PyannoValueError, labels_frequency
 
 
 def assert_is_distributions(distr, axis=0):
@@ -123,8 +123,12 @@ class TestModelB(unittest.TestCase):
         after_llhood = (model.log_likelihood(annotations)
                         + model._log_prior(model.pi, model.theta))
 
-        testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
-        testing.assert_allclose(model.theta, true_model.theta, atol=1e-2, rtol=0.)
+        # errors in the estimation are due to the the high uncertainty over
+        # real labels, due to the relatively high error probability under the
+        # prior
+        testing.assert_allclose(model.pi, true_model.pi, atol=1e-1, rtol=0.)
+        testing.assert_allclose(model.theta, true_model.theta,
+                                atol=1e-1, rtol=0.)
         self.assertGreater(after_llhood, before_llhood)
 
 
@@ -144,7 +148,8 @@ class TestModelB(unittest.TestCase):
         model.map(annotations, epsilon=1e-3, max_epochs=1000)
 
         testing.assert_allclose(model.pi, true_model.pi, atol=1e-1, rtol=0.)
-        testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
+        testing.assert_allclose(model.theta, true_model.theta,
+                                atol=1e-1, rtol=0.)
 
 
     def test_mle_estimation(self):
@@ -161,8 +166,12 @@ class TestModelB(unittest.TestCase):
         model.mle(annotations, epsilon=1e-3, max_epochs=1000)
         after_llhood = model.log_likelihood(annotations)
 
-        testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
-        testing.assert_allclose(model.theta, true_model.theta, atol=1e-2, rtol=0.)
+        # errors in the estimation are due to the the high uncertainty over
+        # real labels, due to the relatively high error probability under the
+        # prior
+        testing.assert_allclose(model.pi, true_model.pi, atol=0.07, rtol=0.)
+        testing.assert_allclose(model.theta, true_model.theta, atol=0.07,
+                                rtol=0.)
         self.assertGreater(after_llhood, before_llhood)
 
 
@@ -187,8 +196,9 @@ class TestModelB(unittest.TestCase):
         after_llhood = (model.log_likelihood(annotations)
                         + model._log_prior(model.pi, model.theta))
 
-        testing.assert_allclose(model.pi, true_model.pi, atol=1e-2, rtol=0.)
-        testing.assert_allclose(model.theta, true_model.theta, atol=1e-2, rtol=0.)
+        testing.assert_allclose(model.pi, true_model.pi, atol=1e-1, rtol=0.)
+        testing.assert_allclose(model.theta, true_model.theta,
+                                atol=1e-1, rtol=0.)
         self.assertGreater(after_llhood, before_llhood)
 
 
