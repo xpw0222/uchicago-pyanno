@@ -5,9 +5,9 @@
 from traits.has_traits import on_trait_change
 from traits.trait_types import Instance, Str, Range, Button, Int
 from traitsui.editors.range_editor import RangeEditor
-from traitsui.group import VGroup, VGrid
+from traitsui.group import VGroup, VGrid, HGroup
 from traitsui.include import Include
-from traitsui.item import Item
+from traitsui.item import Item, Spring
 from traitsui.menu import OKButton
 from traitsui.view import View
 
@@ -81,15 +81,15 @@ class ModelAView(PyannoModelView):
 
     #### Actions
 
-    view_omega = Button(label='View...')
+    view_omega = Button(label='View Omega...')
 
-    view_theta = Button(label='View...')
+    view_theta = Button(label='View Theta...')
 
 
     def _view_theta_fired(self):
         """Create viewer for theta parameters."""
         theta_view = ParametersTabularView(
-            title = 'Model A, parameters theta',
+            title = 'Model A, parameters Theta',
             data = [self.model.theta.tolist()]
         )
         theta_view.edit_traits()
@@ -98,7 +98,7 @@ class ModelAView(PyannoModelView):
     def _view_omega_fired(self):
         """Create viewer for parameters omega."""
         omega_view = ParametersTabularView(
-            title = 'Model A, parameters omega',
+            title = 'Model A, parameters Omega',
             data = [self.model.omega.tolist()]
         )
         omega_view.edit_traits()
@@ -107,17 +107,50 @@ class ModelAView(PyannoModelView):
     #### Traits UI view #########
 
     parameters_group = VGrid(
-        Item('handler.omega_hinton_diagram',
-             style='custom',
-             resizable=False,
-             show_label=False),
-        Item('handler.view_omega', show_label=False),
-        Item('handler.theta_plot',
-             style='custom',
-             resizable=False,
-             show_label=False,
+        Item('_'),
+
+        HGroup(
+            VGroup(
+                Spring(),
+                Item('handler.omega_hinton_diagram',
+                     style='custom',
+                     resizable=False,
+                     show_label=False,
+                     width=550
+                ),
+                Spring()
+            ),
+            Spring(),
+            VGroup(
+                Spring(),
+                Item('handler.view_omega', show_label=False),
+                Spring()
+            )
         ),
-        Item('handler.view_theta', show_label=False),
+
+        Spring(),
+        Item('_'),
+        Spring(),
+
+        HGroup(
+            VGroup(
+                Spring(),
+                Item('handler.theta_plot',
+                     style='custom',
+                     resizable=False,
+                     show_label=False,
+                     width=550
+                ),
+                Spring()
+            ),
+            Spring(),
+            VGroup(
+                Spring(),
+                Item('handler.view_theta', show_label=False),
+                Spring()
+            )
+        )
+
     )
 
     body = VGroup(

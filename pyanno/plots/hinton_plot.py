@@ -128,7 +128,7 @@ class HintonDiagramPlot(PyannoPlotContainer):
         editor=ComponentEditor(),
         resizable=False,
         show_label=False,
-        height=-100,
+        height=-110,
         )
 
 

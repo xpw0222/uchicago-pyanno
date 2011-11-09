@@ -452,6 +452,9 @@ class ModelDataView(HasTraits):
                  visible_when='annotations_are_defined',
                  width=800
             ),
+
+            Item('_', visible_when='annotations_are_defined'),
+
             Item('annotations_stats_view',
                  style='custom',
                  show_label=False,
@@ -504,7 +507,7 @@ class ModelDataView(HasTraits):
             ),
             title='PyAnno - Models of data annotations by multiple curators',
             width = 1400,
-            height = 800,
+            height = 850,
             resizable = False
         )
 

@@ -251,7 +251,8 @@ class ModelBView(PyannoModelView):
 
     theta_line_plot = Instance(ModelB_LineThetaView)
 
-    theta_views = Enum('Line plot (supports samples)', 'Matrix plot')
+    theta_views = Enum('Line plot',
+                       'Matrix plot (does not support samples)')
 
     theta_view = Instance(ModelB_MultipleThetaView)
 

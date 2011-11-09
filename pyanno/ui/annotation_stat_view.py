@@ -6,7 +6,7 @@ from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_numeric import Array
 from traits.trait_types import Enum, Button, Instance, Int, Str, Float
 from traitsui.group import VGroup, HGroup
-from traitsui.item import Item
+from traitsui.item import Item, Spring
 from traitsui.view import View
 
 import numpy as np
@@ -112,7 +112,8 @@ class AnnotationsStatisticsView(HasTraits):
                 ),
                 Item("stats_view",
                      style="custom",
-                     show_label=False),
+                     show_label=False,
+                     width=300),
             ),
             resizable = True
         )

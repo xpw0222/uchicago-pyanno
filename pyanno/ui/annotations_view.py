@@ -23,7 +23,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-ANNOTATIONS_INFO_STR = """Annotations file {}
+ANNOTATIONS_INFO_STR = """Annotations name: {}
 Number of annotations: {}
 Number of annotators: {}
 Number of classes: {}
@@ -118,7 +118,7 @@ class AnnotationsView(HasTraits):
     edit_data = Button(label='Edit annotations...')
 
     # save current annotations
-    save_data = Button(label='Save...')
+    save_data = Button(label='Save annotations...')
 
     def _edit_data_fired(self):
         data_view = DataView(data=self.annotations_container.raw_annotations)
@@ -146,24 +146,35 @@ class AnnotationsView(HasTraits):
         Item('annotations_info_str',
              show_label=False,
              style='readonly',
-             height=100
         ),
+
+        Spring(),
+        Item('_'),
+        Spring(),
+
         HGroup(
-            Item('edit_data',
-                 enabled_when='annotations_are_defined',
-                 show_label=False),
-            Item('save_data',
-                 enabled_when='annotations_are_defined',
-                 show_label=False),
-            Spring()
-        ),
-        HGroup(
-            Item('frequency_plot',
-                 style='custom',
-                 resizable=False,
-                 show_label=False
+            VGroup(
+                Spring(),
+                Item('frequency_plot',
+                     style='custom',
+                     resizable=False,
+                     show_label=False,
+                     width=450
+                ),
+                Spring()
             ),
-        )
+            Spring(),
+            VGroup(
+                Item('edit_data',
+                     enabled_when='annotations_are_defined',
+                     show_label=False),
+                Item('save_data',
+                     enabled_when='annotations_are_defined',
+                     show_label=False),
+                Spring()
+            )
+        ),
+
     )
 
     traits_view = View(body)

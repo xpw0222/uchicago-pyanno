@@ -3,11 +3,12 @@
 # License: Modified BSD license (2-clause)
 
 from traits.has_traits import on_trait_change
-from traits.trait_types import Button, List, CFloat, Str, Range, Int
+from traits.trait_types import Button, List, CFloat, Str, Range, Int, Enum, Any
 from traitsui.api import View, Item, VGroup
 from traitsui.editors.range_editor import RangeEditor
-from traitsui.group import VGrid
+from traitsui.group import VGrid, HGroup
 from traitsui.include import Include
+from traitsui.item import Spring
 from traitsui.menu import OKButton
 from traits.api import Instance
 import numpy as np
@@ -88,15 +89,15 @@ class ModelBtView(PyannoModelView):
 
     #### Actions
 
-    view_gamma = Button(label='View...')
+    view_gamma = Button(label='View Gamma...')
 
-    view_theta = Button(label='View...')
+    view_theta = Button(label='View Theta...')
 
 
     def _view_gamma_fired(self):
         """Create viewer for gamma parameters."""
         gamma_view = ParametersTabularView(
-            title = 'Model B-with-Theta, parameters gamma',
+            title = 'Model B-with-Theta, parameters Gamma',
             data=[self.gamma]
         )
         gamma_view.edit_traits()
@@ -105,7 +106,7 @@ class ModelBtView(PyannoModelView):
     def _view_theta_fired(self):
         """Create viewer for theta parameters."""
         theta_view = ParametersTabularView(
-            title = 'Model B-with-Theta, parameters theta',
+            title = 'Model B-with-Theta, parameters Theta',
             data=[self.model.theta.tolist()]
         )
         theta_view.edit_traits()
@@ -119,23 +120,55 @@ class ModelBtView(PyannoModelView):
 
     #### Traits UI view #########
 
+    parameters_group = VGroup(
+        Item('_'),
+
+        HGroup(
+            VGroup(
+                Spring(),
+                Item('handler.gamma_hinton',
+                     style='custom',
+                     resizable=False,
+                     show_label=False,
+                     width=550
+                ),
+                Spring()
+            ),
+            Spring(),
+            VGroup(
+                Spring(),
+                Item('handler.view_gamma', show_label=False),
+                Spring()
+            )
+        ),
+
+        Spring(),
+        Item('_'),
+        Spring(),
+
+        HGroup(
+            VGroup(
+                Spring(),
+                Item('handler.theta_view',
+                     style='custom',
+                     resizable=False,
+                     show_label=False,
+                     width=550
+                ),
+                Spring()
+            ),
+            Spring(),
+            VGroup(
+                Spring(),
+                Item('handler.view_theta', show_label=False),
+                Spring()
+            )
+        )
+    )
+
     body = VGroup(
         Include('info_group'),
-        VGrid(
-            Item('handler.gamma_hinton',
-                 style='custom',
-                 resizable=False,
-                 show_label=False,
-                 width=300
-            ),
-            Item('handler.view_gamma', show_label=False),
-            Item('handler.theta_view',
-                 style='custom',
-                 resizable=False,
-                 show_label=False,
-            ),
-            Item('handler.view_theta', show_label=False),
-        )
+        Include('parameters_group')
     )
 
     traits_view = View(body, buttons=[OKButton], resizable=True)
