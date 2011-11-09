@@ -5,11 +5,12 @@ from enable.component_editor import ComponentEditor
 
 from traits.has_traits import on_trait_change, HasTraits
 from traits.trait_numeric import Array
-from traits.trait_types import Instance, Str, Range, Button, Int, Any, Enum
+from traits.trait_types import Instance, Str, Range, Button, Int, Any, Enum, List
 from traitsui.editors.range_editor import RangeEditor
+from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.group import VGroup, VGrid, HGroup, Group
 from traitsui.include import Include
-from traitsui.item import Item, Spring
+from traitsui.item import Item, Spring, UItem, Label
 from traitsui.menu import OKButton
 from traitsui.view import View
 
@@ -17,6 +18,7 @@ from pyanno.modelB import ModelB
 from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.plots.matrix_plot import MatrixPlot
 from pyanno.plots.theta_tensor_plot import ThetaTensorPlot
+from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.ui.model_view import PyannoModelView, NewModelDialog
 from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
 
@@ -50,10 +52,10 @@ class ModelB_MultipleThetaView(HasTraits):
     Includes a spin box to select the parameters for each annotator.
     """
 
-    @staticmethod
-    def show(theta):
+    @classmethod
+    def show(cls, theta):
         """Create a window that with a ThetaView inside."""
-        tv = ModelB_TabularThetaView(theta=theta)
+        tv = cls(theta=theta)
         tv.edit_traits()
 
     # 3D tensor to be displayed
@@ -147,6 +149,63 @@ class ModelB_LineThetaView(ModelB_MultipleThetaView):
         self.theta_j_view = self._create_line_plot(self.annotator_idx)
 
 
+class ModelB_PriorView(HasTraits):
+    """Show and allow to edit parameters"""
+
+    @classmethod
+    def show(cls, beta, alpha):
+        """Create a window that with a ThetaView inside."""
+        tv = cls(beta=beta[None,:], alpha=alpha)
+        ui = tv.edit_traits(kind='modal')
+        if ui.result:
+            # user pressed 'OK'
+            return tv.beta[0,:], tv.alpha
+        else:
+            return None, None
+
+    beta = Array
+
+    alpha = Array
+
+    def traits_view(self):
+        nclasses = self.beta.shape[1]
+        width = 100*nclasses
+        height = 30*nclasses
+        margin = 50
+        view = View(
+            VGroup(
+                Label('Beta parameters (prior over pi):'),
+                UItem('beta',
+                      editor=TabularEditor(
+                          adapter=Array2DAdapter(ncolumns=nclasses,
+                                                 format='%.4f',
+                                                 show_index=True),
+                          ),
+                      width = width,
+                      height = 40,
+                      padding = 10
+                ),
+                Label('Alpha parameters (prior over theta):'),
+                UItem('alpha',
+                      editor=TabularEditor(
+                          adapter=Array2DAdapter(ncolumns=nclasses,
+                                                 format='%.4f',
+                                                 show_index=True),
+                          ),
+                      width = width,
+                      height = height,
+                      padding = 10
+                ),
+            ),
+            width = min(width + margin, 800),
+            height = min(height + 100 + margin, 800),
+            scrollable = True,
+            resizable = True,
+            buttons = ['OK', 'Cancel']
+        )
+        return view
+
+
 class ModelBView(PyannoModelView):
     """ Traits UI Model/View for 'ModelB' objects.
     """
@@ -213,6 +272,8 @@ class ModelBView(PyannoModelView):
 
     view_theta = Button(label='View...')
 
+    edit_prior = Button(label='Edit prior...')
+
 
     def _view_pi_fired(self):
         """Create viewer for parameters pi."""
@@ -228,24 +289,49 @@ class ModelBView(PyannoModelView):
         ModelB_TabularThetaView.show(self.model.theta)
 
 
+    def _edit_prior_fired(self):
+        """Create editor for prior parameters."""
+        beta, alpha = ModelB_PriorView.show(beta=self.model.beta,
+                                            alpha=self.model.alpha)
+        if beta is not None:
+            # user pressed 'OK'
+            self.model.beta = beta
+            self.model.alpha = alpha
+            self.model_updated = True
+
+
     #### Traits UI view #########
 
-    parameters_group = VGrid(
-        Item('handler.pi_hinton_diagram',
-             style='custom',
-             resizable=False,
-             show_label=False),
-        Item('handler.view_pi', show_label=False),
-        Item('_'),
-        Group(
-            Item('handler.theta_views',
-                 show_label=False),
-            Item('handler.theta_view',
+    parameters_group = VGroup(
+        HGroup(
+            Item('handler.edit_prior',
+                 show_label=False,
+                 width=100),
+            Spring(),
+        ),
+
+        HGroup(
+            Item('handler.pi_hinton_diagram',
                  style='custom',
                  resizable=False,
                  show_label=False),
+            Item('handler.view_pi', show_label=False),
         ),
-        Item('handler.view_theta', show_label=False),
+
+        Item('_'),
+
+        VGroup(
+            Item('handler.theta_views',
+                 show_label=False),
+            HGroup(
+                Item('handler.theta_view',
+                     style='custom',
+                     resizable=False,
+                     show_label=False,
+                     width = 600),
+                Item('handler.view_theta', show_label=False),
+            )
+        ),
     )
 
     body = VGroup(
