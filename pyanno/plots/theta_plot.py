@@ -316,6 +316,7 @@ class ThetaDistrPlot(PyannoPlotContainer):
         # --- adjust plot appearance
 
         plot.aspect_ratio = 1.7
+        plot.padding = [20,0,10,40]
 
         # adjust axis bounds
         x_low, x_high = theta.min(), theta.max()
@@ -360,7 +361,7 @@ class ThetaDistrPlot(PyannoPlotContainer):
         editor=ComponentEditor(),
         resizable=False,
         show_label=False,
-        width=-550,
+        height=-280,
         )
 
 
@@ -410,6 +411,7 @@ def main():
     )
 
     theta_view = plot_theta_parameters(model, theta_samples,
+                                       type='distr',
                                        title='Debug plot_theta_parameters')
 
     return model, theta_view

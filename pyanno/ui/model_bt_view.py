@@ -8,14 +8,15 @@ from traitsui.api import View, Item, VGroup
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.group import VGrid, HGroup
 from traitsui.include import Include
-from traitsui.item import Spring
+from traitsui.item import Spring, UItem
 from traitsui.menu import OKButton
 from traits.api import Instance
 import numpy as np
 from pyanno.modelBt import ModelBt
 
 from pyanno.plots.hinton_plot import HintonDiagramPlot
-from pyanno.plots.theta_plot import ThetaPlot
+from pyanno.plots.plots_superclass import PyannoPlotContainer
+from pyanno.plots.theta_plot import ThetaScatterPlot, ThetaDistrPlot
 from pyanno.ui.model_view import PyannoModelView, NewModelDialog
 from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
 
@@ -51,12 +52,17 @@ class ModelBtView(PyannoModelView):
     gamma = List(CFloat)
 
 
-    @on_trait_change('model_updated')
+    @on_trait_change('model,model_updated')
     def update_from_model(self):
         """Update view parameters to the ones in the model."""
         self.gamma = self.model.gamma.tolist()
-        self.theta_view.theta_samples_valid = False
-        self.theta_view.redraw = True
+
+        print self.model
+        self.theta_distribution_plot = ThetaDistrPlot(theta=self.model.theta)
+        self.theta_scatter_plot = ThetaScatterPlot(model=self.model)
+        self.theta_scatter_plot._update_plot_data()
+
+        self._theta_view_update()
 
 
     def _gamma_default(self):
@@ -73,8 +79,14 @@ class ModelBtView(PyannoModelView):
 
     gamma_hinton = Instance(HintonDiagramPlot)
 
-    theta_view = Instance(ThetaPlot)
+    theta_scatter_plot = Instance(ThetaScatterPlot)
 
+    theta_distribution_plot = Instance(ThetaDistrPlot)
+
+    theta_views = Enum('Distribution',
+                       'Scatter plot')
+
+    theta_view = Instance(PyannoPlotContainer)
 
     def _gamma_hinton_default(self):
         return HintonDiagramPlot(data = self.gamma,
@@ -82,9 +94,28 @@ class ModelBtView(PyannoModelView):
 
 
     def _theta_view_default(self):
-        self.theta_view = ThetaPlot(model=self.model)
-        self.theta_view._update_plot_data()
-        return self.theta_view
+        return self.theta_distribution_plot
+
+
+    @on_trait_change('theta_views')
+    def _theta_view_update(self):
+        if self.theta_views.startswith('Distr'):
+            self.theta_view = self.theta_distribution_plot
+        else:
+            self.theta_view = self.theta_scatter_plot
+
+
+    def plot_theta_samples(self, theta_samples):
+        self.theta_distribution_plot = ThetaDistrPlot(
+            theta = self.model.theta,
+            theta_samples = theta_samples
+        )
+
+        self.theta_scatter_plot = ThetaScatterPlot(model = self.model)
+        self.theta_scatter_plot.theta_samples = theta_samples
+        self.theta_scatter_plot.theta_samples_valid = True
+
+        self._theta_view_update()
 
 
     #### Actions
@@ -110,12 +141,6 @@ class ModelBtView(PyannoModelView):
             data=[self.model.theta.tolist()]
         )
         theta_view.edit_traits()
-
-
-    def plot_theta_samples(self, theta_samples):
-        self.theta_view.theta_samples = theta_samples
-        self.theta_view.theta_samples_valid = True
-        self.theta_view.redraw = True
 
 
     #### Traits UI view #########
@@ -148,11 +173,10 @@ class ModelBtView(PyannoModelView):
 
         HGroup(
             VGroup(
-                Spring(),
-                Item('handler.theta_view',
+                UItem('handler.theta_views'),
+                UItem('handler.theta_view',
                      style='custom',
                      resizable=False,
-                     show_label=False,
                      width=550
                 ),
                 Spring()
@@ -182,7 +206,12 @@ def main():
     from pyanno import ModelBt
 
     model = ModelBt.create_initial_state(5)
+    anno = model.generate_annotations(100)
+    samples = model.sample_posterior_over_accuracy(anno, 50,
+                                                   step_optimization_nsamples=3)
+
     model_view = ModelBtView(model=model)
+    model_view.plot_theta_samples(samples)
     model_view.configure_traits(view='traits_view')
 
     return model, model_view
