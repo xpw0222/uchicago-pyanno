@@ -222,7 +222,7 @@ class ModelBt(AbstractModel):
         params_best = scipy.optimize.fmin(objective,
                                           params_start,
                                           args=(counts,),
-                                          xtol=1e-6, ftol=1e-6,
+                                          xtol=1e-4, ftol=1e-4,
                                           disp=False, maxiter=10000)
 
         logger.info('Parameters optimization finished')
