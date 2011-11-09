@@ -245,7 +245,7 @@ def main():
 
     from pyanno import ModelBt
     model = ModelBt.create_initial_state(5)
-    annotations = model.generate_annotations(model.generate_labels(2))
+    annotations = model.generate_annotations(2)
 
     anno = AnnotationsContainer.from_array(annotations, name='blah')
     model_view = AnnotationsView(annotations_container=anno)

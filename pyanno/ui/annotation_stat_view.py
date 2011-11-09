@@ -126,7 +126,7 @@ def main():
 
     from pyanno import ModelBt
     model = ModelBt.create_initial_state(5)
-    annotations = model.generate_annotations(model.generate_labels(20))
+    annotations = model.generate_annotations(20)
 
     stats_view = AnnotationsStatisticsView(annotations=annotations, nclasses=5)
     stats_view.configure_traits()

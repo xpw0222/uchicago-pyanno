@@ -264,7 +264,7 @@ def main():
     from pyanno import ModelB
 
     model = ModelB.create_initial_state(4, 5)
-    anno = model.generate_annotations(model.generate_labels(100))
+    anno = model.generate_annotations(100)
     samples = model.sample_posterior_over_accuracy(anno, 10)
 
     model_view = ModelBView(model=model)

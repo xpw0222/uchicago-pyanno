@@ -78,7 +78,7 @@ def main():
     from pyanno import ModelBt
 
     model = ModelBt.create_initial_state(5)
-    annotations = model.generate_annotations(model.generate_labels(400))
+    annotations = model.generate_annotations(400)
     posterior = model.infer_labels(annotations)
 
     post_plot = PosteriorPlot(posterior=posterior,
