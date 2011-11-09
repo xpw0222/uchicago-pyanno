@@ -27,7 +27,7 @@ class AbstractModel(HasTraits):
         Arguments
         ---------
         nclasses : int
-            Number of label classes.
+            Number of label classes
         """
         raise NotImplementedError()
 
