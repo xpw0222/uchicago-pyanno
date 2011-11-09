@@ -94,14 +94,15 @@ class ModelB(AbstractModel):
             self.theta = theta.copy()
 
         # initialize prior parameters if not specified
-        if alpha is None:
-            self.alpha = create_band_matrix((nclasses, nclasses), [4., 2., 1.])
-        else:
+        if alpha is not None:
             self.alpha = alpha
-        if beta is None:
-            self.beta = np.ones((nclasses,))
         else:
+            self.alpha = self.default_alpha(nclasses)
+
+        if beta is not None:
             self.beta = beta
+        else:
+            self.beta = self.default_beta(nclasses)
 
         super(ModelB, self).__init__(**traits)
 
@@ -129,16 +130,25 @@ class ModelB(AbstractModel):
             Default: beta[i] = 2.0
         """
 
+        # NOTE: this is Bob Carpenter's prior; it is a *very* strong prior
+        # over alpha for ordinal data, and becomes stronger for larger number
+        # of classes. What is a sensible prior?
+#        if alpha is None:
+#            alpha = np.empty((nclasses, nclasses))
+#            for k1 in xrange(nclasses):
+#                for k2 in xrange(nclasses):
+#                    # using Bob Carpenter's choice as a prior
+#                    alpha[k1,k2] = max(1, (nclasses + (0.5 if k1 == k2 else 0)
+#                                           - abs(k1 - k2)) ** 4)
+#
+#        if beta is None:
+#            beta = 2.*np.ones(shape=(nclasses,))
+
         if alpha is None:
-            alpha = np.empty((nclasses, nclasses))
-            for k1 in xrange(nclasses):
-                for k2 in xrange(nclasses):
-                    # using Bob Carpenter's choice as a prior
-                    alpha[k1,k2] = max(1, (nclasses + (0.5 if k1 == k2 else 0)
-                                           - abs(k1 - k2)) ** 4)
+            alpha = ModelB.default_alpha(nclasses)
 
         if beta is None:
-            beta = 2.*np.ones(shape=(nclasses,))
+            beta = ModelB.default_beta(nclasses)
 
         # generate random distributions of prevalence and accuracy
         pi = np.random.dirichlet(beta)
@@ -154,6 +164,14 @@ class ModelB(AbstractModel):
             for k in xrange(nclasses):
                 theta[j, k, :] = np.random.dirichlet(alpha[k, :])
         return theta
+
+    @staticmethod
+    def default_beta(nclasses):
+        return np.ones((nclasses,))
+
+    @staticmethod
+    def default_alpha(nclasses):
+        return create_band_matrix((nclasses, nclasses), [16., 4., 2., 1.])
 
 
     def generate_labels(self, nitems):
@@ -221,7 +239,7 @@ class ModelB(AbstractModel):
 
 
     def mle(self, annotations,
-            epsilon=0.00001, init_accuracy=0.6, max_epochs=1000):
+            epsilon=1e-5, init_accuracy=0.6, max_epochs=1000):
         """Computes maximum likelihood estimate (MLE) of parameters.
 
         Input:
