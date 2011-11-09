@@ -426,7 +426,6 @@ class ModelDataView(HasTraits):
                         show_label=False,
                         width=400
                     ),
-                    #show_border = True,
                     label = 'Model view',
                 )
             ),
@@ -457,7 +456,7 @@ class ModelDataView(HasTraits):
                  style='custom',
                  show_label=False,
                  visible_when='annotations_are_defined'),
-            label = 'Data view'
+            label = 'Data view',
         )
 
         data_group = (
@@ -504,7 +503,7 @@ class ModelDataView(HasTraits):
                 model_data_group
             ),
             title='PyAnno - Models of data annotations by multiple curators',
-            width = 1200,
+            width = 1400,
             height = 800,
             resizable = False
         )

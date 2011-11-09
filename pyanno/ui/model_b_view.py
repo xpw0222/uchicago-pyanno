@@ -268,17 +268,17 @@ class ModelBView(PyannoModelView):
 
     #### Actions
 
-    view_pi = Button(label='View...')
+    view_pi = Button(label='View Pi...')
 
-    view_theta = Button(label='View...')
+    view_theta = Button(label='View Theta...')
 
-    edit_prior = Button(label='Edit prior...')
+    edit_prior = Button(label='Edit priors (Alpha, Beta)...')
 
 
     def _view_pi_fired(self):
         """Create viewer for parameters pi."""
         pi_view = ParametersTabularView(
-            title = 'Model B, parameters pi',
+            title = 'Model B, parameters Pi',
             data = [self.model.pi.tolist()]
         )
         pi_view.edit_traits()
@@ -303,6 +303,8 @@ class ModelBView(PyannoModelView):
     #### Traits UI view #########
 
     parameters_group = VGroup(
+        Item('_'),
+
         HGroup(
             Item('handler.edit_prior',
                  show_label=False,
@@ -310,26 +312,43 @@ class ModelBView(PyannoModelView):
             Spring(),
         ),
 
+        Item('_'),
+
         HGroup(
-            Item('handler.pi_hinton_diagram',
-                 style='custom',
-                 resizable=False,
-                 show_label=False),
-            Item('handler.view_pi', show_label=False),
+            VGroup(
+                Spring(),
+                Item('handler.pi_hinton_diagram',
+                     style='custom',
+                     resizable=False,
+                     show_label=False,
+                     width=550),
+                Spring(),
+            ),
+            Spring(),
+            VGroup(
+                Spring(),
+                Item('handler.view_pi', show_label=False),
+                Spring()
+            ),
         ),
 
         Item('_'),
 
-        VGroup(
-            Item('handler.theta_views',
-                 show_label=False),
-            HGroup(
+        HGroup(
+            VGroup(
+                Item('handler.theta_views',
+                     show_label=False),
                 Item('handler.theta_view',
                      style='custom',
                      resizable=False,
                      show_label=False,
-                     width = 600),
+                     width = 550),
+                Spring()
+            ),
+            VGroup(
+                Spring(),
                 Item('handler.view_theta', show_label=False),
+                Spring()
             )
         ),
     )
