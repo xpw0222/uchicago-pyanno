@@ -182,7 +182,7 @@ class ModelBtView(PyannoModelView):
             Spring(),
             VGroup(
                 Spring(),
-                Item('handler.view_theta'),
+                UItem('handler.view_theta'),
                 Spring()
             )
         )
