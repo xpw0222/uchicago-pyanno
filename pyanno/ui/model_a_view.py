@@ -3,17 +3,18 @@
 # License: Modified BSD license (2-clause)
 
 from traits.has_traits import on_trait_change
-from traits.trait_types import Instance, Str, Range, Button, Int
+from traits.trait_types import Instance, Str, Range, Button, Int, Enum
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.group import VGroup, VGrid, HGroup
 from traitsui.include import Include
-from traitsui.item import Item, Spring
+from traitsui.item import Item, Spring, UItem
 from traitsui.menu import OKButton
 from traitsui.view import View
 
 from pyanno.modelA import ModelA
 from pyanno.plots.hinton_plot import HintonDiagramPlot
-from pyanno.plots.theta_plot import ThetaScatterPlot
+from pyanno.plots.plots_superclass import PyannoPlotContainer
+from pyanno.plots.theta_plot import ThetaScatterPlot, ThetaDistrPlot
 from pyanno.ui.model_view import PyannoModelView, NewModelDialog
 from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
 
@@ -54,29 +55,55 @@ class ModelAView(PyannoModelView):
     @on_trait_change('model,model_updated')
     def update_from_model(self):
         """Recreate plots."""
-        self.theta_plot = ThetaScatterPlot(
-            model=self.model,
-            title = 'Theta parameters, P(annotator[k] is correct)'
-        )
-        #self.theta_plot._update_plot_data()
-
+ 
         self.omega_hinton_diagram = HintonDiagramPlot(
             data = self.model.omega.tolist(),
             title = 'Omega parameters, P(label = k)'
         )
 
+        self.theta_distribution_plot = ThetaDistrPlot(theta=self.model.theta)
+        self.theta_scatter_plot = ThetaScatterPlot(model=self.model)
+
+        self._theta_view_update()
+
+
+    def _theta_view_default(self):
+        return self.theta_distribution_plot
+
+
+    @on_trait_change('theta_views')
+    def _theta_view_update(self):
+        if self.theta_views.startswith('Distr'):
+            self.theta_view = self.theta_distribution_plot
+        else:
+            self.theta_view = self.theta_scatter_plot
+
 
     def plot_theta_samples(self, theta_samples):
-        self.theta_plot.theta_samples = theta_samples
-        self.theta_plot.theta_samples_valid = True
-        self.theta_plot.redraw = True
+        self.theta_distribution_plot = ThetaDistrPlot(
+            theta = self.model.theta,
+            theta_samples = theta_samples
+        )
+
+        self.theta_scatter_plot = ThetaScatterPlot(model = self.model)
+        self.theta_scatter_plot.theta_samples = theta_samples
+        self.theta_scatter_plot.theta_samples_valid = True
+
+        self._theta_view_update()
 
 
     #### UI traits
 
-    theta_plot = Instance(ThetaScatterPlot)
-
     omega_hinton_diagram = Instance(HintonDiagramPlot)
+
+    theta_scatter_plot = Instance(ThetaScatterPlot)
+
+    theta_distribution_plot = Instance(ThetaDistrPlot)
+
+    theta_views = Enum('Distribution plot',
+                       'Scatter plot')
+
+    theta_view = Instance(PyannoPlotContainer)
 
 
     #### Actions
@@ -106,7 +133,7 @@ class ModelAView(PyannoModelView):
 
     #### Traits UI view #########
 
-    parameters_group = VGrid(
+    parameters_group = VGroup(
         Item('_'),
 
         HGroup(
@@ -134,11 +161,10 @@ class ModelAView(PyannoModelView):
 
         HGroup(
             VGroup(
-                Spring(),
-                Item('handler.theta_plot',
+                UItem('handler.theta_views'),
+                UItem('handler.theta_view',
                      style='custom',
                      resizable=False,
-                     show_label=False,
                      width=550
                 ),
                 Spring()
@@ -146,7 +172,7 @@ class ModelAView(PyannoModelView):
             Spring(),
             VGroup(
                 Spring(),
-                Item('handler.view_theta', show_label=False),
+                UItem('handler.view_theta'),
                 Spring()
             )
         )

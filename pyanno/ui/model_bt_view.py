@@ -57,10 +57,8 @@ class ModelBtView(PyannoModelView):
         """Update view parameters to the ones in the model."""
         self.gamma = self.model.gamma.tolist()
 
-        print self.model
         self.theta_distribution_plot = ThetaDistrPlot(theta=self.model.theta)
         self.theta_scatter_plot = ThetaScatterPlot(model=self.model)
-        self.theta_scatter_plot._update_plot_data()
 
         self._theta_view_update()
 
@@ -83,7 +81,7 @@ class ModelBtView(PyannoModelView):
 
     theta_distribution_plot = Instance(ThetaDistrPlot)
 
-    theta_views = Enum('Distribution',
+    theta_views = Enum('Distribution plot',
                        'Scatter plot')
 
     theta_view = Instance(PyannoPlotContainer)
@@ -184,7 +182,7 @@ class ModelBtView(PyannoModelView):
             Spring(),
             VGroup(
                 Spring(),
-                Item('handler.view_theta', show_label=False),
+                Item('handler.view_theta'),
                 Spring()
             )
         )
