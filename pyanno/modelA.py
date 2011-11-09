@@ -18,6 +18,7 @@ import scipy.stats
 from traits.has_traits import HasStrictTraits
 from traits.trait_numeric import Array
 from traits.trait_types import Int
+from pyanno.abstract_model import AbstractModel
 from pyanno.sampling import optimize_step_size, sample_distribution
 from pyanno.util import (compute_counts, random_categorical,
                          labels_frequency, MISSING_VALUE, SMALLEST_FLOAT,
@@ -83,7 +84,7 @@ def _triplet_to_counts_index(triplet, nclasses):
     return (triplet * np.array([nclasses**2, nclasses, 1])).sum(1)
 
 
-class ModelA(HasStrictTraits):
+class ModelA(AbstractModel):
     """Implementation of Model A from (Rzhetsky et al., 2009).
 
     The model defines a probability distribution over data annotations
@@ -576,12 +577,13 @@ class ModelA(HasStrictTraits):
 
     ##### Sampling posterior over parameters ##################################
 
-    # TODO arguments for burn-in, thinning
     def sample_posterior_over_accuracy(self, annotations, nsamples,
-                                    target_rejection_rate = 0.3,
-                                    rejection_rate_tolerance = 0.2,
-                                    step_optimization_nsamples = 500,
-                                    adjust_step_every = 100):
+                                       burn_in_samples = 0,
+                                       thin_samples = 1,
+                                       target_rejection_rate = 0.3,
+                                       rejection_rate_tolerance = 0.2,
+                                       step_optimization_nsamples = 500,
+                                       adjust_step_every = 100):
         """Return samples from posterior distribution over theta given data.
 
         Samples are drawn using a variant of a Metropolis-Hasting Markov Chain
@@ -600,6 +602,15 @@ class ModelA(HasStrictTraits):
 
         nsamples : int
             number of samples to draw from the posterior
+
+        burn_in_samples : int
+            Discard the first `burn_in_samples` during the initial burn-in
+            phase, where the Monte Carlo chain converges to the posterior
+
+        thin_samples : int
+            Only return one every `thin_samples` samples in order to reduce
+            the auto-correlation in the sampling chain. This is called
+            "thinning" in MCMC parlance.
 
         target_rejection_rate : float
             target rejection rate for the step size estimation phase
@@ -624,6 +635,9 @@ class ModelA(HasStrictTraits):
         """
 
         self._raise_if_incompatible(annotations)
+        nsamples = self._compute_total_nsamples(nsamples,
+                                                burn_in_samples,
+                                                thin_samples)
 
         # optimize step size
         counts = compute_counts(annotations, self.nclasses)
@@ -656,7 +670,8 @@ class ModelA(HasStrictTraits):
                                           step, nsamples,
                                           params_lower, params_upper)
 
-            return samples
+            return self._post_process_samples(samples, burn_in_samples,
+                                              thin_samples)
         finally:
             # reset parameters
             self.theta = save_params
@@ -928,16 +943,11 @@ class ModelA(HasStrictTraits):
     def are_annotations_compatible(self, annotations):
         """Check if the annotations are compatible with the models' parameters.
         """
+
+        if not super(ModelA, self).are_annotations_compatible(annotations):
+            return False
+
         masked_annotations = np.ma.masked_equal(annotations, MISSING_VALUE)
-
-        if annotations.shape[1] != self.nannotators:
-            return False
-
-        if annotations.max() >= self.nclasses:
-            return False
-
-        if masked_annotations.min() < 0:
-            return False
 
         # exactly 3 annotations per row
         nvalid = (~masked_annotations.mask).sum(1)
@@ -946,8 +956,3 @@ class ModelA(HasStrictTraits):
 
         return True
 
-
-    def _raise_if_incompatible(self, annotations):
-        if not self.are_annotations_compatible(annotations):
-            raise PyannoValueError('Annotations are incompatible with model '
-                                   'parameters')
