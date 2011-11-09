@@ -6,8 +6,8 @@
 
 from traits.has_traits import HasTraits
 from traits.trait_types import Int
-from pyanno.util import PyannoValueError
-
+from pyanno.util import PyannoValueError, MISSING_VALUE
+import numpy as np
 
 class AbstractModel(HasTraits):
     """Abstract class defining the interface of a pyAnno model.
@@ -97,6 +97,20 @@ class AbstractModel(HasTraits):
         raise NotImplementedError()
 
 
+    def _compute_total_nsamples(self, nsamples, burn_in_samples, thin_samples):
+        """Compute the total number of samples to generate in order to return
+        `nsamples` samples after burn-in and thinning.
+        """
+        return nsamples*thin_samples + burn_in_samples
+
+
+    def _post_process_samples(self, samples, burn_in_samples, thin_samples):
+        """Eliminate samples, discarding the first `burn_in_samples`,
+        and thinning the rest.
+        """
+        return samples[burn_in_samples::thin_samples,:]
+
+
     def sample_posterior_over_accuracy(self, annotations, nsamples,
                                        burn_in_samples=0, thin_samples=1):
         """Return samples from posterior over the accuracy parameters.
@@ -113,7 +127,16 @@ class AbstractModel(HasTraits):
 
         nsamples : int
             Number of samples to return (i.e., burn-in and thinning samples
-            are not included).
+            are not included)
+
+        burn_in_samples : int
+            Discard the first `burn_in_samples` during the initial burn-in
+            phase, where the Monte Carlo chain converges to the posterior
+
+        thin_samples : int
+            Only return one every `thin_samples` samples in order to reduce
+            the auto-correlation in the sampling chain. This is called
+            "thinning" in MCMC parlance.
 
         Returns
         -------
@@ -126,7 +149,23 @@ class AbstractModel(HasTraits):
     def are_annotations_compatible(self, annotations):
         """Returns True if the annotations are compatible with the model.
         """
-        raise NotImplementedError
+
+        # The standard implementation is: valid if the number of annotators
+        # is correct, if the classes are between 0 and nclasses-1,
+        # and if missing values are marked with pyanno.util.MISSING_VALUE
+
+        masked_annotations = np.ma.masked_equal(annotations, MISSING_VALUE)
+
+        if annotations.shape[1] != self.nannotators:
+            return False
+
+        if annotations.max() >= self.nclasses:
+            return False
+
+        if masked_annotations.min() < 0:
+            return False
+
+        return True
 
 
     def _raise_if_incompatible(self, annotations):
