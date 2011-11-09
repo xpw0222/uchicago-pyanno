@@ -13,7 +13,7 @@ from traitsui.view import View
 
 from pyanno.modelA import ModelA
 from pyanno.plots.hinton_plot import HintonDiagramPlot
-from pyanno.plots.theta_plot import ThetaPlot
+from pyanno.plots.theta_plot import ThetaScatterPlot
 from pyanno.ui.model_view import PyannoModelView, NewModelDialog
 from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
 
@@ -54,7 +54,7 @@ class ModelAView(PyannoModelView):
     @on_trait_change('model,model_updated')
     def update_from_model(self):
         """Recreate plots."""
-        self.theta_plot = ThetaPlot(
+        self.theta_plot = ThetaScatterPlot(
             model=self.model,
             title = 'Theta parameters, P(annotator[k] is correct)'
         )
@@ -74,7 +74,7 @@ class ModelAView(PyannoModelView):
 
     #### UI traits
 
-    theta_plot = Instance(ThetaPlot)
+    theta_plot = Instance(ThetaScatterPlot)
 
     omega_hinton_diagram = Instance(HintonDiagramPlot)
 

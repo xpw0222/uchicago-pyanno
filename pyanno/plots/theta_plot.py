@@ -7,14 +7,18 @@
 from chaco.array_plot_data import ArrayPlotData
 from chaco.data_range_2d import DataRange2D
 from chaco.label_axis import LabelAxis
+from chaco.legend import Legend
 from chaco.plot import Plot
+from chaco.plot_containers import VPlotContainer
 from chaco.scales.scales import FixedScale
 from chaco.scales_tick_generator import ScalesTickGenerator
+from chaco.default_colors import palette11 as COLOR_PALETTE
+from chaco.tools.legend_tool import LegendTool
 from enable.component_editor import ComponentEditor
 
 from traits.has_traits import on_trait_change
 from traits.trait_numeric import Array
-from traits.trait_types import Instance, Bool, Event, Str, DictStrAny
+from traits.trait_types import Instance, Bool, Event, Str, DictStrAny, Any
 from traitsui.handler import ModelView
 from traitsui.item import Item
 
@@ -27,7 +31,7 @@ def _w_idx(str_, idx):
     return str_ + str(idx)
 
 
-class ThetaPlot(ModelView, PyannoPlotContainer):
+class ThetaScatterPlot(ModelView, PyannoPlotContainer):
     """Defines a view of the annotator accuracy parameters, theta.
 
     The view consists in a Chaco plot that displays the theta parameter for
@@ -239,7 +243,129 @@ class ThetaPlot(ModelView, PyannoPlotContainer):
         )
 
 
-def plot_theta_parameters(modelBt, theta_samples=None, **kwargs):
+class ThetaDistrPlot(PyannoPlotContainer):
+    """Defines a view of the annotator accuracy parameters, theta.
+
+    The view consists in a Chaco plot that displays the theta parameter for
+    each annotator, and samples from the posterior distribution over theta
+    as a discretized distribution over theta.
+    """
+
+    # reference to the theta tensor for one annotator
+    theta = Array
+
+    # reference to an array of samples for theta for one annotator
+    theta_samples = Any
+
+    # chaco plot of the tensor
+    theta_plot = Any
+
+    def _theta_plot_default(self):
+        theta = self.theta
+        nannotators = theta.shape[0]
+        samples = self.theta_samples
+
+        # plot data object
+        plot_data = ArrayPlotData()
+
+        # create the plot
+        plot = Plot(plot_data)
+
+        # --- plot theta as vertical dashed lines
+        # add vertical lines extremes
+        plot_data.set_data('line_extr', [0., 1.])
+
+        for k in range(nannotators):
+            name = 'theta[{}]'.format(k)
+            plot_data.set_data(name, [theta[k], theta[k]])
+
+        plots = {}
+        for k in range(nannotators):
+            name = 'theta[{}]'.format(k)
+            line_plot = plot.plot(
+                (name, 'line_extr'),
+                line_width = 2.,
+                color = COLOR_PALETTE[k % len(COLOR_PALETTE)],
+                line_style = 'dash',
+                name = name
+            )
+            plots[name] = line_plot
+
+        # --- plot samples as distributions
+        if samples is not None:
+            bins = np.linspace(0., 1., 100)
+            max_hist = 0.
+            for k in range(nannotators):
+                name = 'theta_{}_distr_'.format(k)
+                hist, x = np.histogram(samples[:,k], bins=bins)
+                hist = hist / float(hist.sum())
+                max_hist = max(max_hist, hist.max())
+
+                # make "bars" out of histogram values
+                y = np.concatenate(([0], np.repeat(hist, 2), [0]))
+                plot_data.set_data(name+'x', np.repeat(x, 2))
+                plot_data.set_data(name+'y', y)
+
+            for k in range(nannotators):
+                name = 'theta_{}_distr_'.format(k)
+                plot.plot((name+'x', name+'y'),
+                          line_width = 2.,
+                          color = COLOR_PALETTE[k % len(COLOR_PALETTE)]
+                          )
+
+        # --- adjust plot appearance
+
+        plot.aspect_ratio = 1.7
+
+        # adjust axis bounds
+        x_low, x_high = theta.min(), theta.max()
+        y_low, y_high = 0., 1.
+        if samples is not None:
+            x_high = max(x_high, samples.max())
+            x_low = min(x_low, samples.min())
+            y_high = max_hist
+
+        plot.range2d = DataRange2D(
+            low  = (max(x_low-0.2, 0.), y_low),
+            high = (min(x_high*1.1, 1.), min(y_high*1.1, 1.))
+        )
+
+        # label axes
+        plot.value_axis.title = 'Probability'
+        plot.index_axis.title = 'Theta'
+
+        # add legend
+        legend = Legend(component=plot, plots=plots,
+                        align="ul", padding=5)
+        legend.tools.append(LegendTool(legend, drag_button="left"))
+        plot.overlays.append(legend)
+
+        self.decorate_plot(plot, theta)
+
+        return plot
+
+
+    #### View definition #####################################################
+
+    resizable_plot_item = Item(
+        'theta_plot',
+        editor=ComponentEditor(),
+        resizable=True,
+        show_label=False,
+        width = 600
+        )
+
+    traits_plot_item = Item(
+        'theta_plot',
+        editor=ComponentEditor(),
+        resizable=False,
+        show_label=False,
+        width=-550,
+        )
+
+
+def plot_theta_parameters(modelBt, theta_samples=None,
+                          type='distr', **kwargs):
     """Display a Chaco plot of the annotator accuracy parameters, theta.
 
     The component allows saving the plot (with Ctrl-S), and copying the matrix
@@ -249,15 +375,22 @@ def plot_theta_parameters(modelBt, theta_samples=None, **kwargs):
     modelBt -- an instance of ModelBt
     theta_samples -- if given, samples from the posterior over theta,
         as returned by modelBt.sample_posterior_over_accuracy
+    type : string
+        Either 'scatter' or 'distr'.
 
     Keyword arguments:
     title -- title for the resulting plot
     """
 
-    theta_view = ThetaPlot(model=modelBt, **kwargs)
-    if theta_samples is not None:
-        theta_view.theta_samples = theta_samples
-        theta_view.theta_samples_valid = True
+    if type == 'distr':
+        theta_view = ThetaDistrPlot(theta = modelBt.theta,
+                                    theta_samples = theta_samples)
+    else:
+        theta_view = ThetaScatterPlot(model=modelBt, **kwargs)
+        if theta_samples is not None:
+            theta_view.theta_samples = theta_samples
+            theta_view.theta_samples_valid = True
+
     theta_view.configure_traits(view='resizable_view')
     return theta_view
 
