@@ -1,0 +1,343 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Model definitions &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="index.html" />
+    <link rel="next" title="Developer guide" href="developer_guide.html" />
+    <link rel="prev" title="User guide" href="user_guide.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="developer_guide.html" title="Developer guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="user_guide.html" title="User guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="model-definitions">
+<h1>Model definitions<a class="headerlink" href="#model-definitions" title="Permalink to this headline">¶</a></h1>
+<p>At present, pyAnno implements three probabilistic models of data annotation:</p>
+<blockquote>
+<div><p>1. <a class="reference internal" href="#model-a">Model A</a> , a three-step generative model from the paper
+<a class="reference internal" href="#rzhetsky2009">[Rzhetsky2009]</a>.</p>
+<p>2. <a class="reference internal" href="#model-b-with-theta">Model B-with-theta</a> , a multinomial generative model from the paper
+<a class="reference internal" href="#rzhetsky2009">[Rzhetsky2009]</a>.</p>
+<p>3. <a class="reference internal" href="#model-b">Model B</a>, a Bayesian generalization of the model proposed in
+[Dawid1979].</p>
+</div></blockquote>
+<table class="docutils citation" frame="void" id="rzhetsky2009" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Rzhetsky2009]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>)</em> Rzhetsky A., Shatkay, H., and Wilbur,
+W.J. (2009). &#8220;How to get the most from
+your curation effort&#8221;, PLoS Computational Biology, 5(5).</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="dawid1979" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Dawid1979]</td><td>Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
+estimation of observer error-rates using the EM algorithm.  Applied
+Statistics, 28(1):20&#8211;28.</td></tr>
+</tbody>
+</table>
+<div class="section" id="model-a">
+<h2>Model A<a class="headerlink" href="#model-a" title="Permalink to this headline">¶</a></h2>
+<p>descr</p>
+</div>
+<div class="section" id="model-b-with-theta">
+<h2>Model B-with-theta<a class="headerlink" href="#model-b-with-theta" title="Permalink to this headline">¶</a></h2>
+<p>descr</p>
+</div>
+<div class="section" id="model-b">
+<h2>Model B<a class="headerlink" href="#model-b" title="Permalink to this headline">¶</a></h2>
+<p>descr</p>
+</div>
+<div class="section" id="dawid-and-skene-s-multinomial-model-w-arbitrary-design">
+<h2>DAWID AND SKENE&#8217;S MULTINOMIAL MODEL W. ARBITRARY DESIGN<a class="headerlink" href="#dawid-and-skene-s-multinomial-model-w-arbitrary-design" title="Permalink to this headline">¶</a></h2>
+<p>Our first model generalizes the model in (Dawid and Skene 1979) to
+arbitrary designs, including that of (Rzhetsky et al. 2009).  There
+are no priors, so estimation is necessarily through maximum
+likelihood.</p>
+<p>Example math:
+<img class="math" src="images/math/7be83399ce3fe0183530ae6f44987fed5b4cb4dd.png" alt="P(x_i = y^t)"/></p>
+</div>
+<div class="section" id="data">
+<h2>Data<a class="headerlink" href="#data" title="Permalink to this headline">¶</a></h2>
+<p>I                 number of items being annotated
+J                 number of annotators
+N                 number of annotations
+K                 number of categories
+jj[n] in 0:(J-1)  annotator for annotation n in 1:N
+ii[n] in 0:(I-1)  item for annotation n in 1:N
+y[n]  in 0:(K-1)  category for annotation n in 1:N</p>
+</div>
+<div class="section" id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
+<p>z[i]  in 1:K                 (latent) category for item i in 1:I
+pi[k] in [0,1]               prevalence of category k in 1:K;</p>
+<blockquote>
+<div>SUM_k pi[k] = 1</div></blockquote>
+<dl class="docutils">
+<dt>theta[j][kRef][k] in [0,1]   probability of annotator j in 1:J</dt>
+<dd>returning category k in 1:K for
+item of true category kRef;
+SUM_k theta[j,kRef,k] = 1</dd>
+</dl>
+</div>
+<div class="section" id="model">
+<h2>Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h2>
+<p>z[i] ~ Categorical(pi)
+y[n] ~ Categorical(theta[ jj[n] ][ z[ii[n]] ])</p>
+</div>
+<div class="section" id="complete-data-likelihood">
+<h2>Complete Data Likelihood<a class="headerlink" href="#complete-data-likelihood" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>p(y,z|theta,pi)</dt>
+<dd><p class="first">= p(z|pi) * p(y|theta,z)
+= PROD_{i in 1:I} p(z[i]|pi)</p>
+<blockquote>
+<div><ul class="simple">
+<li>PROD_{n in 1:N} p(y[n]|theta,z)</li>
+</ul>
+</div></blockquote>
+<dl class="last docutils">
+<dt>= PROD_{i in 1:K} pi[ z[i] ]</dt>
+<dd><ul class="first last simple">
+<li>PROD_{n in 1:N} theta[ jj[n] ][ z[ii[n]] ][ y[n] ]</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="observed-data-likelihood">
+<h2>Observed Data Likelihood<a class="headerlink" href="#observed-data-likelihood" title="Permalink to this headline">¶</a></h2>
+<p>p(y|theta,pi) = INTEGRAL_z p(y,z|theta,pi) dz</p>
+</div>
+<div class="section" id="maximum-likelihood-estimate-mle">
+<h2>Maximum Likelihood Estimate (MLE)<a class="headerlink" href="#maximum-likelihood-estimate-mle" title="Permalink to this headline">¶</a></h2>
+<p>(theta*,pi*) = ARGMAX_{theta,pi} p(y|theta,pi)</p>
+</div>
+<div class="section" id="dawid-and-skene-s-model-with-priors">
+<h2>DAWID AND SKENE&#8217;S MODEL WITH PRIORS<a class="headerlink" href="#dawid-and-skene-s-model-with-priors" title="Permalink to this headline">¶</a></h2>
+<p>The second model adds priors to the Dawid and Skene model, which
+corresponds to the full Model B in (Rzhetsky et al. 2009).</p>
+</div>
+<div class="section" id="priors">
+<h2>Priors<a class="headerlink" href="#priors" title="Permalink to this headline">¶</a></h2>
+<p>This model basically adds Dirichlet priors for the categorical
+parameters.  There is one prior beta for prevalence pi, and
+K priors alpha[k] for annotator response for items of reference
+category k.</p>
+<blockquote>
+<div><p>beta in (0,infty)^K</p>
+<p>alpha[k] in (0,infty)^K</p>
+</div></blockquote>
+<p>For maximum a posteriori fitting, all values must be
+greater than or equal to 1.0.</p>
+</div>
+<div class="section" id="id3">
+<h2>Model<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>In BUGS-like notation, we add the following:</p>
+<p>pi ~ Dirichlet(beta)</p>
+<dl class="docutils">
+<dt>for (j in 1:J) {</dt>
+<dd><dl class="first docutils">
+<dt>for (k in 1:K) {</dt>
+<dd>theta[j][k] ~ Dirichlet(alpha[k])</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+<p>}</p>
+</div>
+<div class="section" id="complete-likelihood">
+<h2>Complete Likelihood<a class="headerlink" href="#complete-likelihood" title="Permalink to this headline">¶</a></h2>
+<p>We just add in terms for the priors to the data likelihood
+above, giving us:</p>
+<dl class="docutils">
+<dt>p(y,z,theta,pi|alpha,beta)</dt>
+<dd>= p(theta|alpha) * p(pi|beta) * p(y,z|theta,pi)</dd>
+</dl>
+<p>where</p>
+<blockquote>
+<div>p(theta|alpha) = Dirichlet(theta|alpha)</div></blockquote>
+<p>and</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>p(theta|alpha)</dt>
+<dd><dl class="first last docutils">
+<dt>= PROD_{j in 1:J} PROD_{k in 1:K}</dt>
+<dd>Dirichlet(theta[j][k]|alpha[k]).</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+</div>
+<div class="section" id="em-algorithm">
+<h2>EM ALGORITHM<a class="headerlink" href="#em-algorithm" title="Permalink to this headline">¶</a></h2>
+<p>All of the expecation-maximization (EM) algorithms work the
+same way for computing either maximum likelihood estimates (MLE)
+or maximum a posterioiri (MAP estimates).  The basic idea is
+to treat the the unknown category labels as missing data,
+alternating between estimating the category expecations and
+then maximizing the parameters for those expectations.</p>
+<ol class="arabic" start="0">
+<li><p class="first">Initialize parameters (pi(0),theta(0))</p>
+</li>
+<li><p class="first">for n = 1; ; ++n</p>
+<dl class="docutils">
+<dt>1.a  (E Step)</dt>
+<dd><dl class="first last docutils">
+<dt>Calculate observed data likelihood given previous params</dt>
+<dd><p class="first last">p(cat|pi(n-1),theta(n-1),y)</p>
+</dd>
+</dl>
+</dd>
+<dt>1.b  (M Step)</dt>
+<dd><p class="first last">Set next params pi(n), theta(n) to maximize observed
+data likelihood w.r.t. previous params</p>
+</dd>
+<dt>1.c  (convergence test)</dt>
+<dd><p class="first last">if log likelihood doesn&#8217;t change much, exit</p>
+</dd>
+</dl>
+</li>
+</ol>
+</div>
+<div class="section" id="references">
+<h2>REFERENCES<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<p>Artstein, Ron and Massimo Poesio. 2008. Inter-coder agreement for
+computational linguistics.  Computational Linguistics Journal
+34(4):555&#8211;596.</p>
+<p>Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood estimation of
+observer error-rates using the EM algorithm.  Applied Statistics,
+28(1):20&#8211;28.</p>
+<p>Rzhetsky, A., H. Shatkay, and W. J. Wilbur.  How to get the most out
+of your curation effort.  PLoS Computational Biology. 5(5). 2009.
+doi: 10.1371/journal.pcbi.1000391</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Model definitions</a><ul>
+<li><a class="reference internal" href="#model-a">Model A</a></li>
+<li><a class="reference internal" href="#model-b-with-theta">Model B-with-theta</a></li>
+<li><a class="reference internal" href="#model-b">Model B</a></li>
+<li><a class="reference internal" href="#dawid-and-skene-s-multinomial-model-w-arbitrary-design">DAWID AND SKENE&#8217;S MULTINOMIAL MODEL W. ARBITRARY DESIGN</a></li>
+<li><a class="reference internal" href="#data">Data</a></li>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#model">Model</a></li>
+<li><a class="reference internal" href="#complete-data-likelihood">Complete Data Likelihood</a></li>
+<li><a class="reference internal" href="#observed-data-likelihood">Observed Data Likelihood</a></li>
+<li><a class="reference internal" href="#maximum-likelihood-estimate-mle">Maximum Likelihood Estimate (MLE)</a></li>
+<li><a class="reference internal" href="#dawid-and-skene-s-model-with-priors">DAWID AND SKENE&#8217;S MODEL WITH PRIORS</a></li>
+<li><a class="reference internal" href="#priors">Priors</a></li>
+<li><a class="reference internal" href="#id3">Model</a></li>
+<li><a class="reference internal" href="#complete-likelihood">Complete Likelihood</a></li>
+<li><a class="reference internal" href="#em-algorithm">EM ALGORITHM</a></li>
+<li><a class="reference internal" href="#references">REFERENCES</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="user_guide.html"
+                        title="previous chapter">User guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="developer_guide.html"
+                        title="next chapter">Developer guide</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/models.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="developer_guide.html" title="Developer guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="user_guide.html" title="User guide"
+             >previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

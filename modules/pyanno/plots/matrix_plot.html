@@ -1,0 +1,248 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyanno.plots.matrix_plot &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyanno.plots.matrix_plot</h1><div class="highlight"><pre>
+<span class="c"># Copyright (c) 2011, Enthought, Ltd.</span>
+<span class="c"># Author: Pietro Berkes &lt;pberkes@enthought.com&gt;</span>
+<span class="c"># License: Modified BSD license (2-clause)</span>
+
+<span class="sd">&quot;&quot;&quot;View of 2D matrix based on Chaco.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">chaco.array_plot_data</span> <span class="kn">import</span> <span class="n">ArrayPlotData</span>
+<span class="kn">from</span> <span class="nn">chaco.color_bar</span> <span class="kn">import</span> <span class="n">ColorBar</span>
+<span class="kn">from</span> <span class="nn">chaco.data_range_1d</span> <span class="kn">import</span> <span class="n">DataRange1D</span>
+<span class="kn">from</span> <span class="nn">chaco.default_colormaps</span> <span class="kn">import</span> <span class="n">jet</span>
+<span class="kn">from</span> <span class="nn">chaco.linear_mapper</span> <span class="kn">import</span> <span class="n">LinearMapper</span>
+<span class="kn">from</span> <span class="nn">chaco.plot</span> <span class="kn">import</span> <span class="n">Plot</span>
+<span class="kn">from</span> <span class="nn">chaco.plot_containers</span> <span class="kn">import</span> <span class="n">HPlotContainer</span>
+<span class="kn">from</span> <span class="nn">enable.component_editor</span> <span class="kn">import</span> <span class="n">ComponentEditor</span>
+
+<span class="kn">from</span> <span class="nn">traits.trait_numeric</span> <span class="kn">import</span> <span class="n">Array</span>
+<span class="kn">from</span> <span class="nn">traits.trait_types</span> <span class="kn">import</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Instance</span><span class="p">,</span> <span class="n">Float</span>
+<span class="kn">from</span> <span class="nn">traitsui.item</span> <span class="kn">import</span> <span class="n">Item</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyanno.plots.plots_superclass</span> <span class="kn">import</span> <span class="n">PyannoPlotContainer</span>
+
+
+<div class="viewcode-block" id="MatrixPlot"><a class="viewcode-back" href="../../../pyanno.plots.html#pyanno.plots.matrix_plot.MatrixPlot">[docs]</a><span class="k">class</span> <span class="nc">MatrixPlot</span><span class="p">(</span><span class="n">PyannoPlotContainer</span><span class="p">):</span>
+
+    <span class="c"># data to be displayed</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">Array</span>
+
+    <span class="c">#### plot-related traits</span>
+    <span class="n">colormap_low</span> <span class="o">=</span> <span class="n">Float</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">colormap_high</span> <span class="o">=</span> <span class="n">Float</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">origin</span> <span class="o">=</span> <span class="n">Str</span><span class="p">(</span><span class="s">&#39;top left&#39;</span><span class="p">)</span>
+
+    <span class="n">matrix_plot_container</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">HPlotContainer</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_colormap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">colormap_low</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">colormap_low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">colormap_high</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">colormap_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="n">colormap</span> <span class="o">=</span> <span class="n">jet</span><span class="p">(</span><span class="n">DataRange1D</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colormap_low</span><span class="p">,</span>
+                                   <span class="n">high</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colormap_high</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">colormap</span>
+
+
+    <span class="k">def</span> <span class="nf">_matrix_plot_container_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c"># create a plot data object and give it this data</span>
+        <span class="n">plot_data</span> <span class="o">=</span> <span class="n">ArrayPlotData</span><span class="p">()</span>
+        <span class="n">plot_data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s">&quot;values&quot;</span><span class="p">,</span> <span class="n">matrix</span><span class="p">)</span>
+
+        <span class="c"># create the plot</span>
+        <span class="n">plot</span> <span class="o">=</span> <span class="n">Plot</span><span class="p">(</span><span class="n">plot_data</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">)</span>
+
+        <span class="n">img_plot</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">img_plot</span><span class="p">(</span><span class="s">&quot;values&quot;</span><span class="p">,</span>
+                                 <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+
+                                 <span class="n">xbounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="p">),</span>
+                                 <span class="n">ybounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="p">),</span>
+                                 <span class="n">colormap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_colormap</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c">#### fix axes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remove_grid_and_axes</span><span class="p">(</span><span class="n">plot</span><span class="p">)</span>
+
+        <span class="n">axis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_increment_one_axis</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_value_axis</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+
+        <span class="n">axis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_increment_one_axis</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_index_axis</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+
+        <span class="c">#### tweak plot attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_title</span><span class="p">(</span><span class="n">plot</span><span class="p">)</span>
+        <span class="n">plot</span><span class="o">.</span><span class="n">aspect_ratio</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="c"># padding [left, right, up, down]</span>
+        <span class="n">plot</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">]</span>
+
+        <span class="c"># create the colorbar, handing in the appropriate range and colormap</span>
+        <span class="n">colormap</span> <span class="o">=</span> <span class="n">img_plot</span><span class="o">.</span><span class="n">color_mapper</span>
+        <span class="n">colorbar</span> <span class="o">=</span> <span class="n">ColorBar</span><span class="p">(</span><span class="n">index_mapper</span><span class="o">=</span><span class="n">LinearMapper</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="n">colormap</span><span class="o">.</span><span class="n">range</span><span class="p">),</span>
+                            <span class="n">color_mapper</span><span class="o">=</span><span class="n">colormap</span><span class="p">,</span>
+                            <span class="n">plot</span><span class="o">=</span><span class="n">img_plot</span><span class="p">,</span>
+                            <span class="n">orientation</span><span class="o">=</span><span class="s">&#39;v&#39;</span><span class="p">,</span>
+                            <span class="n">resizable</span><span class="o">=</span><span class="s">&#39;v&#39;</span><span class="p">,</span>
+                            <span class="n">width</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                            <span class="n">padding</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">colorbar</span><span class="o">.</span><span class="n">padding_top</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">padding_top</span>
+        <span class="n">colorbar</span><span class="o">.</span><span class="n">padding_bottom</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">padding_bottom</span>
+
+        <span class="c"># create a container to position the plot and the colorbar side-by-side</span>
+        <span class="n">container</span> <span class="o">=</span> <span class="n">HPlotContainer</span><span class="p">(</span><span class="n">use_backbuffer</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">container</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">plot</span><span class="p">)</span>
+        <span class="n">container</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">colorbar</span><span class="p">)</span>
+        <span class="n">container</span><span class="o">.</span><span class="n">bgcolor</span> <span class="o">=</span> <span class="mh">0xFFFFFF</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">decorate_plot</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">container</span>
+
+
+    <span class="n">resizable_plot_item</span> <span class="o">=</span> <span class="n">Item</span><span class="p">(</span>
+        <span class="s">&#39;matrix_plot_container&#39;</span><span class="p">,</span>
+        <span class="n">editor</span><span class="o">=</span><span class="n">ComponentEditor</span><span class="p">(),</span>
+        <span class="n">resizable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">show_label</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">600</span><span class="p">,</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mi">400</span>
+        <span class="p">)</span>
+
+
+    <span class="n">traits_plot_item</span> <span class="o">=</span> <span class="n">Item</span><span class="p">(</span>
+        <span class="s">&#39;matrix_plot_container&#39;</span><span class="p">,</span>
+        <span class="n">editor</span><span class="o">=</span><span class="n">ComponentEditor</span><span class="p">(),</span>
+        <span class="n">resizable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">show_label</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">height</span><span class="o">=-</span><span class="mi">200</span><span class="p">,</span>
+        <span class="n">width</span><span class="o">=-</span><span class="mi">200</span>
+        <span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="plot_square_matrix"><a class="viewcode-back" href="../../../pyanno.plots.html#pyanno.plots.matrix_plot.plot_square_matrix">[docs]</a><span class="k">def</span> <span class="nf">plot_square_matrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create and display a Chaco plot of a 2D matrix.</span>
+
+<span class="sd">    The matrix is shown with a color code, and the plot will allow saving the</span>
+<span class="sd">    plot (with Ctrl-S), and copying the matrix data to the clipboard (with</span>
+<span class="sd">    Ctrl-C).</span>
+
+<span class="sd">    It is possible to set a number of keyword arguments:</span>
+<span class="sd">    title -- title for the resulting plot</span>
+<span class="sd">    colormap_low -- lower value for the colormap</span>
+<span class="sd">    colormap_high -- higher value for the colormap</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matrix_view</span> <span class="o">=</span> <span class="n">MatrixPlot</span><span class="p">(</span><span class="n">matrix</span><span class="o">=</span><span class="n">matrix</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">matrix_view</span><span class="o">.</span><span class="n">edit_traits</span><span class="p">(</span><span class="n">view</span><span class="o">=</span><span class="s">&#39;resizable_view&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">matrix_view</span>
+
+
+
+
+<span class="c">#### Testing and debugging ####################################################</span>
+</div>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../pyanno.plots.html#pyanno.plots.matrix_plot.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Entry point for standalone testing/debugging. &quot;&quot;&quot;</span>
+
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">matrix_view</span> <span class="o">=</span> <span class="n">plot_square_matrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Debug plot_matrix&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">matrix_view</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">mv</span> <span class="o">=</span> <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyanno.ui.model_bt_view &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyanno.ui.model_bt_view</h1><div class="highlight"><pre>
+<span class="c"># Copyright (c) 2011, Enthought, Ltd.</span>
+<span class="c"># Author: Pietro Berkes &lt;pberkes@enthought.com&gt;</span>
+<span class="c"># License: Modified BSD license (2-clause)</span>
+
+<span class="kn">from</span> <span class="nn">traits.has_traits</span> <span class="kn">import</span> <span class="n">on_trait_change</span>
+<span class="kn">from</span> <span class="nn">traits.trait_types</span> <span class="kn">import</span> <span class="n">Button</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">CFloat</span><span class="p">,</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Range</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">traitsui.api</span> <span class="kn">import</span> <span class="n">View</span><span class="p">,</span> <span class="n">Item</span><span class="p">,</span> <span class="n">VGroup</span>
+<span class="kn">from</span> <span class="nn">traitsui.editors.range_editor</span> <span class="kn">import</span> <span class="n">RangeEditor</span>
+<span class="kn">from</span> <span class="nn">traitsui.group</span> <span class="kn">import</span> <span class="n">VGrid</span><span class="p">,</span> <span class="n">HGroup</span>
+<span class="kn">from</span> <span class="nn">traitsui.handler</span> <span class="kn">import</span> <span class="n">Handler</span>
+<span class="kn">from</span> <span class="nn">traitsui.include</span> <span class="kn">import</span> <span class="n">Include</span>
+<span class="kn">from</span> <span class="nn">traitsui.item</span> <span class="kn">import</span> <span class="n">Spring</span><span class="p">,</span> <span class="n">UItem</span>
+<span class="kn">from</span> <span class="nn">traitsui.menu</span> <span class="kn">import</span> <span class="n">OKButton</span>
+<span class="kn">from</span> <span class="nn">traits.api</span> <span class="kn">import</span> <span class="n">Instance</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyanno.modelBt</span> <span class="kn">import</span> <span class="n">ModelBt</span>
+
+<span class="kn">from</span> <span class="nn">pyanno.plots.hinton_plot</span> <span class="kn">import</span> <span class="n">HintonDiagramPlot</span>
+<span class="kn">from</span> <span class="nn">pyanno.plots.plots_superclass</span> <span class="kn">import</span> <span class="n">PyannoPlotContainer</span>
+<span class="kn">from</span> <span class="nn">pyanno.plots.theta_plot</span> <span class="kn">import</span> <span class="n">ThetaScatterPlot</span><span class="p">,</span> <span class="n">ThetaDistrPlot</span>
+<span class="kn">from</span> <span class="nn">pyanno.ui.model_view</span> <span class="kn">import</span> <span class="n">PyannoModelView</span><span class="p">,</span> <span class="n">NewModelDialog</span>
+<span class="kn">from</span> <span class="nn">pyanno.ui.parameters_tabular_viewer</span> <span class="kn">import</span> <span class="n">ParametersTabularView</span>
+
+
+<span class="n">MODEL_BT_NAME</span> <span class="o">=</span> <span class="s">&#39;Model B-with-theta&#39;</span>
+
+<div class="viewcode-block" id="NewModelBtDialog"><a class="viewcode-back" href="../../../pyanno.ui.html#pyanno.ui.model_bt_view.NewModelBtDialog">[docs]</a><span class="k">class</span> <span class="nc">NewModelBtDialog</span><span class="p">(</span><span class="n">NewModelDialog</span><span class="p">):</span>
+    <span class="n">model_name</span> <span class="o">=</span> <span class="n">Str</span><span class="p">(</span><span class="n">MODEL_BT_NAME</span><span class="p">)</span>
+    <span class="n">nclasses</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="n">parameters_group</span> <span class="o">=</span> <span class="n">VGroup</span><span class="p">(</span>
+        <span class="n">Item</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;nclasses&#39;</span><span class="p">,</span>
+             <span class="n">editor</span><span class="o">=</span><span class="n">RangeEditor</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s">&#39;spinner&#39;</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">1000</span><span class="p">),</span>
+             <span class="n">label</span><span class="o">=</span><span class="s">&#39;Number of annotation classes:&#39;</span><span class="p">,</span>
+             <span class="n">width</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+        <span class="n">group_theme</span> <span class="o">=</span> <span class="s">&#39;white_theme.png&#39;</span>
+    <span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ModelBtView"><a class="viewcode-back" href="../../../pyanno.ui.html#pyanno.ui.model_bt_view.ModelBtView">[docs]</a><span class="k">class</span> <span class="nc">ModelBtView</span><span class="p">(</span><span class="n">PyannoModelView</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Traits UI Model/View for &#39;ModelBt&#39; objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">model_name</span> <span class="o">=</span> <span class="n">Str</span><span class="p">(</span><span class="n">MODEL_BT_NAME</span><span class="p">)</span>
+    <span class="n">new_model_dialog_class</span> <span class="o">=</span> <span class="n">NewModelBtDialog</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_create_model_from_dialog</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">dialog</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ModelBt</span><span class="o">.</span><span class="n">create_initial_state</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">nclasses</span><span class="p">)</span>
+
+
+    <span class="c">#### Model properties</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">CFloat</span><span class="p">)</span>
+
+
+    <span class="nd">@on_trait_change</span><span class="p">(</span><span class="s">&#39;model,model_updated&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="ModelBtView.update_from_model"><a class="viewcode-back" href="../../../pyanno.ui.html#pyanno.ui.model_bt_view.ModelBtView.update_from_model">[docs]</a>    <span class="k">def</span> <span class="nf">update_from_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update view parameters to the ones in the model.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta_distribution_plot</span> <span class="o">=</span> <span class="n">ThetaDistrPlot</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta_scatter_plot</span> <span class="o">=</span> <span class="n">ThetaScatterPlot</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_theta_view_update</span><span class="p">()</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_gamma_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+
+    <span class="nd">@on_trait_change</span><span class="p">(</span><span class="s">&#39;gamma[]&#39;</span><span class="p">,</span> <span class="n">post_init</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_gamma</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma_hinton</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span>
+
+
+    <span class="c">#### UI-related traits</span>
+
+    <span class="n">gamma_hinton</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">HintonDiagramPlot</span><span class="p">)</span>
+
+    <span class="n">theta_scatter_plot</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">ThetaScatterPlot</span><span class="p">)</span>
+
+    <span class="n">theta_distribution_plot</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">ThetaDistrPlot</span><span class="p">)</span>
+
+    <span class="n">theta_views</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;Distribution plot&#39;</span><span class="p">,</span>
+                       <span class="s">&#39;Scatter plot&#39;</span><span class="p">)</span>
+
+    <span class="n">theta_view</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">PyannoPlotContainer</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_gamma_hinton_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">HintonDiagramPlot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span>
+                                 <span class="n">title</span><span class="o">=</span><span class="s">&#39;Gamma parameters, P(label=k)&#39;</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_theta_view_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta_distribution_plot</span>
+
+
+    <span class="nd">@on_trait_change</span><span class="p">(</span><span class="s">&#39;theta_views&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_theta_view_update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta_views</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;Distr&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">theta_view</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta_distribution_plot</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">theta_view</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta_scatter_plot</span>
+
+
+<div class="viewcode-block" id="ModelBtView.plot_theta_samples"><a class="viewcode-back" href="../../../pyanno.ui.html#pyanno.ui.model_bt_view.ModelBtView.plot_theta_samples">[docs]</a>    <span class="k">def</span> <span class="nf">plot_theta_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta_samples</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta_distribution_plot</span> <span class="o">=</span> <span class="n">ThetaDistrPlot</span><span class="p">(</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span>
+            <span class="n">theta_samples</span> <span class="o">=</span> <span class="n">theta_samples</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta_scatter_plot</span> <span class="o">=</span> <span class="n">ThetaScatterPlot</span><span class="p">(</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta_scatter_plot</span><span class="o">.</span><span class="n">theta_samples</span> <span class="o">=</span> <span class="n">theta_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta_scatter_plot</span><span class="o">.</span><span class="n">theta_samples_valid</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_theta_view_update</span><span class="p">()</span>
+
+
+    <span class="c">#### Actions</span>
+</div>
+    <span class="n">view_gamma</span> <span class="o">=</span> <span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;View Gamma...&#39;</span><span class="p">)</span>
+
+    <span class="n">view_theta</span> <span class="o">=</span> <span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;View Theta...&#39;</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_view_gamma_fired</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create viewer for gamma parameters.&quot;&quot;&quot;</span>
+        <span class="n">gamma_view</span> <span class="o">=</span> <span class="n">ParametersTabularView</span><span class="p">(</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Model B-with-Theta, parameters Gamma&#39;</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">gamma_view</span><span class="o">.</span><span class="n">edit_traits</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">_view_theta_fired</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create viewer for theta parameters.&quot;&quot;&quot;</span>
+        <span class="n">theta_view</span> <span class="o">=</span> <span class="n">ParametersTabularView</span><span class="p">(</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Model B-with-Theta, parameters Theta&#39;</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
+        <span class="p">)</span>
+        <span class="n">theta_view</span><span class="o">.</span><span class="n">edit_traits</span><span class="p">()</span>
+
+
+    <span class="c">#### Traits UI view #########</span>
+
+    <span class="n">parameters_group</span> <span class="o">=</span> <span class="n">VGroup</span><span class="p">(</span>
+        <span class="n">Item</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">),</span>
+
+        <span class="n">HGroup</span><span class="p">(</span>
+            <span class="n">VGroup</span><span class="p">(</span>
+                <span class="n">Spring</span><span class="p">(),</span>
+                <span class="n">Item</span><span class="p">(</span><span class="s">&#39;handler.gamma_hinton&#39;</span><span class="p">,</span>
+                     <span class="n">style</span><span class="o">=</span><span class="s">&#39;custom&#39;</span><span class="p">,</span>
+                     <span class="n">resizable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                     <span class="n">show_label</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                     <span class="n">width</span><span class="o">=</span><span class="mi">480</span>
+                <span class="p">),</span>
+                <span class="n">Spring</span><span class="p">()</span>
+            <span class="p">),</span>
+            <span class="n">Spring</span><span class="p">(),</span>
+            <span class="n">VGroup</span><span class="p">(</span>
+                <span class="n">Spring</span><span class="p">(),</span>
+                <span class="n">Item</span><span class="p">(</span><span class="s">&#39;handler.view_gamma&#39;</span><span class="p">,</span> <span class="n">show_label</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                <span class="n">Spring</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="p">),</span>
+
+        <span class="n">Spring</span><span class="p">(),</span>
+        <span class="n">Item</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">),</span>
+        <span class="n">Spring</span><span class="p">(),</span>
+
+        <span class="n">HGroup</span><span class="p">(</span>
+            <span class="n">VGroup</span><span class="p">(</span>
+                <span class="n">UItem</span><span class="p">(</span><span class="s">&#39;handler.theta_views&#39;</span><span class="p">),</span>
+                <span class="n">UItem</span><span class="p">(</span><span class="s">&#39;handler.theta_view&#39;</span><span class="p">,</span>
+                     <span class="n">style</span><span class="o">=</span><span class="s">&#39;custom&#39;</span><span class="p">,</span>
+                     <span class="n">resizable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                     <span class="n">width</span><span class="o">=</span><span class="mi">480</span>
+                <span class="p">),</span>
+                <span class="n">Spring</span><span class="p">()</span>
+            <span class="p">),</span>
+            <span class="n">Spring</span><span class="p">(),</span>
+            <span class="n">VGroup</span><span class="p">(</span>
+                <span class="n">Spring</span><span class="p">(),</span>
+                <span class="n">UItem</span><span class="p">(</span><span class="s">&#39;handler.view_theta&#39;</span><span class="p">),</span>
+                <span class="n">Spring</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">body</span> <span class="o">=</span> <span class="n">VGroup</span><span class="p">(</span>
+        <span class="n">Include</span><span class="p">(</span><span class="s">&#39;info_group&#39;</span><span class="p">),</span>
+        <span class="n">Include</span><span class="p">(</span><span class="s">&#39;parameters_group&#39;</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">traits_view</span> <span class="o">=</span> <span class="n">View</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">buttons</span><span class="o">=</span><span class="p">[</span><span class="n">OKButton</span><span class="p">],</span> <span class="n">resizable</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+<span class="c">#### Testing and debugging ####################################################</span>
+</div>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../pyanno.ui.html#pyanno.ui.model_bt_view.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Entry point for standalone testing/debugging. &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">pyanno</span> <span class="kn">import</span> <span class="n">ModelBt</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ModelBt</span><span class="o">.</span><span class="n">create_initial_state</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">anno</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate_annotations</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">sample_posterior_over_accuracy</span><span class="p">(</span><span class="n">anno</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span>
+                                                   <span class="n">step_optimization_nsamples</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">model_view</span> <span class="o">=</span> <span class="n">ModelBtView</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">model_view</span><span class="o">.</span><span class="n">plot_theta_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+    <span class="n">model_view</span><span class="o">.</span><span class="n">configure_traits</span><span class="p">(</span><span class="n">view</span><span class="o">=</span><span class="s">&#39;traits_view&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">model_view</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">model</span><span class="p">,</span> <span class="n">model_view</span> <span class="o">=</span> <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
