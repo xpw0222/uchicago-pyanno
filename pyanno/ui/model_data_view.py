@@ -8,9 +8,9 @@ from traits.trait_types import (Any, File, Instance, Button, Enum, Str, Bool,
                                 Float, Event, Int)
 from traits.traits import Property
 from traitsui.editors.range_editor import RangeEditor
-from traitsui.group import HGroup, VGroup
+from traitsui.group import HGroup, VGroup, Tabbed
 from traitsui.handler import ModelView
-from traitsui.item import Item, Label, Spring
+from traitsui.item import Item, Label, Spring, UItem
 from traitsui.menu import OKCancelButtons
 from traitsui.view import View
 from traitsui.message import error
@@ -406,11 +406,9 @@ class ModelDataView(HasTraits):
         model_create_group = (
             VGroup(
                 HGroup(
-                    Item(name='model_name',show_label=False, width=200),
-                    Item(name='new_model', show_label=False, width=100),
-                    Item(name='get_info_on_model', show_label=False,
-                         width=100),
-                    #show_border=True
+                    UItem(name='model_name',width=200),
+                    UItem(name='new_model', width=100),
+                    UItem(name='get_info_on_model', width=100, height=25),
                 ),
                 label = 'Create new model'
             )
@@ -437,9 +435,8 @@ class ModelDataView(HasTraits):
             #Label('Open annotation file:', width=800),
             HGroup(
                 Item('annotations_file', style='simple', label='Open file:',
-                     show_label=True,
-                     width=400),
-                Item('new_annotations', show_label=False)
+                     width=400, height=25),
+                UItem('new_annotations', height=25)
             ),
             label = 'Load/create annotations',
             show_border = False,
@@ -453,7 +450,9 @@ class ModelDataView(HasTraits):
                  width=800
             ),
 
+            Spring(),
             Item('_', visible_when='annotations_are_defined'),
+            Spring(),
 
             Item('annotations_stats_view',
                  style='custom',
@@ -501,7 +500,7 @@ class ModelDataView(HasTraits):
             VGroup(
                 HGroup(
                     model_group,
-                    data_group,
+                    data_group
                 ),
                 model_data_group
             ),

@@ -5,12 +5,13 @@
 from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_numeric import Array
 from traits.trait_types import Instance, Int, ListFloat, Str, Button, Event, File, Any
+from traits.traits import Property
 from traitsui.api import  View, VGroup
 from traitsui.editors.file_editor import FileEditor
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.file_dialog import save_file
-from traitsui.group import HGroup
+from traitsui.group import HGroup, VGrid
 from traitsui.item import Item, Spring, Label
 from traitsui.menu import OKCancelButtons
 from pyanno.annotations import AnnotationsContainer
@@ -142,15 +143,56 @@ class AnnotationsView(HasTraits):
 
 
     ### View definition ###
-    body = VGroup(
-        Item('annotations_info_str',
-             show_label=False,
-             style='readonly',
-        ),
 
-        Spring(),
+    _name = Property
+    def _get__name(self):
+        return self.annotations_container.name
+
+    _nitems = Property
+    def _get__nitems(self):
+        return self.annotations_container.nitems
+
+    _nclasses = Property
+    def _get__nclasses(self):
+        return self.annotations_container.nclasses
+
+    _labels = Property
+    def _get__labels(self):
+        return str(self.annotations_container.labels)
+
+    _nannotators = Property
+    def _get__nannotators(self):
+        return str(self.annotations_container.nannotators)
+
+    info_group = VGroup(
+        Item('_name',
+             label='Annotations name:',
+             style='readonly',
+             padding=0),
+        VGrid(
+            Item('_nclasses',
+                 label='Number of classes:',
+                 style='readonly',
+                 width=10),
+            Item('_labels',
+                 label='Labels:',
+                 style='readonly'),
+            Item('_nannotators',
+                 label='Number of annotators:',
+                 style='readonly', width=10),
+            Item('_nitems',
+                 label='Number of items:',
+                 style='readonly'),
+            padding=0
+        ),
+        padding=0
+    )
+
+
+    body = VGroup(
+        info_group,
+
         Item('_'),
-        Spring(),
 
         HGroup(
             VGroup(
@@ -165,6 +207,7 @@ class AnnotationsView(HasTraits):
             ),
             Spring(),
             VGroup(
+                Spring(),
                 Item('edit_data',
                      enabled_when='annotations_are_defined',
                      show_label=False),
