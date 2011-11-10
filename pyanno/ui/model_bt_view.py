@@ -7,6 +7,7 @@ from traits.trait_types import Button, List, CFloat, Str, Range, Int, Enum, Any
 from traitsui.api import View, Item, VGroup
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.group import VGrid, HGroup
+from traitsui.handler import Handler
 from traitsui.include import Include
 from traitsui.item import Spring, UItem
 from traitsui.menu import OKButton
@@ -23,7 +24,6 @@ from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
 
 MODEL_BT_NAME = 'Model B-with-theta'
 
-
 class NewModelBtDialog(NewModelDialog):
     model_name = Str(MODEL_BT_NAME)
     nclasses = Int(5)
@@ -32,7 +32,8 @@ class NewModelBtDialog(NewModelDialog):
         Item(name='nclasses',
              editor=RangeEditor(mode='spinner', low=3, high=1000),
              label='Number of annotation classes:',
-             width=100)
+             width=100),
+        group_theme = 'white_theme.png'
     )
 
 
@@ -190,7 +191,7 @@ class ModelBtView(PyannoModelView):
 
     body = VGroup(
         Include('info_group'),
-        Include('parameters_group')
+        Include('parameters_group'),
     )
 
     traits_view = View(body, buttons=[OKButton], resizable=True)
