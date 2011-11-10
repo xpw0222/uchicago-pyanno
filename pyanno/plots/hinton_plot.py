@@ -1,9 +1,14 @@
 # Copyright (c) 2011, Enthought, Ltd.
 # Author: Pietro Berkes <pberkes@enthought.com>
 # License: Modified BSD license (2-clause)
+from chaco.color_bar import ColorBar
+from chaco.data_range_1d import DataRange1D
 
 from chaco.data_range_2d import DataRange2D
+from chaco.default_colormaps import Reds
 from chaco.label_axis import LabelAxis
+from chaco.linear_mapper import LinearMapper
+from chaco.plot_containers import HPlotContainer
 from chaco.scales.scales import FixedScale
 from chaco.scales_tick_generator import ScalesTickGenerator
 from chaco.api import ArrayPlotData, Plot
@@ -11,11 +16,12 @@ from chaco.base import n_gon
 
 from enable.component_editor import ComponentEditor
 from traits.has_traits import on_trait_change
-from traits.trait_types import ListFloat
+from traits.trait_types import ListFloat, Any
 from traits.api import Instance
 from traitsui.item import Item
 
 import numpy as np
+from pyanno.plots.plot_tools import get_class_color
 from pyanno.plots.plots_superclass import PyannoPlotContainer
 
 
@@ -35,7 +41,7 @@ class HintonDiagramPlot(PyannoPlotContainer):
 
     #### plot-related traits
     plot_data = Instance(ArrayPlotData)
-    plot = Instance(Plot)
+    plot = Any
 
 
     @on_trait_change('data', post_init=True)
@@ -48,8 +54,8 @@ class HintonDiagramPlot(PyannoPlotContainer):
 
         for idx, center in enumerate(centers):
             # draw square with area proportional to probability mass
-            r = np.sqrt(self.data[idx] / 2.)
-            npoints = n_gon(center=center, r=r, nsides=4, rot_degrees=45)
+            r = np.sqrt(self.data[idx] / (2.*np.pi))
+            npoints = n_gon(center=center, r=r, nsides=40)
             nxarray, nyarray = np.transpose(npoints)
             # save in dataarray
             plot_data.set_data('x%d' % idx, nxarray)
@@ -79,13 +85,18 @@ class HintonDiagramPlot(PyannoPlotContainer):
     def _plot_default(self):
         distr_len = len(self.data)
 
-        # PolygonPlot holding the square of the Hinton diagram
+        # colormap for probability values
+        cm = Reds(DataRange1D(low=0., high=1.))
+        data_color_indices = cm.map_index(np.asarray(self.data))
+
+        # PolygonPlot holding the circles of the Hinton diagram
         polyplot = Plot(self.plot_data)
         for idx in range(distr_len):
-            polyplot.plot(('x%d' % idx, 'y%d' % idx),
+            p = polyplot.plot(('x%d' % idx, 'y%d' % idx),
                           type="polygon",
-                          face_color='black',
-                          edge_color='black')
+                          face_color=cm.color_bands[data_color_indices[idx]],
+                          edge_color='black',
+                          color_mapper=cm)
 
         self._set_title(polyplot)
         self._remove_grid_and_axes(polyplot)
@@ -106,10 +117,29 @@ class HintonDiagramPlot(PyannoPlotContainer):
                                  / (range2d.y_range.high - range2d.y_range.low))
 
         polyplot.border_visible = False
-        polyplot.padding = [15, 15, 25, 25]
+        polyplot.padding = [0, 0, 25, 25]
 
-        self.decorate_plot(polyplot, self.data)
-        return polyplot
+        # add colorbar
+        colorbar = ColorBar(index_mapper = LinearMapper(range=cm.range),
+                            color_mapper = cm,
+                            plot = p[0],
+                            orientation = 'v',
+                            resizable = '',
+                            width = 10,
+                            height = 80)
+        colorbar.padding_bottom = polyplot.padding_bottom
+        colorbar.padding_top = polyplot.padding_top
+        colorbar.padding_left = 40
+        colorbar.padding_right = 0
+
+        # create a container to position the plot and the colorbar side-by-side
+        container = HPlotContainer(use_backbuffer=True, valign='center')
+        container.add(colorbar)
+        container.add(polyplot)
+        container.bgcolor = 0xFFFFFF # light gray: 0xEEEEEE
+
+        self.decorate_plot(container, self.data)
+        return container
 
 
     #### View definition ######################################################
@@ -156,6 +186,7 @@ def main():
     data /= data.sum()
     hinton_view = plot_hinton_diagram(data.tolist(),
                                       title='Debug plot_hinton_diagram')
+    hinton_view.configure_traits()
     return hinton_view
 
 
