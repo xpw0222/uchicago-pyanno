@@ -95,7 +95,7 @@ class MatrixPlot(PyannoPlotContainer):
         container = HPlotContainer(use_backbuffer=True)
         container.add(plot)
         container.add(colorbar)
-        container.bgcolor = 0xEEEEEE
+        container.bgcolor = 0xFFFFFF
 
         self.decorate_plot(container, self.matrix)
         return container

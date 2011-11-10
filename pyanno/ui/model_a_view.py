@@ -144,7 +144,7 @@ class ModelAView(PyannoModelView):
                      style='custom',
                      resizable=False,
                      show_label=False,
-                     width=550
+                     width=480
                 ),
                 Spring()
             ),
@@ -166,7 +166,7 @@ class ModelAView(PyannoModelView):
                 UItem('handler.theta_view',
                      style='custom',
                      resizable=False,
-                     width=550
+                     width=480
                 ),
                 Spring()
             ),

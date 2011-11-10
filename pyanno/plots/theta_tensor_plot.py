@@ -174,7 +174,7 @@ class ThetaTensorPlot(PyannoPlotContainer):
         legend = Legend(component=plot, plots=plots,
                         align="ur", border_padding=10)
         legend.tools.append(LegendTool(legend, drag_button="left"))
-        legend.padding_right = -115
+        legend.padding_right = -110
         plot.overlays.append(legend)
 
         container = VPlotContainer(width=plot.width + 100, halign='left')
@@ -182,7 +182,7 @@ class ThetaTensorPlot(PyannoPlotContainer):
         plot.padding_top = 10
         plot.padding_left = 0
         container.add(plot)
-        container.bgcolor = 0xEEEEEE
+        container.bgcolor = 0xFFFFFF
 
         self.decorate_plot(container, theta)
 

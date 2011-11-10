@@ -449,7 +449,7 @@ class ModelDataView(HasTraits):
                  style='custom',
                  show_label=False,
                  visible_when='annotations_are_defined',
-                 width=800
+                 width=700
             ),
 
             Spring(),
@@ -509,7 +509,7 @@ class ModelDataView(HasTraits):
                 group_theme = 'white_theme.png',
             ),
             title='PyAnno - Models of data annotations by multiple curators',
-            width = 1400,
+            width = 1300,
             height = 850,
             resizable = False
 

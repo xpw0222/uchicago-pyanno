@@ -324,7 +324,7 @@ class ModelBView(PyannoModelView):
                      style='custom',
                      resizable=False,
                      show_label=False,
-                     width=550),
+                     width=510),
                 Spring(),
             ),
             Spring(),
@@ -345,7 +345,7 @@ class ModelBView(PyannoModelView):
                      style='custom',
                      resizable=False,
                      show_label=False,
-                     width = 550),
+                     width = 510),
                 Spring()
             ),
             VGroup(

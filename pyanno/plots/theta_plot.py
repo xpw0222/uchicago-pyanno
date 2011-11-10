@@ -64,7 +64,7 @@ class ThetaScatterPlot(ModelView, PyannoPlotContainer):
     title = Str('Accuracy of annotators (theta)')
 
     theta_plot_data = Instance(ArrayPlotData)
-    theta_plot = Instance(Plot)
+    theta_plot = Any
 
     redraw = Event
 
@@ -158,9 +158,14 @@ class ThetaScatterPlot(ModelView, PyannoPlotContainer):
         theta_plot.padding_left = 40
         theta_plot.aspect_ratio = 1.0
 
-        self.decorate_plot(theta_plot, self.data)
+        container = VPlotContainer()
+        container.add(theta_plot)
+        container.bgcolor = 0xFFFFFF
+
+        self.decorate_plot(container, theta)
         self._set_title(theta_plot)
-        return theta_plot
+
+        return container
 
 
     ### Handle plot data ######################################################
@@ -341,9 +346,13 @@ class ThetaDistrPlot(PyannoPlotContainer):
         legend.tools.append(LegendTool(legend, drag_button="left"))
         plot.overlays.append(legend)
 
-        self.decorate_plot(plot, theta)
+        container = VPlotContainer()
+        container.add(plot)
+        container.bgcolor = 0xFFFFFF
 
-        return plot
+        self.decorate_plot(container, theta)
+
+        return container
 
 
     #### View definition #####################################################
