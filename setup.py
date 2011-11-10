@@ -7,7 +7,7 @@ with open('README') as f:
     LONG_DESCRIPTION = f.read()
 
 setup(name = "pyanno",
-      version = "2.0dev-4",
+      version = "2.0dev-5",
       packages = find_packages(),
 
       author = 'pyAnno developers',
