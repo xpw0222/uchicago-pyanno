@@ -23,6 +23,7 @@ from traitsui.handler import ModelView
 from traitsui.item import Item
 
 import numpy as np
+from pyanno.plots.plot_tools import get_annotator_color
 from pyanno.plots.plots_superclass import PyannoPlotContainer
 
 
@@ -290,7 +291,7 @@ class ThetaDistrPlot(PyannoPlotContainer):
             line_plot = plot.plot(
                 (name, 'line_extr'),
                 line_width = 2.,
-                color = COLOR_PALETTE[k % len(COLOR_PALETTE)],
+                color = get_annotator_color(k),
                 line_style = 'dash',
                 name = name
             )
@@ -315,7 +316,7 @@ class ThetaDistrPlot(PyannoPlotContainer):
                 name = 'theta_{}_distr_'.format(k)
                 plot.plot((name+'x', name+'y'),
                           line_width = 2.,
-                          color = COLOR_PALETTE[k % len(COLOR_PALETTE)]
+                          color = get_annotator_color(k)
                           )
 
         # --- adjust plot appearance

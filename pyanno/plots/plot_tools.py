@@ -11,7 +11,8 @@ from enable.base_tool import BaseTool
 from traits.has_traits import HasTraits
 from traits.trait_types import Int, Any, File
 from pyface.api import clipboard
-from enthought.etsconfig.api import ETSConfig
+from chaco.default_colors import palette11 as CLASS_COLORS
+from chaco.default_colors import cbrewer as ANNOTATOR_COLORS
 
 from traitsui.editors.file_editor import FileEditor
 from traitsui.group import VGroup
@@ -21,6 +22,13 @@ from traitsui.view import View
 
 import os.path
 import numpy as np
+
+
+def get_annotator_color(idx):
+    return list(ANNOTATOR_COLORS[idx % len(ANNOTATOR_COLORS)])
+
+def get_class_color(idx):
+    return list(CLASS_COLORS[idx % len(CLASS_COLORS)])
 
 
 # NOTE this code can be deleted after the next release of enthought.enable

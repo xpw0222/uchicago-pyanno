@@ -12,13 +12,13 @@ from chaco.plot_containers import HPlotContainer, VPlotContainer
 from chaco.scales.scales import FixedScale
 from chaco.scales_tick_generator import ScalesTickGenerator
 from chaco.tools.legend_tool import LegendTool
-from chaco.default_colors import palette11 as COLOR_PALETTE
 
 from enable.component_editor import ComponentEditor
 
 from traits.trait_numeric import Array
 from traits.trait_types import Instance, Str, Range, Button, Int, Any
 from traitsui.item import Item
+from pyanno.plots.plot_tools import get_class_color
 
 from pyanno.plots.plots_superclass import PyannoPlotContainer
 
@@ -80,7 +80,7 @@ class ThetaTensorPlot(PyannoPlotContainer):
                                                     dtype=float))
 
             # make color lighter and more transparent
-            color = list(COLOR_PALETTE[k % len(COLOR_PALETTE)])
+            color = get_class_color(k)
             for i in range(3):
                 color[i] = min(1.0, sigmoid(color[i]*5.))
             color[-1] = 0.3
@@ -98,7 +98,7 @@ class ThetaTensorPlot(PyannoPlotContainer):
             plot_data.set_data(avg_name, avg)
             plot.plot(
                 ('classes', avg_name),
-                color = COLOR_PALETTE[k % len(COLOR_PALETTE)],
+                color = get_class_color(k),
                 line_style = 'dash'
             )
 
@@ -119,7 +119,7 @@ class ThetaTensorPlot(PyannoPlotContainer):
             line_plot = plot.plot(
                 ['classes', name],
                 line_width=2.,
-                color=COLOR_PALETTE[k % len(COLOR_PALETTE)],
+                color = get_class_color(k),
                 name=name
             )
             plots[name] = line_plot
