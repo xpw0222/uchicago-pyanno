@@ -327,7 +327,7 @@ class ThetaDistrPlot(PyannoPlotContainer):
             y_high = max_hist
 
         plot.range2d = DataRange2D(
-            low  = (max(x_low-0.2, 0.), y_low),
+            low  = (max(x_low-0.05, 0.), y_low),
             high = (min(x_high*1.1, 1.), min(y_high*1.1, 1.))
         )
 
