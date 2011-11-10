@@ -5,10 +5,10 @@
 """Defines super class for all traits UI views of annotations models."""
 from traits.has_traits import HasTraits
 from traits.trait_types import Event, Str, Instance
-from traitsui.group import Group, VGroup
+from traitsui.group import Group, VGroup, VGrid
 from traitsui.handler import ModelView
 from traitsui.include import Include
-from traitsui.item import Item
+from traitsui.item import Item, Label
 from traitsui.menu import OKCancelButtons
 from traitsui.view import View
 
@@ -72,10 +72,16 @@ class PyannoModelView(ModelView):
         Item('model_name',
              label='Model name:',
              style='readonly'),
-        Item('model.nclasses',
-             label='Number of labels',
-             style='readonly'),
-        Item('model.nannotators',
-             label='Number of annotators',
-             style='readonly'),
+        VGrid(
+            Item('model.nclasses',
+                 label='Number of classes:',
+                 style='readonly'),
+            Label(' '),
+            Item('model.nannotators',
+                 label='Number of annotators:',
+                 style='readonly'),
+            Label(' '),
+            padding=0
+        ),
+        padding=0
     )

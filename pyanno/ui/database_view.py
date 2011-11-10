@@ -195,7 +195,8 @@ class DatabaseView(HasTraits):
                     Item('close_view',
                          show_label=False,
                          width=100)
-                )
+                ),
+                group_theme = 'white_theme.png'
             ),
             title     = 'pyAnno results database',
             width     = 800,

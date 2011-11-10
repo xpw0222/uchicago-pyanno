@@ -5,12 +5,13 @@
 from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_numeric import Array
 from traits.trait_types import Instance, Int, ListFloat, Str, Button, Event, File, Any
+from traits.traits import Property
 from traitsui.api import  View, VGroup
 from traitsui.editors.file_editor import FileEditor
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.file_dialog import save_file
-from traitsui.group import HGroup
+from traitsui.group import HGroup, VGrid
 from traitsui.item import Item, Spring, Label
 from traitsui.menu import OKCancelButtons
 from pyanno.annotations import AnnotationsContainer
@@ -23,24 +24,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-ANNOTATIONS_INFO_STR = """Annotations name: {}
-Number of annotations: {}
-Number of annotators: {}
-Number of classes: {}
-Labels: {}"""
-
-
 class DataView(HasTraits):
     data = Array(dtype=object)
 
     def traits_view(self):
         return View(
             VGroup(
-                #HGroup(
-                #    Spring(),
-                #    Label('Annotators'),
-                #    Spring()
-                #),
                 Item('data',
                     editor=TabularEditor
                         (
@@ -48,7 +37,8 @@ class DataView(HasTraits):
                                                format='%s',
                                                show_index=True)),
                     show_label=False,
-                    width=600)
+                    width=600),
+                group_theme = 'white_theme.png'
             ),
             title='Annotations',
             width=500,
@@ -97,20 +87,6 @@ class AnnotationsView(HasTraits):
     # event raised when annotations are updated
     annotations_updated = Event
 
-    ## annotations info string definition
-    annotations_info_str = Str
-
-    @on_trait_change('annotations_container,annotations_updated')
-    def _update_annotations_info_str(self):
-        valid = is_valid(self.annotations_container)
-        classes = str(self.annotations_container.labels)
-        self.annotations_info_str = ANNOTATIONS_INFO_STR.format(
-            self.annotations_container.name,
-            self.annotations_container.nitems,
-            self.annotations_container.nannotators,
-            self.annotations_container.nclasses,
-            classes)
-
     ## frequency plot definition
     frequency_plot = Instance(HintonDiagramPlot)
 
@@ -142,15 +118,56 @@ class AnnotationsView(HasTraits):
 
 
     ### View definition ###
-    body = VGroup(
-        Item('annotations_info_str',
-             show_label=False,
-             style='readonly',
-        ),
 
-        Spring(),
+    _name = Property
+    def _get__name(self):
+        return self.annotations_container.name
+
+    _nitems = Property
+    def _get__nitems(self):
+        return self.annotations_container.nitems
+
+    _nclasses = Property
+    def _get__nclasses(self):
+        return self.annotations_container.nclasses
+
+    _labels = Property
+    def _get__labels(self):
+        return str(self.annotations_container.labels)
+
+    _nannotators = Property
+    def _get__nannotators(self):
+        return str(self.annotations_container.nannotators)
+
+    info_group = VGroup(
+        Item('_name',
+             label='Annotations name:',
+             style='readonly',
+             padding=0),
+        VGrid(
+            Item('_nclasses',
+                 label='Number of classes:',
+                 style='readonly',
+                 width=10),
+            Item('_labels',
+                 label='Labels:',
+                 style='readonly'),
+            Item('_nannotators',
+                 label='Number of annotators:',
+                 style='readonly', width=10),
+            Item('_nitems',
+                 label='Number of items:',
+                 style='readonly'),
+            padding=0
+        ),
+        padding=0
+    )
+
+
+    body = VGroup(
+        info_group,
+
         Item('_'),
-        Spring(),
 
         HGroup(
             VGroup(
@@ -165,6 +182,7 @@ class AnnotationsView(HasTraits):
             ),
             Spring(),
             VGroup(
+                Spring(),
                 Item('edit_data',
                      enabled_when='annotations_are_defined',
                      show_label=False),
@@ -204,7 +222,8 @@ class SaveAnnotationsDialog(HasTraits):
              editor=FileEditor(allow_dir=False,
                                dialog_style='save',
                                entries=0),
-             style='simple'),
+             style='simple',
+             item_theme='white_theme.png'),
         width = 400,
         resizable = True,
         buttons = ['OK', 'Cancel']
@@ -242,7 +261,8 @@ class CreateNewAnnotationsDialog(HasTraits):
                     'nitems',
                     editor=RangeEditor(mode='spinner', low=2, high=1000000),
                     label='Number of items'
-                )
+                ),
+                group_theme = 'white_theme.png'
             ),
             buttons = ['OK', 'Cancel']
         )

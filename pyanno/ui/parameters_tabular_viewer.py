@@ -36,7 +36,9 @@ class ParametersTabularView(HasTraits):
                                                   show_index=False),
                            editable=False
                        ),
-                       show_label=False)),
+                       show_label=False),
+                  group_theme = 'white_theme.png',
+            ),
             title     = self.title,
             width     = self.width,
             height    = self.height,

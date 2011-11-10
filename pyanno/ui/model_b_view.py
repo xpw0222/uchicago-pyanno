@@ -42,7 +42,8 @@ class NewModelBDialog(NewModelDialog):
         Item(name='nannotators',
              editor=RangeEditor(mode='spinner', low=2, high=1000),
              label='Number of annotators:',
-             width=100)
+             width=100),
+        group_theme = 'white_theme.png'
     )
 
 
@@ -87,7 +88,7 @@ class ModelB_MultipleThetaView(HasTraits):
                     Item('theta_j_view',
                          style='custom',
                          show_label=False)
-                )
+                ),
             ),
             width = 500,
             height = 400,
@@ -196,6 +197,7 @@ class ModelB_PriorView(HasTraits):
                       height = height,
                       padding = 10
                 ),
+                group_theme = 'white_theme.png'
             ),
             width = min(width + margin, 800),
             height = min(height + 100 + margin, 800),
@@ -322,7 +324,7 @@ class ModelBView(PyannoModelView):
                      style='custom',
                      resizable=False,
                      show_label=False,
-                     width=550),
+                     width=510),
                 Spring(),
             ),
             Spring(),
@@ -343,7 +345,7 @@ class ModelBView(PyannoModelView):
                      style='custom',
                      resizable=False,
                      show_label=False,
-                     width = 550),
+                     width = 510),
                 Spring()
             ),
             VGroup(

@@ -33,6 +33,7 @@ class NewModelADialog(NewModelDialog):
              editor=RangeEditor(mode='spinner', low=3, high=1000),
              label='Number of annotation classes:',
              width=100),
+        group_theme = 'white_theme.png'
     )
 
 
@@ -143,7 +144,7 @@ class ModelAView(PyannoModelView):
                      style='custom',
                      resizable=False,
                      show_label=False,
-                     width=550
+                     width=480
                 ),
                 Spring()
             ),
@@ -165,7 +166,7 @@ class ModelAView(PyannoModelView):
                 UItem('handler.theta_view',
                      style='custom',
                      resizable=False,
-                     width=550
+                     width=480
                 ),
                 Spring()
             ),
