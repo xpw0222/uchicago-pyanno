@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyanno.plots.plot_tools &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyanno.plots.plot_tools</h1><div class="highlight"><pre>
+<span class="c"># Copyright (c) 2011, Enthought, Ltd.</span>
+<span class="c"># Author: Pietro Berkes &lt;pberkes@enthought.com&gt;</span>
+<span class="c"># License: Modified BSD license (2-clause)</span>
+
+<span class="sd">&quot;&quot;&quot;Plot tools to save plots and copy their data inside to the clipboard.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">chaco.plot_graphics_context</span> <span class="kn">import</span> <span class="n">PlotGraphicsContext</span>
+<span class="kn">from</span> <span class="nn">chaco.tools.save_tool</span> <span class="kn">import</span> <span class="n">SaveTool</span>
+<span class="kn">from</span> <span class="nn">enable.base_tool</span> <span class="kn">import</span> <span class="n">BaseTool</span>
+<span class="kn">from</span> <span class="nn">traits.has_traits</span> <span class="kn">import</span> <span class="n">HasTraits</span>
+<span class="kn">from</span> <span class="nn">traits.trait_types</span> <span class="kn">import</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">File</span>
+<span class="kn">from</span> <span class="nn">pyface.api</span> <span class="kn">import</span> <span class="n">clipboard</span>
+<span class="kn">from</span> <span class="nn">enthought.etsconfig.api</span> <span class="kn">import</span> <span class="n">ETSConfig</span>
+
+<span class="kn">from</span> <span class="nn">traitsui.editors.file_editor</span> <span class="kn">import</span> <span class="n">FileEditor</span>
+<span class="kn">from</span> <span class="nn">traitsui.group</span> <span class="kn">import</span> <span class="n">VGroup</span>
+<span class="kn">from</span> <span class="nn">traitsui.item</span> <span class="kn">import</span> <span class="n">Item</span>
+<span class="kn">from</span> <span class="nn">traitsui.menu</span> <span class="kn">import</span> <span class="n">OKCancelButtons</span>
+<span class="kn">from</span> <span class="nn">traitsui.view</span> <span class="kn">import</span> <span class="n">View</span>
+
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+
+<span class="c"># NOTE this code can be deleted after the next release of enthought.enable</span>
+<span class="c"># NOTE current version is enable.__version__ == &#39;4.0.1&#39;</span>
+<span class="k">def</span> <span class="nf">_key_event_repackaging</span><span class="p">(</span><span class="n">key_event</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Workaround for Issue #37 in enable.</span>
+
+<span class="sd">    Remap keys in wx and qt to have a consistent behavior across platforms</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">wx</span>
+    <span class="kn">from</span> <span class="nn">pyface.qt</span> <span class="kn">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span>
+    <span class="kn">import</span> <span class="nn">enable.wx.constants</span> <span class="kn">as</span> <span class="nn">wx_constants</span>
+    <span class="kn">from</span> <span class="nn">enable.events</span> <span class="kn">import</span> <span class="n">KeyEvent</span>
+
+    <span class="k">def</span> <span class="nf">wx_key_event_repackaging</span><span class="p">(</span><span class="n">key_event</span><span class="p">,</span> <span class="n">gui_event</span><span class="p">):</span>
+        <span class="n">key_code</span> <span class="o">=</span> <span class="n">gui_event</span><span class="o">.</span><span class="n">GetKeyCode</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">key_code</span> <span class="ow">in</span> <span class="n">wx_constants</span><span class="o">.</span><span class="n">KEY_MAP</span><span class="p">:</span>
+            <span class="n">character</span> <span class="o">=</span> <span class="n">wx_constants</span><span class="o">.</span><span class="n">KEY_MAP</span><span class="p">[</span><span class="n">key_code</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">key_code</span> <span class="o">==</span> <span class="n">wx</span><span class="o">.</span><span class="n">WXK_COMMAND</span><span class="p">:</span>
+            <span class="n">character</span> <span class="o">=</span> <span class="s">&#39;Menu&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">character</span> <span class="o">=</span> <span class="nb">unichr</span><span class="p">(</span><span class="n">key_code</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">KeyEvent</span><span class="p">(</span><span class="n">event_type</span><span class="o">=</span><span class="n">key_event</span><span class="o">.</span><span class="n">event_type</span><span class="p">,</span>
+                        <span class="n">character</span><span class="o">=</span><span class="n">character</span><span class="p">,</span>
+                        <span class="n">x</span><span class="o">=</span><span class="n">key_event</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">key_event</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                        <span class="n">control_down</span><span class="o">=</span><span class="n">gui_event</span><span class="o">.</span><span class="n">ControlDown</span><span class="p">(),</span>
+                        <span class="n">shift_down</span><span class="o">=</span><span class="n">gui_event</span><span class="o">.</span><span class="n">ShiftDown</span><span class="p">(),</span>
+                        <span class="n">meta_down</span><span class="o">=</span><span class="n">gui_event</span><span class="o">.</span><span class="n">MetaDown</span><span class="p">(),</span>
+                        <span class="n">event</span><span class="o">=</span><span class="n">gui_event</span><span class="p">,</span>
+                        <span class="n">window</span><span class="o">=</span><span class="n">key_event</span><span class="o">.</span><span class="n">window</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">qt_new_behavior_key_event</span><span class="p">(</span><span class="n">key_event</span><span class="p">,</span> <span class="n">gui_event</span><span class="p">):</span>
+        <span class="n">modifiers</span> <span class="o">=</span> <span class="n">gui_event</span><span class="o">.</span><span class="n">modifiers</span><span class="p">()</span>
+
+        <span class="n">character</span> <span class="o">=</span> <span class="n">key_event</span><span class="o">.</span><span class="n">character</span>
+        <span class="kn">import</span> <span class="nn">sys</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s">&#39;darwin&#39;</span><span class="p">:</span>
+            <span class="c"># manually switch Meta and Control for Mac OS X</span>
+            <span class="n">key_code</span> <span class="o">=</span> <span class="n">gui_event</span><span class="o">.</span><span class="n">key</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">key_code</span> <span class="o">==</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Key_Control</span><span class="p">:</span> <span class="n">character</span> <span class="o">=</span> <span class="s">&#39;Menu&#39;</span>
+            <span class="k">elif</span> <span class="n">key_code</span> <span class="o">==</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Key_Meta</span><span class="p">:</span> <span class="n">character</span> <span class="o">=</span> <span class="s">&#39;Control&#39;</span>
+            <span class="n">control_down</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">modifiers</span> <span class="o">&amp;</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">MetaModifier</span><span class="p">)</span>
+            <span class="n">meta_down</span> <span class="o">=</span>  <span class="nb">bool</span><span class="p">(</span><span class="n">modifiers</span> <span class="o">&amp;</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">ControlModifier</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">control_down</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">modifiers</span> <span class="o">&amp;</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">ControlModifier</span><span class="p">)</span>
+            <span class="n">meta_down</span> <span class="o">=</span>  <span class="nb">bool</span><span class="p">(</span><span class="n">modifiers</span> <span class="o">&amp;</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">MetaModifier</span><span class="p">)</span>
+
+        <span class="c"># re-package old event according to new criteria</span>
+        <span class="k">return</span> <span class="n">KeyEvent</span><span class="p">(</span><span class="n">event_type</span><span class="o">=</span><span class="n">key_event</span><span class="o">.</span><span class="n">event_type</span><span class="p">,</span>
+                        <span class="n">character</span><span class="o">=</span><span class="n">character</span><span class="p">,</span>
+                        <span class="n">x</span><span class="o">=</span><span class="n">key_event</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">key_event</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                        <span class="n">alt_down</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">modifiers</span> <span class="o">&amp;</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AltModifier</span><span class="p">),</span>
+                        <span class="n">shift_down</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">modifiers</span> <span class="o">&amp;</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">ShiftModifier</span><span class="p">),</span>
+                        <span class="n">control_down</span><span class="o">=</span><span class="n">control_down</span><span class="p">,</span>
+                        <span class="n">meta_down</span><span class="o">=</span><span class="n">meta_down</span><span class="p">,</span>
+                        <span class="n">event</span><span class="o">=</span><span class="n">gui_event</span><span class="p">,</span>
+                        <span class="n">window</span><span class="o">=</span><span class="n">key_event</span><span class="o">.</span><span class="n">window</span><span class="p">)</span>
+
+
+    <span class="n">gui_event</span> <span class="o">=</span> <span class="n">key_event</span><span class="o">.</span><span class="n">event</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gui_event</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">_core</span><span class="o">.</span><span class="n">KeyEvent</span><span class="p">):</span>
+        <span class="n">key_event</span> <span class="o">=</span> <span class="n">wx_key_event_repackaging</span><span class="p">(</span><span class="n">key_event</span><span class="p">,</span> <span class="n">gui_event</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gui_event</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QKeyEvent</span><span class="p">):</span>
+        <span class="n">key_event</span> <span class="o">=</span> <span class="n">qt_new_behavior_key_event</span><span class="p">(</span><span class="n">key_event</span><span class="p">,</span> <span class="n">gui_event</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">key_event</span>
+
+
+<span class="k">def</span> <span class="nf">_is_control_down</span><span class="p">(</span><span class="n">key_event</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return true if the Ctrl or Cmd key is down.&quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">key_event</span><span class="o">.</span><span class="n">control_down</span> <span class="ow">or</span> <span class="n">key_event</span><span class="o">.</span><span class="n">meta_down</span>
+
+
+<div class="viewcode-block" id="SaveFileDialog"><a class="viewcode-back" href="../../../pyanno.plots.html#pyanno.plots.plot_tools.SaveFileDialog">[docs]</a><span class="k">class</span> <span class="nc">SaveFileDialog</span><span class="p">(</span><span class="n">HasTraits</span><span class="p">):</span>
+    <span class="n">save_file</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">dpi</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+
+    <span class="n">traits_view</span> <span class="o">=</span> <span class="n">View</span><span class="p">(</span>
+        <span class="n">VGroup</span><span class="p">(</span>
+            <span class="n">Item</span><span class="p">(</span><span class="s">&#39;save_file&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Save to:&#39;</span><span class="p">,</span>
+                 <span class="n">editor</span><span class="o">=</span><span class="n">FileEditor</span><span class="p">(</span><span class="n">allow_dir</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                   <span class="n">dialog_style</span><span class="o">=</span><span class="s">&#39;save&#39;</span><span class="p">,</span>
+                                   <span class="n">entries</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                 <span class="n">style</span><span class="o">=</span><span class="s">&#39;simple&#39;</span><span class="p">),</span>
+            <span class="n">Item</span><span class="p">(</span><span class="s">&#39;dpi&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Resolution (dpi):&#39;</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Save plot&#39;</span><span class="p">,</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">400</span><span class="p">,</span>
+        <span class="n">resizable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">buttons</span><span class="o">=</span><span class="n">OKCancelButtons</span>
+    <span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="SaveToolPlus"><a class="viewcode-back" href="../../../pyanno.plots.html#pyanno.plots.plot_tools.SaveToolPlus">[docs]</a><span class="k">class</span> <span class="nc">SaveToolPlus</span><span class="p">(</span><span class="n">SaveTool</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Subclass of SaveTool that requests a filename and dpi before saving.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SaveToolPlus.normal_key_pressed"><a class="viewcode-back" href="../../../pyanno.plots.html#pyanno.plots.plot_tools.SaveToolPlus.normal_key_pressed">[docs]</a>    <span class="k">def</span> <span class="nf">normal_key_pressed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Handles a key-release when the tool is in the &#39;normal&#39; state.</span>
+
+<span class="sd">        Saves an image of the plot when the user presses Ctrl-S.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">component</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+
+        <span class="c"># workaround for differences in Mac OS X, wx, and qt</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">_key_event_repackaging</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">character</span> <span class="o">==</span> <span class="s">&quot;s&quot;</span> <span class="ow">and</span> <span class="n">_is_control_down</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">SaveFileDialog</span><span class="p">()</span>
+            <span class="n">dialog</span><span class="o">.</span><span class="n">edit_traits</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;modal&#39;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">dialog</span><span class="o">.</span><span class="n">save_file</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;.pdf&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_save_pdf</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_save_raster</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="n">dialog</span><span class="o">.</span><span class="n">dpi</span><span class="p">)</span>
+
+            <span class="n">event</span><span class="o">.</span><span class="n">handled</span> <span class="o">=</span> <span class="bp">True</span>
+</div>
+    <span class="k">def</span> <span class="nf">_save_raster</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Saves an image of the component.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="o">.</span><span class="n">do_layout</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="c"># NOTE saving only works properly when dpi is a multiple of 72</span>
+        <span class="n">gc</span> <span class="o">=</span> <span class="n">PlotGraphicsContext</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="o">.</span><span class="n">outer_width</span><span class="p">),</span>
+                                  <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="o">.</span><span class="n">outer_height</span><span class="p">)),</span>
+                                 <span class="n">dpi</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">dpi</span> <span class="o">/</span> <span class="mf">72.0</span><span class="p">)</span><span class="o">*</span><span class="mi">72</span><span class="p">)</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">render_component</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="p">)</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CopyDataToClipboardTool"><a class="viewcode-back" href="../../../pyanno.plots.html#pyanno.plots.plot_tools.CopyDataToClipboardTool">[docs]</a><span class="k">class</span> <span class="nc">CopyDataToClipboardTool</span><span class="p">(</span><span class="n">BaseTool</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tool that copies the plot&#39;s data to the clipboard.&quot;&quot;&quot;</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">Any</span>
+
+<div class="viewcode-block" id="CopyDataToClipboardTool.normal_key_pressed"><a class="viewcode-back" href="../../../pyanno.plots.html#pyanno.plots.plot_tools.CopyDataToClipboardTool.normal_key_pressed">[docs]</a>    <span class="k">def</span> <span class="nf">normal_key_pressed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Handles a key-release when the tool is in the &#39;normal&#39; state.</span>
+
+<span class="sd">        Copy `data` to the keyboard when the user presses Ctrl-C.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">component</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+
+        <span class="c"># workaround for differences in Mac OS X, wx, and qt</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">_key_event_repackaging</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">character</span> <span class="o">==</span> <span class="s">&quot;c&quot;</span>  <span class="ow">and</span> <span class="n">_is_control_down</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+            <span class="c"># save numpy print options</span>
+            <span class="n">old_printoptions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">get_printoptions</span><span class="p">()</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">infstr</span><span class="o">=</span><span class="s">&#39;numpy.inf&#39;</span><span class="p">,</span> <span class="n">nanstr</span><span class="o">=</span><span class="s">&#39;numpy.nan&#39;</span><span class="p">,</span>
+                                <span class="n">suppress</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span>
+                                <span class="n">precision</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+
+            <span class="c"># copy data to clipboard</span>
+            <span class="n">clipboard</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+            <span class="c"># reset numpy print options</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="o">**</span><span class="n">old_printoptions</span><span class="p">)</span>
+
+            <span class="n">event</span><span class="o">.</span><span class="n">handled</span> <span class="o">=</span> <span class="bp">True</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

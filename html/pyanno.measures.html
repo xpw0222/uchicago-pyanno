@@ -1,0 +1,381 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>measures Package &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="index.html" />
+    <link rel="up" title="pyanno Package" href="pyanno.html" />
+    <link rel="next" title="plots Package" href="pyanno.plots.html" />
+    <link rel="prev" title="pyanno Package" href="pyanno.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyanno.plots.html" title="plots Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyanno.html" title="pyanno Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="modules.html" >Project Modules</a> &raquo;</li>
+          <li><a href="pyanno.html" accesskey="U">pyanno Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="measures-package">
+<h1>measures Package<a class="headerlink" href="#measures-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">measures</span></tt> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-pyanno.measures"></span><p>Define standard reliability and agreement measures.</p>
+</div>
+<div class="section" id="module-pyanno.measures.agreement">
+<span id="agreement-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">agreement</span></tt> Module<a class="headerlink" href="#module-pyanno.measures.agreement" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pyanno.measures.agreement.cohens_kappa">
+<tt class="descclassname">pyanno.measures.agreement.</tt><tt class="descname">cohens_kappa</tt><big>(</big><em>annotations1</em>, <em>annotations2</em>, <em>nclasses=None</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/agreement.html#cohens_kappa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.agreement.cohens_kappa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Cohen&#8217;s kappa for two annotators.</p>
+<p>Assumes that the annotators draw annotations at random with different but
+constant frequencies.</p>
+<p>Cohen, Jacob (1960). A coefficient of agreement for nominal scales.
+Educational and Psychological Measurement, 20, 37&#8211;46.</p>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Cohen%27s_kappa">http://en.wikipedia.org/wiki/Cohen%27s_kappa</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.agreement.cohens_weighted_kappa">
+<tt class="descclassname">pyanno.measures.agreement.</tt><tt class="descname">cohens_weighted_kappa</tt><big>(</big><em>annotations1</em>, <em>annotations2</em>, <em>weights_func=&lt;function diagonal_distance at 0x6656cb0&gt;</em>, <em>nclasses=None</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/agreement.html#cohens_weighted_kappa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.agreement.cohens_weighted_kappa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Cohen&#8217;s weighted kappa for two annotators.</p>
+<p>Assumes that the annotators draw annotations at random with different but
+constant frequencies. Disagreements are weighted by a weights
+w_ij representing the &#8220;seriousness&#8221; of disagreement. For ordered codes,
+it is often set to the distance from the diagonal, i.e. w_ij = <a href="#id2"><span class="problematic" id="id3">|i-j|</span></a> .</p>
+<p>When w_ij is 0.0 on the diagonal and 1.0 elsewhere,
+Cohen&#8217;s weighted kappa is equivalent to Cohen&#8217;s kappa.</p>
+<p>Input:</p>
+<dl class="docutils">
+<dt>annotations1, annotations2 &#8211; array of annotations; classes are</dt>
+<dd>indicated by non-negative integers, -1 indicates missing values</dd>
+<dt>weights_func &#8211; weights function that receives two matrices of classes</dt>
+<dd>i, j and returns the matrix of weights between them.
+Default is <cite>diagonal_distance</cite></dd>
+<dt>nclasses &#8211; number of classes in the annotations. If None, <cite>nclasses</cite> is</dt>
+<dd>inferred from the values in the annotations</dd>
+</dl>
+<p>Output:</p>
+<p>kappa &#8211; Cohens&#8217; weighted kappa</p>
+<p>See also:
+<cite>diagonal_distance</cite>, <cite>binary_distance</cite>, <cite>cohens_kappa</cite></p>
+<p>Cohen 1968
+<a class="reference external" href="http://en.wikipedia.org/wiki/Cohen%27s_kappa">http://en.wikipedia.org/wiki/Cohen%27s_kappa</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.agreement.fleiss_kappa">
+<tt class="descclassname">pyanno.measures.agreement.</tt><tt class="descname">fleiss_kappa</tt><big>(</big><em>annotations</em>, <em>nclasses=None</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/agreement.html#fleiss_kappa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.agreement.fleiss_kappa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Fleiss&#8217; kappa.</p>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Fleiss%27_kappa">http://en.wikipedia.org/wiki/Fleiss%27_kappa</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.agreement.krippendorffs_alpha">
+<tt class="descclassname">pyanno.measures.agreement.</tt><tt class="descname">krippendorffs_alpha</tt><big>(</big><em>annotations</em>, <em>metric_func=&lt;function diagonal_distance at 0x6656cb0&gt;</em>, <em>nclasses=None</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/agreement.html#krippendorffs_alpha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.agreement.krippendorffs_alpha" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Krippendorff&#8217;s alpha.</p>
+<p>Input:</p>
+<dl class="docutils">
+<dt>annotations &#8211; array of annotations; classes are</dt>
+<dd>indicated by non-negative integers, -1 indicates missing values</dd>
+<dt>weights_func &#8211; weights function that receives two matrices of classes</dt>
+<dd>i, j and returns the matrix of weights between them.
+Default is <cite>diagonal_distance</cite></dd>
+<dt>nclasses &#8211; number of classes in the annotations. If None, <cite>nclasses</cite> is</dt>
+<dd>inferred from the values in the annotations</dd>
+</dl>
+<p>Output:</p>
+<p>alpha &#8211; Krippendorff&#8217;s alpha</p>
+<p>See also:
+<cite>diagonal_distance</cite>, <cite>binary_distance</cite></p>
+<p>Klaus Krippendorff (2004). Content Analysis, an Introduction to Its
+Methodology, 2nd Edition. Thousand Oaks, CA: Sage Publications.
+In particular, Chapter 11, pages 219&#8211;250.</p>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha">http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.agreement.scotts_pi">
+<tt class="descclassname">pyanno.measures.agreement.</tt><tt class="descname">scotts_pi</tt><big>(</big><em>annotations1</em>, <em>annotations2</em>, <em>nclasses=None</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/agreement.html#scotts_pi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.agreement.scotts_pi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Scott&#8217;s pi statistic for two annotators.</p>
+<p>Assumes that the annotators draw random annotations with the same
+frequency as the combined observed annotations.</p>
+<p>Allows for missing values.</p>
+<p>Scott 1955
+<a class="reference external" href="http://en.wikipedia.org/wiki/Scott%27s_Pi">http://en.wikipedia.org/wiki/Scott%27s_Pi</a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyanno.measures.covariation">
+<span id="covariation-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">covariation</span></tt> Module<a class="headerlink" href="#module-pyanno.measures.covariation" title="Permalink to this headline">¶</a></h2>
+<p>Standard reliability and covariation measures.</p>
+<dl class="function">
+<dt id="pyanno.measures.covariation.cronbachs_alpha">
+<tt class="descclassname">pyanno.measures.covariation.</tt><tt class="descname">cronbachs_alpha</tt><big>(</big><em>annotations</em>, <em>nclasses=None</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/covariation.html#cronbachs_alpha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.covariation.cronbachs_alpha" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Cronbach&#8217;s alpha.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.covariation.pearsons_rho">
+<tt class="descclassname">pyanno.measures.covariation.</tt><tt class="descname">pearsons_rho</tt><big>(</big><em>annotations1</em>, <em>annotations2</em>, <em>nclasses=None</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/covariation.html#pearsons_rho"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.covariation.pearsons_rho" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Pearson&#8217;s product-moment correlation coefficient.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.covariation.spearmans_rho">
+<tt class="descclassname">pyanno.measures.covariation.</tt><tt class="descname">spearmans_rho</tt><big>(</big><em>annotations1</em>, <em>annotations2</em>, <em>nclasses=None</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/covariation.html#spearmans_rho"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.covariation.spearmans_rho" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Spearman&#8217;s rank correlation coefficient.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyanno.measures.distances">
+<span id="distances-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">distances</span></tt> Module<a class="headerlink" href="#module-pyanno.measures.distances" title="Permalink to this headline">¶</a></h2>
+<p>Definition of distance measures between classes.</p>
+<dl class="function">
+<dt id="pyanno.measures.distances.binary_distance">
+<tt class="descclassname">pyanno.measures.distances.</tt><tt class="descname">binary_distance</tt><big>(</big><em>i</em>, <em>j</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/distances.html#binary_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.distances.binary_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return 0 if i==j, else 1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.distances.diagonal_distance">
+<tt class="descclassname">pyanno.measures.distances.</tt><tt class="descname">diagonal_distance</tt><big>(</big><em>i</em>, <em>j</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/distances.html#diagonal_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.distances.diagonal_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <a href="#id4"><span class="problematic" id="id5">|i-j|</span></a>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyanno.measures.helpers">
+<span id="helpers-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">helpers</span></tt> Module<a class="headerlink" href="#module-pyanno.measures.helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pyanno.measures.helpers.all_invalid">
+<tt class="descclassname">pyanno.measures.helpers.</tt><tt class="descname">all_invalid</tt><big>(</big><em>*annotations</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/helpers.html#all_invalid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.helpers.all_invalid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if all annotations are invalid.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.helpers.chance_adjusted_agreement">
+<tt class="descclassname">pyanno.measures.helpers.</tt><tt class="descname">chance_adjusted_agreement</tt><big>(</big><em>observed_agreement</em>, <em>chance_agreement</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/helpers.html#chance_adjusted_agreement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.helpers.chance_adjusted_agreement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the chance-adjusted agreement given the specified agreement
+and expected agreement.</p>
+<p>Defined by (observed_agreement - chance_agreement)/(1.0 - chance_agreement)</p>
+<p>Input:
+observed_agreement &#8211; agreement
+chance_agreement &#8211; expected agreement</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.helpers.chance_agreement_different_frequency">
+<tt class="descclassname">pyanno.measures.helpers.</tt><tt class="descname">chance_agreement_different_frequency</tt><big>(</big><em>annotations1</em>, <em>annotations2</em>, <em>nclasses</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/helpers.html#chance_agreement_different_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.helpers.chance_agreement_different_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expected frequency of agreement by random annotations.</p>
+<p>Assumes that the annotators draw annotations at random with different but
+constant frequencies.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.helpers.chance_agreement_same_frequency">
+<tt class="descclassname">pyanno.measures.helpers.</tt><tt class="descname">chance_agreement_same_frequency</tt><big>(</big><em>annotations1</em>, <em>annotations2</em>, <em>nclasses</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/helpers.html#chance_agreement_same_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.helpers.chance_agreement_same_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expected frequency of agreement by random annotations.</p>
+<p>Assumes that the annotators draw random annotations with the same
+frequency as the combined observed annotations.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.helpers.coincidence_matrix">
+<tt class="descclassname">pyanno.measures.helpers.</tt><tt class="descname">coincidence_matrix</tt><big>(</big><em>annotations</em>, <em>nclasses</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/helpers.html#coincidence_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.helpers.coincidence_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build coincidence matrix.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.helpers.compute_nclasses">
+<tt class="descclassname">pyanno.measures.helpers.</tt><tt class="descname">compute_nclasses</tt><big>(</big><em>*annotations</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/helpers.html#compute_nclasses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.helpers.compute_nclasses" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.helpers.confusion_matrix">
+<tt class="descclassname">pyanno.measures.helpers.</tt><tt class="descname">confusion_matrix</tt><big>(</big><em>annotations1</em>, <em>annotations2</em>, <em>nclasses</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/helpers.html#confusion_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.helpers.confusion_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute confusion matrix from pairs of annotations.</p>
+<p>Labels are numbers between 0 and <cite>nclasses</cite>. Any other value is
+considered a missing value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>annotations1</strong> (<em>array, shape = [n_samples]</em>) &#8211; </li>
+<li><strong>annotations2</strong> (<em>array, shape = [n_samples]</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>nclasses</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>conf_mat</strong> (array, shape = [nclasses, nclasses]) - confusion matrix; conf_mat[i,j] = number of observations that was annotated as category <cite>i</cite> by annotator 1 and as <cite>j</cite> by annotator 2</td>
+</tr>
+</tbody>
+</table>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Confusion_matrix">http://en.wikipedia.org/wiki/Confusion_matrix</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.helpers.observed_agreement_frequency">
+<tt class="descclassname">pyanno.measures.helpers.</tt><tt class="descname">observed_agreement_frequency</tt><big>(</big><em>annotations1</em>, <em>annotations2</em>, <em>nclasses</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/helpers.html#observed_agreement_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.helpers.observed_agreement_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observed frequency of agreement by two annotators.</p>
+<p>If a category is never observed, the frequency for that category is set
+to 0.0 .</p>
+<p>Only count entries where both annotators responded toward observed
+frequency.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.measures.helpers.pairwise_matrix">
+<tt class="descclassname">pyanno.measures.helpers.</tt><tt class="descname">pairwise_matrix</tt><big>(</big><em>pairwise_statistic</em>, <em>annotations</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="modules/pyanno/measures/helpers.html#pairwise_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.helpers.pairwise_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the matrix of all combinations of a pairwise statistics.</p>
+<p>This function applies an agreement or covariation statistic that is only
+defined for pairs of annotators to all combinations of annotators pairs,
+and returns a matrix of the result.</p>
+<p>Example</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyanno.measures</span> <span class="kn">import</span> <span class="n">pairwise_matrix</span><span class="p">,</span> <span class="n">cohens_kappa</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stat_matrix</span> <span class="o">=</span> <span class="n">pairwise_matrix</span><span class="p">(</span><span class="n">cohens_kappa</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="n">nclasses</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pairwise_statistics</strong> (<em>function</em>) &#8211; Function accepting as first two arguments two 1D array of
+annotations, and returning a single scalar measuring some annotations
+statistics.</li>
+<li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; Annotations in pyanno format.</li>
+<li><strong>args</strong> (<em>any</em>) &#8211; Additional arguments passed to <cite>pairwise_statistics</cite>.</li>
+<li><strong>kwargs</strong> (<em>any</em>) &#8211; Additional keyword arguments passed to <cite>pairwise_statistics</cite>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>stat_matrix</strong> (ndarray, shape = (n_annotators, n_annotators)) - <cite>stat_matrix[i,j]</cite> is the value of <cite>pairwise_statistics</cite> applied to the annotations of annotators <cite>i</cite> and <cite>j</cite></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">measures Package</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">measures</span></tt> Package</a></li>
+<li><a class="reference internal" href="#module-pyanno.measures.agreement"><tt class="docutils literal"><span class="pre">agreement</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pyanno.measures.covariation"><tt class="docutils literal"><span class="pre">covariation</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pyanno.measures.distances"><tt class="docutils literal"><span class="pre">distances</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pyanno.measures.helpers"><tt class="docutils literal"><span class="pre">helpers</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyanno.html"
+                        title="previous chapter">pyanno Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyanno.plots.html"
+                        title="next chapter">plots Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/pyanno.measures.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyanno.plots.html" title="plots Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyanno.html" title="pyanno Package"
+             >previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="modules.html" >Project Modules</a> &raquo;</li>
+          <li><a href="pyanno.html" >pyanno Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

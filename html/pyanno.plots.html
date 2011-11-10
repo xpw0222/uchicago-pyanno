@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>plots Package &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="index.html" />
+    <link rel="up" title="pyanno Package" href="pyanno.html" />
+    <link rel="prev" title="measures Package" href="pyanno.measures.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyanno.measures.html" title="measures Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="modules.html" >Project Modules</a> &raquo;</li>
+          <li><a href="pyanno.html" accesskey="U">pyanno Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="plots-package">
+<h1>plots Package<a class="headerlink" href="#plots-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">plots</span></tt> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-pyanno.plots"></span></div>
+<div class="section" id="module-pyanno.plots.hinton_plot">
+<span id="hinton-plot-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">hinton_plot</span></tt> Module<a class="headerlink" href="#module-pyanno.plots.hinton_plot" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyanno.plots.hinton_plot.HintonDiagramPlot">
+<em class="property">class </em><tt class="descclassname">pyanno.plots.hinton_plot.</tt><tt class="descname">HintonDiagramPlot</tt><a class="reference internal" href="modules/pyanno/plots/hinton_plot.html#HintonDiagramPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.hinton_plot.HintonDiagramPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pyanno.plots.plots_superclass.PyannoPlotContainer</span></tt></p>
+<p>Defines a Hinton diagram view of a discrete probability distribution.</p>
+<p>A Hinton diagram displays a probability distribution as a series of
+squares, with area proportional to the probability mass of each element.</p>
+<p>The plot updates automatically whenever the attribute <cite>data</cite> is modified.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.plots.hinton_plot.main">
+<tt class="descclassname">pyanno.plots.hinton_plot.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="reference internal" href="modules/pyanno/plots/hinton_plot.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.hinton_plot.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entry point for standalone testing/debugging.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.plots.hinton_plot.plot_hinton_diagram">
+<tt class="descclassname">pyanno.plots.hinton_plot.</tt><tt class="descname">plot_hinton_diagram</tt><big>(</big><em>data</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="modules/pyanno/plots/hinton_plot.html#plot_hinton_diagram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.hinton_plot.plot_hinton_diagram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and display a Chaco plot of a Hinton diagram.</p>
+<p>The component allows saving the plot (with Ctrl-S), and copying the matrix
+data to the clipboard (with Ctrl-C).</p>
+<p>Keyword arguments:
+title &#8211; title for the resulting plot</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyanno.plots.matrix_plot">
+<span id="matrix-plot-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">matrix_plot</span></tt> Module<a class="headerlink" href="#module-pyanno.plots.matrix_plot" title="Permalink to this headline">¶</a></h2>
+<p>View of 2D matrix based on Chaco.</p>
+<dl class="class">
+<dt id="pyanno.plots.matrix_plot.MatrixPlot">
+<em class="property">class </em><tt class="descclassname">pyanno.plots.matrix_plot.</tt><tt class="descname">MatrixPlot</tt><a class="reference internal" href="modules/pyanno/plots/matrix_plot.html#MatrixPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.matrix_plot.MatrixPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pyanno.plots.plots_superclass.PyannoPlotContainer</span></tt></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.plots.matrix_plot.main">
+<tt class="descclassname">pyanno.plots.matrix_plot.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="reference internal" href="modules/pyanno/plots/matrix_plot.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.matrix_plot.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entry point for standalone testing/debugging.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.plots.matrix_plot.plot_square_matrix">
+<tt class="descclassname">pyanno.plots.matrix_plot.</tt><tt class="descname">plot_square_matrix</tt><big>(</big><em>matrix</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="modules/pyanno/plots/matrix_plot.html#plot_square_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.matrix_plot.plot_square_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and display a Chaco plot of a 2D matrix.</p>
+<p>The matrix is shown with a color code, and the plot will allow saving the
+plot (with Ctrl-S), and copying the matrix data to the clipboard (with
+Ctrl-C).</p>
+<p>It is possible to set a number of keyword arguments:
+title &#8211; title for the resulting plot
+colormap_low &#8211; lower value for the colormap
+colormap_high &#8211; higher value for the colormap</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyanno.plots.plot_tools">
+<span id="plot-tools-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">plot_tools</span></tt> Module<a class="headerlink" href="#module-pyanno.plots.plot_tools" title="Permalink to this headline">¶</a></h2>
+<p>Plot tools to save plots and copy their data inside to the clipboard.</p>
+<dl class="class">
+<dt id="pyanno.plots.plot_tools.CopyDataToClipboardTool">
+<em class="property">class </em><tt class="descclassname">pyanno.plots.plot_tools.</tt><tt class="descname">CopyDataToClipboardTool</tt><big>(</big><em>component=None</em>, <em>**kwtraits</em><big>)</big><a class="reference internal" href="modules/pyanno/plots/plot_tools.html#CopyDataToClipboardTool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.plot_tools.CopyDataToClipboardTool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">enable.base_tool.BaseTool</span></tt></p>
+<p>Tool that copies the plot&#8217;s data to the clipboard.</p>
+<dl class="method">
+<dt id="pyanno.plots.plot_tools.CopyDataToClipboardTool.normal_key_pressed">
+<tt class="descname">normal_key_pressed</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="modules/pyanno/plots/plot_tools.html#CopyDataToClipboardTool.normal_key_pressed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.plot_tools.CopyDataToClipboardTool.normal_key_pressed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles a key-release when the tool is in the &#8216;normal&#8217; state.</p>
+<p>Copy <cite>data</cite> to the keyboard when the user presses Ctrl-C.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyanno.plots.plot_tools.SaveFileDialog">
+<em class="property">class </em><tt class="descclassname">pyanno.plots.plot_tools.</tt><tt class="descname">SaveFileDialog</tt><a class="reference internal" href="modules/pyanno/plots/plot_tools.html#SaveFileDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.plot_tools.SaveFileDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">traits.has_traits.HasTraits</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pyanno.plots.plot_tools.SaveToolPlus">
+<em class="property">class </em><tt class="descclassname">pyanno.plots.plot_tools.</tt><tt class="descname">SaveToolPlus</tt><big>(</big><em>component=None</em>, <em>**kwtraits</em><big>)</big><a class="reference internal" href="modules/pyanno/plots/plot_tools.html#SaveToolPlus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.plot_tools.SaveToolPlus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">chaco.tools.save_tool.SaveTool</span></tt></p>
+<p>Subclass of SaveTool that requests a filename and dpi before saving.</p>
+<dl class="method">
+<dt id="pyanno.plots.plot_tools.SaveToolPlus.normal_key_pressed">
+<tt class="descname">normal_key_pressed</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="modules/pyanno/plots/plot_tools.html#SaveToolPlus.normal_key_pressed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.plot_tools.SaveToolPlus.normal_key_pressed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles a key-release when the tool is in the &#8216;normal&#8217; state.</p>
+<p>Saves an image of the plot when the user presses Ctrl-S.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyanno.plots.pyanno_plots">
+<span id="pyanno-plots-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">pyanno_plots</span></tt> Module<a class="headerlink" href="#module-pyanno.plots.pyanno_plots" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pyanno.plots.pyanno_plots.main">
+<tt class="descclassname">pyanno.plots.pyanno_plots.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="reference internal" href="modules/pyanno/plots/pyanno_plots.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.pyanno_plots.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entry point for standalone testing/debugging.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.plots.pyanno_plots.plot_pairwise_statistics">
+<tt class="descclassname">pyanno.plots.pyanno_plots.</tt><tt class="descname">plot_pairwise_statistics</tt><big>(</big><em>stat_func</em>, <em>annotations</em>, <em>nclasses=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="modules/pyanno/plots/pyanno_plots.html#plot_pairwise_statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.pyanno_plots.plot_pairwise_statistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a matrix representation of a statistical function of annotations.</p>
+<p>The function <cite>stat_func</cite> is applied to the annotations of all pairs of
+annotators, and the resulting matrix is displayed in a window.</p>
+<p>Example:
+plot_pairwise_statistics(pyanno.measures.cohens_kappa, annotations)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyanno.plots.theta_plot">
+<span id="theta-plot-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">theta_plot</span></tt> Module<a class="headerlink" href="#module-pyanno.plots.theta_plot" title="Permalink to this headline">¶</a></h2>
+<p>TraitsUI view of the Theta parameters, and their samples.</p>
+<dl class="class">
+<dt id="pyanno.plots.theta_plot.ThetaDistrPlot">
+<em class="property">class </em><tt class="descclassname">pyanno.plots.theta_plot.</tt><tt class="descname">ThetaDistrPlot</tt><a class="reference internal" href="modules/pyanno/plots/theta_plot.html#ThetaDistrPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.theta_plot.ThetaDistrPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pyanno.plots.plots_superclass.PyannoPlotContainer</span></tt></p>
+<p>Defines a view of the annotator accuracy parameters, theta.</p>
+<p>The view consists in a Chaco plot that displays the theta parameter for
+each annotator, and samples from the posterior distribution over theta
+as a discretized distribution over theta.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pyanno.plots.theta_plot.ThetaScatterPlot">
+<em class="property">class </em><tt class="descclassname">pyanno.plots.theta_plot.</tt><tt class="descname">ThetaScatterPlot</tt><big>(</big><em>model=None</em>, <em>**metadata</em><big>)</big><a class="reference internal" href="modules/pyanno/plots/theta_plot.html#ThetaScatterPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.theta_plot.ThetaScatterPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">traitsui.handler.ModelView</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">pyanno.plots.plots_superclass.PyannoPlotContainer</span></tt></p>
+<p>Defines a view of the annotator accuracy parameters, theta.</p>
+<p>The view consists in a Chaco plot that displays the theta parameter for
+each annotator, and samples from the posterior distribution over theta
+with a combination of a scatter plot and a candle plot.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.plots.theta_plot.main">
+<tt class="descclassname">pyanno.plots.theta_plot.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="reference internal" href="modules/pyanno/plots/theta_plot.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.theta_plot.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entry point for standalone testing/debugging.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.plots.theta_plot.plot_theta_parameters">
+<tt class="descclassname">pyanno.plots.theta_plot.</tt><tt class="descname">plot_theta_parameters</tt><big>(</big><em>modelBt</em>, <em>theta_samples=None</em>, <em>type='distr'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="modules/pyanno/plots/theta_plot.html#plot_theta_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.theta_plot.plot_theta_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display a Chaco plot of the annotator accuracy parameters, theta.</p>
+<p>The component allows saving the plot (with Ctrl-S), and copying the matrix
+data to the clipboard (with Ctrl-C).</p>
+<p>Input:
+modelBt &#8211; an instance of ModelBt
+theta_samples &#8211; if given, samples from the posterior over theta,</p>
+<blockquote>
+<div>as returned by modelBt.sample_posterior_over_accuracy</div></blockquote>
+<dl class="docutils">
+<dt>type <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
+<dd>Either &#8216;scatter&#8217; or &#8216;distr&#8217;.</dd>
+</dl>
+<p>Keyword arguments:
+title &#8211; title for the resulting plot</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">plots Package</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">plots</span></tt> Package</a></li>
+<li><a class="reference internal" href="#module-pyanno.plots.hinton_plot"><tt class="docutils literal"><span class="pre">hinton_plot</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pyanno.plots.matrix_plot"><tt class="docutils literal"><span class="pre">matrix_plot</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pyanno.plots.plot_tools"><tt class="docutils literal"><span class="pre">plot_tools</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pyanno.plots.pyanno_plots"><tt class="docutils literal"><span class="pre">pyanno_plots</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pyanno.plots.theta_plot"><tt class="docutils literal"><span class="pre">theta_plot</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyanno.measures.html"
+                        title="previous chapter">measures Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/pyanno.plots.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyanno.measures.html" title="measures Package"
+             >previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="modules.html" >Project Modules</a> &raquo;</li>
+          <li><a href="pyanno.html" >pyanno Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

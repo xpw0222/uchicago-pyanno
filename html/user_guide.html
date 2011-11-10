@@ -1,0 +1,249 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>User guide &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="index.html" />
+    <link rel="next" title="Model definitions" href="models.html" />
+    <link rel="prev" title="Installation guide" href="installation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="models.html" title="Model definitions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="user-guide">
+<h1>User guide<a class="headerlink" href="#user-guide" title="Permalink to this headline">¶</a></h1>
+<p>This user guide contains information about getting started
+with pyanno, running simulations and running model estimation.</p>
+<div class="section" id="license">
+<h2>LICENSE<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>pyAnno is distributed under the Apache 2.0 license.  See License.txt.</p>
+</div>
+<div class="section" id="documentation">
+<h2>DOCUMENTATION<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>Functions are documented with code comments explaining
+inputs and outputs.</p>
+</div>
+<div class="section" id="unit-tests">
+<h2>UNIT TESTS<a class="headerlink" href="#unit-tests" title="Permalink to this headline">¶</a></h2>
+<p>One way to see how the functions are intended to work
+is to study the unit tests.  These are in the top-level
+file unit_test.py.  There are only unit tests for pyanno.util
+and pyanno.kappa modules.</p>
+</div>
+<div class="section" id="pyanno-kappa-kappa-and-other-agreement-statistics">
+<h2>pyanno.kappa:  KAPPA AND OTHER AGREEMENT STATISTICS<a class="headerlink" href="#pyanno-kappa-kappa-and-other-agreement-statistics" title="Permalink to this headline">¶</a></h2>
+<p>The pyanno.kappa module contains routines to estimate
+interannotator agreement statistics such as simple
+agreement, kappa, and pi.  Documentation for these
+functions is available in the code.</p>
+</div>
+<div class="section" id="pyanno-multinom-model-estimation">
+<h2>pyanno.multinom:  MODEL ESTIMATION<a class="headerlink" href="#pyanno-multinom-model-estimation" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="maximum-likelihood-simulation">
+<h2>Maximum Likelihood Simulation<a class="headerlink" href="#maximum-likelihood-simulation" title="Permalink to this headline">¶</a></h2>
+<p>Simulating ordinal data and fitting using EM for the
+Dawid and Skene multinomial model can be done using:</p>
+<blockquote>
+<div>% cd $PYANNO_HOME
+% python examples/mle_sim.py</div></blockquote>
+<p>This will print out (a) sizing for simulated data, (b) a trace of EM
+epoch-by-epoch with log likelihoods, (c) estimated prevalences
+compared to simulated parameter and sample prevalence, (d) estimated
+accuracies compared to simulated values and sample values, and (e)
+estimated categories with simulated cateory indicated.  Here&#8217;s
+what the output should look like:</p>
+<blockquote>
+<div><p>SIZES
+I= 200
+J= 5
+K= 4
+N= 1000</p>
+<dl class="docutils">
+<dt>RUNNING EM</dt>
+<dd>epoch=     0  log likelihood=-1205.1652   diff=     1.#IO
+epoch=     1  log likelihood= -965.8246   diff=     1.#IO</dd>
+</dl>
+<blockquote>
+<div>epoch=    86  log likelihood= -945.8426   diff=    0.0011</div></blockquote>
+<dl class="docutils">
+<dt>PREVALENCE ESTIMATES</dt>
+<dd>k,   sim,  samp,   MLE,  d.sim, d.samp
+0, 0.038, 0.030, 0.048, +0.010, +0.018
+1, 0.326, 0.355, 0.327, +0.001, -0.028
+2, 0.536, 0.515, 0.447, -0.089, -0.068
+3, 0.100, 0.100, 0.178, +0.078, +0.078</dd>
+<dt>ACCURACY ESTIMATES</dt>
+<dd>j,k1,k2,   sim,  samp,   mle,  d.sim, d.samp
+0, 0, 0, 0.802, 0.667, 0.472, -0.330, -0.195
+0, 0, 1, 0.169, 0.333, 0.424, +0.255, +0.090
+0, 0, 2, 0.023, 0.000, 0.104, +0.081, +0.104
+0, 0, 3, 0.006, 0.000, 0.000, -0.006, +0.000</dd>
+</dl>
+<dl class="docutils">
+<dt>...</dt>
+<dd>4, 3, 2, 0.143, 0.200, 0.323, +0.180, +0.123
+4, 3, 3, 0.809, 0.750, 0.647, -0.163, -0.103</dd>
+<dt>CATEGORY ESTIMATES</dt>
+<dd>0   0: 0.000   1: 0.000   2:<a href="#id1"><span class="problematic" id="id2">*</span></a>0.996   3: 0.004
+1   0: 0.000   1:<a href="#id3"><span class="problematic" id="id4">*</span></a>0.986   2: 0.014   3: 0.000</dd>
+</dl>
+<p>...</p>
+</div></blockquote>
+<p>Note that you get comparisons with the simulated values as well as the
+sampled values.  This is because, for example, the prevalence of
+categories in the generated sample isn&#8217;t necessarily the same as in
+the parameter.  The best a model can do is fit the sampled data, so
+the estimated values are usually closer to sampled than simulated
+values.</p>
+<p>For the category estimates, an asterisk appears before
+the score of the true label.  For example, item 0 in
+the above has reference category 2, and item 1 has
+reference category 1.</p>
+</div>
+<div class="section" id="maximum-a-posteriori-map-estimation-simulation">
+<h2>Maximum a Posteriori (MAP) Estimation Simulation<a class="headerlink" href="#maximum-a-posteriori-map-estimation-simulation" title="Permalink to this headline">¶</a></h2>
+<p>Runs the same way as the MLE estimation simulation,</p>
+<blockquote>
+<div>% cd $PYANNO_HOME
+% python examples/map_sim.py</div></blockquote>
+<p>In addition to printing log likelihoods, you also get log priors and
+the sums during the run.  The output prevalence, accuracy and
+categories are as before.</p>
+</div>
+<div class="section" id="real-data-estimation">
+<h2>Real Data Estimation<a class="headerlink" href="#real-data-estimation" title="Permalink to this headline">¶</a></h2>
+<p>pyanno also ships with demos for the Rzhetsky et al. (2009)
+annotation paper.  The code reads the data out of a CSV file
+and populates the inputs for estimation.  This can be done
+with MLE or MAP estimates as follows:</p>
+<blockquote>
+<div>% cd $PYANNO_HOME</div></blockquote>
+<p>and then for MLE:</p>
+<blockquote>
+<div>% python examples/rzhetsky2009/mle.py examples/rzhetsky2009/data/p85.csv</div></blockquote>
+<p>or for MAP:</p>
+<blockquote>
+<div>% python examples/rzhetsky2009/map.py examples/rzhetsky2009/data/p85.csv</div></blockquote>
+<p>There are also data files e85.csv and f85.csv, which have
+slightly differently shaped data.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">User guide</a><ul>
+<li><a class="reference internal" href="#license">LICENSE</a></li>
+<li><a class="reference internal" href="#documentation">DOCUMENTATION</a></li>
+<li><a class="reference internal" href="#unit-tests">UNIT TESTS</a></li>
+<li><a class="reference internal" href="#pyanno-kappa-kappa-and-other-agreement-statistics">pyanno.kappa:  KAPPA AND OTHER AGREEMENT STATISTICS</a></li>
+<li><a class="reference internal" href="#pyanno-multinom-model-estimation">pyanno.multinom:  MODEL ESTIMATION</a></li>
+<li><a class="reference internal" href="#maximum-likelihood-simulation">Maximum Likelihood Simulation</a></li>
+<li><a class="reference internal" href="#maximum-a-posteriori-map-estimation-simulation">Maximum a Posteriori (MAP) Estimation Simulation</a></li>
+<li><a class="reference internal" href="#real-data-estimation">Real Data Estimation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Installation guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="models.html"
+                        title="next chapter">Model definitions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/user_guide.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="models.html" title="Model definitions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation guide"
+             >previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

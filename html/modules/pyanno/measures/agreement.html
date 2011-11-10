@@ -1,0 +1,359 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyanno.measures.agreement &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="../../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../../static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyanno.measures.agreement</h1><div class="highlight"><pre>
+<span class="c"># Copyright (c) 2011, Enthought, Ltd.</span>
+<span class="c"># Author: Pietro Berkes &lt;pberkes@enthought.com&gt;</span>
+<span class="c"># License: Modified BSD license (2-clause)</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">pyanno.measures.distances</span> <span class="kn">import</span> <span class="n">diagonal_distance</span>
+<span class="kn">from</span> <span class="nn">pyanno.measures.helpers</span> <span class="kn">import</span> <span class="p">(</span><span class="n">compute_nclasses</span><span class="p">,</span>
+                                     <span class="n">chance_agreement_same_frequency</span><span class="p">,</span>
+                                     <span class="n">observed_agreement_frequency</span><span class="p">,</span>
+                                     <span class="n">chance_adjusted_agreement</span><span class="p">,</span>
+                                     <span class="n">chance_agreement_different_frequency</span><span class="p">,</span>
+                                     <span class="n">confusion_matrix</span><span class="p">,</span> <span class="n">coincidence_matrix</span><span class="p">,</span> <span class="n">all_invalid</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pyanno.util</span> <span class="kn">import</span> <span class="n">labels_frequency</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">,</span> <span class="n">PyannoValueError</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="scotts_pi"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.agreement.scotts_pi">[docs]</a><span class="k">def</span> <span class="nf">scotts_pi</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">,</span> <span class="n">nclasses</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return Scott&#39;s pi statistic for two annotators.</span>
+
+<span class="sd">    Assumes that the annotators draw random annotations with the same</span>
+<span class="sd">    frequency as the combined observed annotations.</span>
+
+<span class="sd">    Allows for missing values.</span>
+
+<span class="sd">    Scott 1955</span>
+<span class="sd">    http://en.wikipedia.org/wiki/Scott%27s_Pi</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">all_invalid</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;No valid annotations&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">if</span> <span class="n">nclasses</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">nclasses</span> <span class="o">=</span> <span class="n">compute_nclasses</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">)</span>
+
+    <span class="n">chance_agreement</span> <span class="o">=</span> <span class="n">chance_agreement_same_frequency</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span>
+                                                       <span class="n">annotations2</span><span class="p">,</span>
+                                                       <span class="n">nclasses</span><span class="p">)</span>
+
+    <span class="n">observed_agreement</span> <span class="o">=</span> <span class="n">observed_agreement_frequency</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span>
+                                                      <span class="n">annotations2</span><span class="p">,</span>
+                                                      <span class="n">nclasses</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">chance_adjusted_agreement</span><span class="p">(</span><span class="n">observed_agreement</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+                                      <span class="n">chance_agreement</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+
+</div>
+<div class="viewcode-block" id="cohens_kappa"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.agreement.cohens_kappa">[docs]</a><span class="k">def</span> <span class="nf">cohens_kappa</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">,</span> <span class="n">nclasses</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute Cohen&#39;s kappa for two annotators.</span>
+
+<span class="sd">    Assumes that the annotators draw annotations at random with different but</span>
+<span class="sd">    constant frequencies.</span>
+
+<span class="sd">    Cohen, Jacob (1960). A coefficient of agreement for nominal scales.</span>
+<span class="sd">    Educational and Psychological Measurement, 20, 37--46.</span>
+
+<span class="sd">    http://en.wikipedia.org/wiki/Cohen%27s_kappa</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">all_invalid</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;No valid annotations&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">if</span> <span class="n">nclasses</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">nclasses</span> <span class="o">=</span> <span class="n">compute_nclasses</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">)</span>
+
+    <span class="n">chance_agreement</span> <span class="o">=</span> <span class="n">chance_agreement_different_frequency</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span>
+                                                            <span class="n">annotations2</span><span class="p">,</span>
+                                                            <span class="n">nclasses</span><span class="p">)</span>
+
+    <span class="n">observed_agreement</span> <span class="o">=</span> <span class="n">observed_agreement_frequency</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span>
+                                                      <span class="n">annotations2</span><span class="p">,</span>
+                                                      <span class="n">nclasses</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">chance_adjusted_agreement</span><span class="p">(</span><span class="n">observed_agreement</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+                                     <span class="n">chance_agreement</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+
+</div>
+<div class="viewcode-block" id="cohens_weighted_kappa"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.agreement.cohens_weighted_kappa">[docs]</a><span class="k">def</span> <span class="nf">cohens_weighted_kappa</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">,</span>
+                          <span class="n">weights_func</span> <span class="o">=</span> <span class="n">diagonal_distance</span><span class="p">,</span>
+                          <span class="n">nclasses</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute Cohen&#39;s weighted kappa for two annotators.</span>
+
+<span class="sd">    Assumes that the annotators draw annotations at random with different but</span>
+<span class="sd">    constant frequencies. Disagreements are weighted by a weights</span>
+<span class="sd">    w_ij representing the &quot;seriousness&quot; of disagreement. For ordered codes,</span>
+<span class="sd">    it is often set to the distance from the diagonal, i.e. w_ij = |i-j| .</span>
+
+<span class="sd">    When w_ij is 0.0 on the diagonal and 1.0 elsewhere,</span>
+<span class="sd">    Cohen&#39;s weighted kappa is equivalent to Cohen&#39;s kappa.</span>
+
+
+<span class="sd">    Input:</span>
+
+<span class="sd">    annotations1, annotations2 -- array of annotations; classes are</span>
+<span class="sd">        indicated by non-negative integers, -1 indicates missing values</span>
+
+<span class="sd">    weights_func -- weights function that receives two matrices of classes</span>
+<span class="sd">        i, j and returns the matrix of weights between them.</span>
+<span class="sd">        Default is `diagonal_distance`</span>
+
+<span class="sd">    nclasses -- number of classes in the annotations. If None, `nclasses` is</span>
+<span class="sd">        inferred from the values in the annotations</span>
+
+
+<span class="sd">    Output:</span>
+
+<span class="sd">    kappa -- Cohens&#39; weighted kappa</span>
+
+
+<span class="sd">    See also:</span>
+<span class="sd">    `diagonal_distance`, `binary_distance`, `cohens_kappa`</span>
+
+<span class="sd">    Cohen 1968</span>
+<span class="sd">    http://en.wikipedia.org/wiki/Cohen%27s_kappa</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">all_invalid</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;No valid annotations&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">if</span> <span class="n">nclasses</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">nclasses</span> <span class="o">=</span> <span class="n">compute_nclasses</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">)</span>
+
+    <span class="c"># observed probability of each combination of annotations</span>
+    <span class="n">observed_freq</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">)</span>
+    <span class="n">observed_freq_sum</span> <span class="o">=</span> <span class="n">observed_freq</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">observed_freq_sum</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="n">observed_freq</span> <span class="o">/=</span> <span class="n">observed_freq_sum</span>
+
+    <span class="c"># expected probability of each combination of annotations if annotators</span>
+    <span class="c"># draw annotations at random with different but constant frequencies</span>
+    <span class="n">freq1</span> <span class="o">=</span> <span class="n">labels_frequency</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">)</span>
+    <span class="n">freq2</span> <span class="o">=</span> <span class="n">labels_frequency</span><span class="p">(</span><span class="n">annotations2</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">)</span>
+    <span class="n">chance_freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">freq1</span><span class="p">,</span> <span class="n">freq2</span><span class="p">)</span>
+
+    <span class="c"># build weights matrix from weights function</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromfunction</span><span class="p">(</span><span class="n">weights_func</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">nclasses</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">),</span>
+                              <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">kappa</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="p">(</span><span class="n">weights</span><span class="o">*</span><span class="n">observed_freq</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">weights</span><span class="o">*</span><span class="n">chance_freq</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">kappa</span>
+
+</div>
+<div class="viewcode-block" id="fleiss_kappa"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.agreement.fleiss_kappa">[docs]</a><span class="k">def</span> <span class="nf">fleiss_kappa</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="n">nclasses</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute Fleiss&#39; kappa.</span>
+
+<span class="sd">    http://en.wikipedia.org/wiki/Fleiss%27_kappa</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">all_invalid</span><span class="p">(</span><span class="n">annotations</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;No valid annotations&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">if</span> <span class="n">nclasses</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">nclasses</span> <span class="o">=</span> <span class="n">compute_nclasses</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span>
+
+    <span class="c"># transform raw annotations into the number of annotations per class</span>
+    <span class="c"># for each item</span>
+    <span class="n">nitems</span> <span class="o">=</span> <span class="n">annotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nannotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nitems</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+        <span class="n">nannotations</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">annotations</span><span class="o">==</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_fleiss_kappa_nannotations</span><span class="p">(</span><span class="n">nannotations</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_fleiss_kappa_nannotations</span><span class="p">(</span><span class="n">nannotations</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute Fleiss&#39; kappa gien number of annotations per class format.</span>
+
+<span class="sd">    This is a testable helper for fleiss_kappa.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">nitems</span> <span class="o">=</span> <span class="n">nannotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c"># check that all rows are annotated by the same number of annotators</span>
+    <span class="n">_nanno_sum</span> <span class="o">=</span> <span class="n">nannotations</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">nannotations_per_item</span> <span class="o">=</span> <span class="n">_nanno_sum</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">_nanno_sum</span> <span class="o">==</span> <span class="n">nannotations_per_item</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PyannoValueError</span><span class="p">(</span>
+            <span class="s">&#39;Number of annotations per item is not constant.&#39;</span>
+        <span class="p">)</span>
+
+    <span class="c"># empirical frequency of categories</span>
+    <span class="n">freqs</span> <span class="o">=</span> <span class="n">nannotations</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nitems</span><span class="o">*</span><span class="n">nannotations_per_item</span><span class="p">)</span>
+    <span class="n">chance_agreement</span> <span class="o">=</span> <span class="p">(</span><span class="n">freqs</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="c"># annotator agreement for i-th item, relative to possible annotators pairs</span>
+    <span class="n">agreement_rate</span> <span class="o">=</span> <span class="p">(((</span><span class="n">nannotations</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">nannotations_per_item</span><span class="p">)</span>
+                      <span class="o">/</span> <span class="p">(</span><span class="n">nannotations_per_item</span><span class="o">*</span><span class="p">(</span><span class="n">nannotations_per_item</span><span class="o">-</span><span class="mf">1.</span><span class="p">)))</span>
+    <span class="n">observed_agreement</span> <span class="o">=</span> <span class="n">agreement_rate</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">chance_adjusted_agreement</span><span class="p">(</span><span class="n">observed_agreement</span><span class="p">,</span> <span class="n">chance_agreement</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="krippendorffs_alpha"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.agreement.krippendorffs_alpha">[docs]</a><span class="k">def</span> <span class="nf">krippendorffs_alpha</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="n">metric_func</span><span class="o">=</span><span class="n">diagonal_distance</span><span class="p">,</span>
+                        <span class="n">nclasses</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute Krippendorff&#39;s alpha.</span>
+
+<span class="sd">    Input:</span>
+
+<span class="sd">    annotations -- array of annotations; classes are</span>
+<span class="sd">        indicated by non-negative integers, -1 indicates missing values</span>
+
+<span class="sd">    weights_func -- weights function that receives two matrices of classes</span>
+<span class="sd">        i, j and returns the matrix of weights between them.</span>
+<span class="sd">        Default is `diagonal_distance`</span>
+
+<span class="sd">    nclasses -- number of classes in the annotations. If None, `nclasses` is</span>
+<span class="sd">        inferred from the values in the annotations</span>
+
+
+<span class="sd">    Output:</span>
+
+<span class="sd">    alpha -- Krippendorff&#39;s alpha</span>
+
+
+<span class="sd">    See also:</span>
+<span class="sd">    `diagonal_distance`, `binary_distance`</span>
+
+
+<span class="sd">    Klaus Krippendorff (2004). Content Analysis, an Introduction to Its</span>
+<span class="sd">    Methodology, 2nd Edition. Thousand Oaks, CA: Sage Publications.</span>
+<span class="sd">    In particular, Chapter 11, pages 219--250.</span>
+
+<span class="sd">    http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">all_invalid</span><span class="p">(</span><span class="n">annotations</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;No valid annotations&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">if</span> <span class="n">nclasses</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">nclasses</span> <span class="o">=</span> <span class="n">compute_nclasses</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span>
+
+    <span class="n">coincidences</span> <span class="o">=</span> <span class="n">coincidence_matrix</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">)</span>
+
+    <span class="n">nc</span> <span class="o">=</span> <span class="n">coincidences</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">coincidences</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="c"># ---- coincidences expected by chance</span>
+    <span class="n">chance_coincidences</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nclasses</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="n">k</span><span class="p">:</span>
+                <span class="n">chance_coincidences</span><span class="p">[</span><span class="n">c</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">nc</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">nc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">chance_coincidences</span><span class="p">[</span><span class="n">c</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">nc</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">*</span><span class="n">nc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span>
+
+    <span class="c"># build weights matrix from weights function</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromfunction</span><span class="p">(</span><span class="n">metric_func</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">nclasses</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">),</span>
+                              <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.</span>
+
+    <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="p">((</span><span class="n">weights</span><span class="o">*</span><span class="n">coincidences</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                  <span class="o">/</span> <span class="p">(</span><span class="n">weights</span><span class="o">*</span><span class="n">chance_coincidences</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">alpha</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
