@@ -24,24 +24,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-ANNOTATIONS_INFO_STR = """Annotations name: {}
-Number of annotations: {}
-Number of annotators: {}
-Number of classes: {}
-Labels: {}"""
-
-
 class DataView(HasTraits):
     data = Array(dtype=object)
 
     def traits_view(self):
         return View(
             VGroup(
-                #HGroup(
-                #    Spring(),
-                #    Label('Annotators'),
-                #    Spring()
-                #),
                 Item('data',
                     editor=TabularEditor
                         (
@@ -97,20 +85,6 @@ class AnnotationsView(HasTraits):
 
     # event raised when annotations are updated
     annotations_updated = Event
-
-    ## annotations info string definition
-    annotations_info_str = Str
-
-    @on_trait_change('annotations_container,annotations_updated')
-    def _update_annotations_info_str(self):
-        valid = is_valid(self.annotations_container)
-        classes = str(self.annotations_container.labels)
-        self.annotations_info_str = ANNOTATIONS_INFO_STR.format(
-            self.annotations_container.name,
-            self.annotations_container.nitems,
-            self.annotations_container.nannotators,
-            self.annotations_container.nclasses,
-            classes)
 
     ## frequency plot definition
     frequency_plot = Instance(HintonDiagramPlot)
