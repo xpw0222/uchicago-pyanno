@@ -5,7 +5,7 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
-BUILDDIR      = ../../pyanno-docs/html
+BUILDDIR      = ../../pyanno-docs
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
