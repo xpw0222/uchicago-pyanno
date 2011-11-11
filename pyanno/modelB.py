@@ -83,24 +83,25 @@ class ModelB(AbstractModel):
         self.nclasses = nclasses
         self.nannotators = nannotators
 
-        if pi is None:
-            self.pi = np.ones((nclasses,)) / nclasses
-        else:
+        if pi is not None:
             self.pi = pi.copy()
-        # theta[j,k,:] is P(annotator j chooses : | real label = k)
-        if theta is None:
-            self.theta = np.ones((nannotators, nclasses, nclasses)) / nclasses
         else:
+            self.pi = np.ones((nclasses,)) / nclasses
+
+        # theta[j,k,:] is P(annotator j chooses : | real label = k)
+        if theta is not None:
             self.theta = theta.copy()
+        else:
+            self.theta = np.ones((nannotators, nclasses, nclasses)) / nclasses
 
         # initialize prior parameters if not specified
         if alpha is not None:
-            self.alpha = alpha
+            self.alpha = alpha.copy()
         else:
             self.alpha = self.default_alpha(nclasses)
 
         if beta is not None:
-            self.beta = beta
+            self.beta = beta.copy()
         else:
             self.beta = self.default_beta(nclasses)
 
@@ -111,7 +112,9 @@ class ModelB(AbstractModel):
 
     @staticmethod
     def create_initial_state(nclasses, nannotators, alpha=None, beta=None):
-        """FFactory method returning a model with random initial parameters.
+        """Factory method returning a model with random initial parameters.
+
+        <describe distr used for priors>
 
         Arguments
         ---------
