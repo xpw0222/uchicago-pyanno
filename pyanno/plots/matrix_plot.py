@@ -7,7 +7,7 @@
 from chaco.array_plot_data import ArrayPlotData
 from chaco.color_bar import ColorBar
 from chaco.data_range_1d import DataRange1D
-from chaco.default_colormaps import jet
+from chaco.default_colormaps import jet, Reds, RdBu, reverse
 from chaco.linear_mapper import LinearMapper
 from chaco.plot import Plot
 from chaco.plot_containers import HPlotContainer
@@ -40,8 +40,14 @@ class MatrixPlot(PyannoPlotContainer):
         if self.colormap_high is None:
             self.colormap_high = self.matrix.max()
 
-        colormap = jet(DataRange1D(low=self.colormap_low,
-                                   high=self.colormap_high))
+        if self.colormap_low >= 0.0:
+            colormap_factory = Reds
+        else:
+            colormap_factory = reverse(RdBu)
+
+        colormap = colormap_factory(
+            DataRange1D(low=self.colormap_low, high=self.colormap_high)
+        )
 
         return colormap
 
