@@ -4,6 +4,7 @@
 
 """Plot tools to save plots and copy their data inside to the clipboard.
 """
+from chaco.data_range_1d import DataRange1D
 
 from chaco.plot_graphics_context import PlotGraphicsContext
 from chaco.tools.save_tool import SaveTool
@@ -11,8 +12,6 @@ from enable.base_tool import BaseTool
 from traits.has_traits import HasTraits
 from traits.trait_types import Int, Any, File
 from pyface.api import clipboard
-from chaco.default_colors import palette11 as CLASS_COLORS
-from chaco.default_colors import cbrewer as ANNOTATOR_COLORS
 
 from traitsui.editors.file_editor import FileEditor
 from traitsui.group import VGroup
@@ -23,12 +22,22 @@ from traitsui.view import View
 import os.path
 import numpy as np
 
+import chaco.default_colormaps as dc
+
+CLASS_COLORS = dc.RdYlGn(DataRange1D(low=-0.1, high=1.1))
+ANNOTATOR_COLORS = dc.gist_ncar(DataRange1D(low=-0.1, high=1.1))
 
 def get_annotator_color(idx):
-    return list(ANNOTATOR_COLORS[idx % len(ANNOTATOR_COLORS)])
+    nannotators = 8
+    idx %= nannotators
+    color_idx = ANNOTATOR_COLORS.map_index(np.array(float(idx) / nannotators))
+    return list(ANNOTATOR_COLORS.color_bands[color_idx])
 
 def get_class_color(idx):
-    return list(CLASS_COLORS[idx % len(CLASS_COLORS)])
+    nclasses = 8
+    idx %= nclasses
+    color_idx = CLASS_COLORS.map_index(np.array(float(idx) / nclasses))
+    return list(CLASS_COLORS.color_bands[color_idx])
 
 
 # NOTE this code can be deleted after the next release of enthought.enable
