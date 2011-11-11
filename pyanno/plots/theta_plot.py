@@ -111,7 +111,7 @@ class ThetaScatterPlot(ModelView, PyannoPlotContainer):
                                     _w_idx('avg', idx),
                                     _w_idx('barmax', idx),
                                     _w_idx('max', idx)),
-                                    color = "lightgray",
+                                    color = get_annotator_color(idx),
                                     bar_line_color = "black",
                                     stem_color = "blue",
                                     center_color = "red",
@@ -121,15 +121,15 @@ class ThetaScatterPlot(ModelView, PyannoPlotContainer):
             theta_plot.plot((_w_idx('ysamples', idx),
                              _w_idx('xsamples', idx)),
                             type='scatter',
-                            color='red',
-                            marker='plus',
-                            line_width=1,
-                            marker_size=3)
+                            color='black',
+                            marker='dot',
+                            line_width=0.5,
+                            marker_size=1)
 
             # plot current parameters
             theta_plot.plot((_w_idx('y', idx), _w_idx('x', idx)),
                             type='scatter',
-                            color='black',
+                            color=get_annotator_color(idx),
                             marker='plus',
                             marker_size=8,
                             line_width=2)
