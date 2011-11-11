@@ -80,14 +80,17 @@ class TestModelBtLoopDesign(unittest.TestCase):
         nsamples = 1000
 
         # create random model (this is our ground truth model)
-        true_model = ModelBtLoopDesign.create_initial_state(nclasses)
+        true_model = ModelBtLoopDesign.create_initial_state(
+            nclasses,
+            theta=np.array([0.01, 0.1, 0.9, 0.7, 0.7, 0.7, 0.7, 0.7])
+        )
         # create random data
         annotations = true_model.generate_annotations(nitems)
 
         # create a new model
         model = ModelBtLoopDesign.create_initial_state(nclasses)
         # get optimal parameters (to make sure we're at the optimum)
-        model.mle(annotations)
+        model.map(annotations)
 
         # modify parameters, to give false start to sampler
         real_theta = model.theta.copy()

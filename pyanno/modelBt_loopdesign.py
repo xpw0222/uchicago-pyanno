@@ -446,9 +446,10 @@ class ModelBtLoopDesign(AbstractModel):
         # wrap log likelihood function to give it to optimize_step_size and
         # sample_distribution
         _llhood_counts = self._log_likelihood_counts
+        _log_prior = self._log_prior
         def _wrap_llhood(params, counts):
             self.theta = params
-            return _llhood_counts(counts)
+            return _llhood_counts(counts) + _log_prior()
 
         # TODO this save-reset is rather ugly, refactor: create copy of
         #      model and sample over it
