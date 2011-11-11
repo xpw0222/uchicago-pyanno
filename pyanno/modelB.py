@@ -432,10 +432,30 @@ class ModelB(AbstractModel):
                           missing_mask_nclasses=None, normalize=True):
         """Compute P(category[i] = k | model, annotations).
 
-        Input:
-        accuracy -- the theta parameters
-        prevalence -- the pi parameters
-        normalize -- if False, do not normalize the posterior
+        Arguments
+        ---------
+        annotations : ndarray
+            Array of annotations
+
+        prevalence : ndarray
+            Gamma parameters
+
+        accuracy : ndarray
+            Theta parameters
+
+        missing_mask_nclasses : ndarray, shape=(nitems, nannotators, n_classes)
+            Mask with True at missing values, tiled in the third dimension.
+            If None, it is computed, but it can be specified to speed-up
+            computations.
+
+        normalize : bool
+            If False, do not normalize the distribution.
+
+        Returns
+        -------
+        category : ndarray, shape = (n_items, n_classes)
+            category[i,k] is the (unnormalized) probability of class k for
+            item i
         """
 
         nitems, nannotators = annotations.shape
