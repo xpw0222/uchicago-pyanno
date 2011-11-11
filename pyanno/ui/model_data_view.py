@@ -17,6 +17,7 @@ from traitsui.message import error
 
 from pyanno.modelA import ModelA
 from pyanno.modelB import ModelB
+from pyanno.modelBt import ModelBt
 from pyanno.modelBt_loopdesign import ModelBtLoopDesign
 
 from pyanno.annotations import AnnotationsContainer
@@ -26,6 +27,7 @@ from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
 from pyanno.ui.annotations_view import AnnotationsView, CreateNewAnnotationsDialog
 from pyanno.ui.appbase.long_running_call import LongRunningCall
 from pyanno.ui.model_a_view import ModelAView
+from pyanno.ui.model_bt_view import ModelBtView
 from pyanno.ui.model_btloop_view import ModelBtLoopDesignView
 from pyanno.ui.model_b_view import ModelBView
 
@@ -43,17 +45,22 @@ class ModelDataView(HasTraits):
 
     #### Information about available models
 
-    model_name = Enum('Model B-with-theta (loop design)',
-                      'Model B',
-                      'Model A')
+    model_name = Enum(
+        'Model B-with-theta',
+        'Model B-with-theta (loop design)',
+        'Model B',
+        'Model A (loop design)',
+    )
 
     _model_name_to_class = {
+        'Model B-with-theta': ModelBt,
         'Model B-with-theta (loop design)': ModelBtLoopDesign,
         'Model B': ModelB,
         'Model A': ModelA
     }
 
     _model_class_to_view = {
+        ModelBt: ModelBtView,
         ModelBtLoopDesign: ModelBtLoopDesignView,
         ModelB: ModelBView,
         ModelA: ModelAView
@@ -294,7 +301,7 @@ class ModelDataView(HasTraits):
                 error('Error: ' + errmsg)
             else:
                 # re-raise exception if it has not been handled
-                raise
+                raise err
 
 
     def _action_on_model(self, message, method, args=None, kwargs=None,

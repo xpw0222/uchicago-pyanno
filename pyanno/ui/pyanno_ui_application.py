@@ -10,7 +10,7 @@ from traits.traits import Property
 from traitsui.message import error
 from traitsui.ui import UI
 from pyanno.database import PyannoDatabase
-from pyanno.modelBt_loopdesign import ModelBtLoopDesign
+from pyanno.modelBt import ModelBt
 from pyanno.ui.database_view import DatabaseView
 from pyanno.ui.model_data_view import ModelDataView
 import os
@@ -87,7 +87,7 @@ class PyannoApplication(HasTraits):
     def _open_main_window(self):
         self.main_window = ModelDataView(application=self)
 
-        model = ModelBtLoopDesign.create_initial_state(5)
+        model = ModelBt.create_initial_state(5, 8)
         self.main_window.set_model(model)
 
         self.main_window.configure_traits()
