@@ -165,7 +165,7 @@ class TestModelA(unittest.TestCase):
         # create a new model
         model = ModelA.create_initial_state(nclasses)
         # get optimal parameters (to make sure we're at the optimum)
-        model.mle(annotations)
+        model.map(annotations)
 
         # modify parameters, to give false start to sampler
         real_theta = model.theta.copy()

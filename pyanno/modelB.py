@@ -83,24 +83,25 @@ class ModelB(AbstractModel):
         self.nclasses = nclasses
         self.nannotators = nannotators
 
-        if pi is None:
-            self.pi = np.ones((nclasses,)) / nclasses
-        else:
+        if pi is not None:
             self.pi = pi.copy()
-        # theta[j,k,:] is P(annotator j chooses : | real label = k)
-        if theta is None:
-            self.theta = np.ones((nannotators, nclasses, nclasses)) / nclasses
         else:
+            self.pi = np.ones((nclasses,)) / nclasses
+
+        # theta[j,k,:] is P(annotator j chooses : | real label = k)
+        if theta is not None:
             self.theta = theta.copy()
+        else:
+            self.theta = np.ones((nannotators, nclasses, nclasses)) / nclasses
 
         # initialize prior parameters if not specified
         if alpha is not None:
-            self.alpha = alpha
+            self.alpha = alpha.copy()
         else:
             self.alpha = self.default_alpha(nclasses)
 
         if beta is not None:
-            self.beta = beta
+            self.beta = beta.copy()
         else:
             self.beta = self.default_beta(nclasses)
 
@@ -111,7 +112,9 @@ class ModelB(AbstractModel):
 
     @staticmethod
     def create_initial_state(nclasses, nannotators, alpha=None, beta=None):
-        """FFactory method returning a model with random initial parameters.
+        """Factory method returning a model with random initial parameters.
+
+        <describe distr used for priors>
 
         Arguments
         ---------
@@ -429,10 +432,30 @@ class ModelB(AbstractModel):
                           missing_mask_nclasses=None, normalize=True):
         """Compute P(category[i] = k | model, annotations).
 
-        Input:
-        accuracy -- the theta parameters
-        prevalence -- the pi parameters
-        normalize -- if False, do not normalize the posterior
+        Arguments
+        ---------
+        annotations : ndarray
+            Array of annotations
+
+        prevalence : ndarray
+            Gamma parameters
+
+        accuracy : ndarray
+            Theta parameters
+
+        missing_mask_nclasses : ndarray, shape=(nitems, nannotators, n_classes)
+            Mask with True at missing values, tiled in the third dimension.
+            If None, it is computed, but it can be specified to speed-up
+            computations.
+
+        normalize : bool
+            If False, do not normalize the distribution.
+
+        Returns
+        -------
+        category : ndarray, shape = (n_items, n_classes)
+            category[i,k] is the (unnormalized) probability of class k for
+            item i
         """
 
         nitems, nannotators = annotations.shape

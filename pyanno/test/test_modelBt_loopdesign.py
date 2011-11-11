@@ -5,96 +5,63 @@
 import unittest
 import numpy as np
 from numpy import testing
-from pyanno import ModelBt
 from pyanno.modelBt_loopdesign import ModelBtLoopDesign
-from pyanno.util import MISSING_VALUE as MV, is_valid, PyannoValueError, labels_frequency
+from pyanno.util import MISSING_VALUE as MV, is_valid, PyannoValueError
 
 
-class TestModelBt(unittest.TestCase):
-
-    def test_create_model(self):
-        nclasses = 8
-        nannotators = 32
-        model = ModelBt.create_initial_state(nclasses, nannotators)
-
-        self.assertEqual(model.nannotators, nannotators)
-        self.assertEqual(model.gamma.shape[0], nclasses)
-        self.assertEqual(model.theta.shape[0], nannotators)
-
+class TestModelBtLoopDesign(unittest.TestCase):
 
     def test_mle_estimation(self):
         # test simple model, check that we get to global optimum
-        nclasses, nannotators, nitems = 3, 5, 5000
+        nclasses, nitems = 3, 500*8
         # create random model and data (this is our ground truth model)
-        true_model = ModelBt.create_initial_state(nclasses, nannotators)
+        true_model = ModelBtLoopDesign.create_initial_state(nclasses)
         annotations = true_model.generate_annotations(nitems)
 
         # create a new, empty model and infer back the parameters
-        model = ModelBt.create_initial_state(nclasses, nannotators)
+        model = ModelBtLoopDesign.create_initial_state(nclasses)
         before_llhood = model.log_likelihood(annotations)
         model.mle(annotations)
         after_llhood = model.log_likelihood(annotations)
 
-        testing.assert_allclose(model.gamma, true_model.gamma,
-                                atol=0.05, rtol=0.)
-        testing.assert_allclose(model.theta, true_model.theta,
-                                atol=0.05, rtol=0.)
+        testing.assert_allclose(model.gamma, true_model.gamma, atol=1e-1, rtol=0.)
+        testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
         self.assertGreater(after_llhood, before_llhood)
 
 
     def test_map_estimation(self):
         # test simple model, check that we get to global optimum
-        nclasses, nannotators, nitems = 3, 5, 5000
+        nclasses, nitems = 3, 500*8
         # create random model and data (this is our ground truth model)
-        true_model = ModelBt.create_initial_state(nclasses, nannotators)
+        true_model = ModelBtLoopDesign.create_initial_state(nclasses)
         annotations = true_model.generate_annotations(nitems)
 
         # create a new, empty model and infer back the parameters
-        model = ModelBt.create_initial_state(nclasses, nannotators)
+        model = ModelBtLoopDesign.create_initial_state(nclasses)
         before_obj = model.log_likelihood(annotations) + model._log_prior()
         model.map(annotations)
         after_obj = model.log_likelihood(annotations) + model._log_prior()
 
-        testing.assert_allclose(model.gamma, true_model.gamma,
-                                atol=0.05, rtol=0.)
-        testing.assert_allclose(model.theta, true_model.theta,
-                                atol=0.05, rtol=0.)
+        testing.assert_allclose(model.gamma, true_model.gamma, atol=1e-1, rtol=0.)
+        testing.assert_allclose(model.theta, true_model.theta, atol=1e-1, rtol=0.)
         self.assertGreater(after_obj, before_obj)
-
-
-    def test_log_likelihood_loop_design(self):
-        # behavior: the log likelihood of the new class should match the one
-        # of the more specialized class
-        nclasses, nannotators, nitems = 4, 8, 100
-
-        # create specialized model, draw data
-        true_model = ModelBtLoopDesign.create_initial_state(nclasses)
-        annotations = true_model.generate_annotations(nitems)
-        expect = true_model.log_likelihood(annotations)
-
-        model = ModelBt(nclasses, nannotators,
-                        gamma=true_model.gamma, theta=true_model.theta)
-        llhood = model.log_likelihood(annotations)
-
-        np.testing.assert_almost_equal(llhood, expect, 10)
 
 
     def test_log_likelihood(self):
         # check that log likelihood is maximal at true parameters
-        nclasses, nannotators, nitems = 3, 5, 1000
+        nclasses, nitems = 3, 1500*8
         # create random model and data (this is our ground truth model)
-        true_model = ModelBt.create_initial_state(nclasses, nannotators)
+        true_model = ModelBtLoopDesign.create_initial_state(nclasses)
         annotations = true_model.generate_annotations(nitems)
 
         max_llhood = true_model.log_likelihood(annotations)
-
         # perturb gamma
         for _ in xrange(20):
             theta = true_model.theta
             gamma = np.random.normal(loc=true_model.gamma, scale=0.1)
             gamma = np.clip(gamma, 0., 1.)
             gamma /= gamma.sum()
-            model = ModelBt(nclasses, nannotators, gamma, theta)
+            model = ModelBtLoopDesign(nclasses, gamma, theta)
             llhood = model.log_likelihood(annotations)
             self.assertGreater(max_llhood, llhood)
 
@@ -103,22 +70,25 @@ class TestModelBt(unittest.TestCase):
             gamma = true_model.gamma
             theta = np.random.normal(loc=true_model.theta, scale=0.1)
             theta = np.clip(theta, 0., 1.)
-            model = ModelBt(nclasses, nannotators, gamma, theta)
+            model = ModelBtLoopDesign(nclasses, gamma, theta)
             llhood = model.log_likelihood(annotations)
             self.assertGreater(max_llhood, llhood)
 
 
     def test_sampling_theta(self):
-        nclasses, nannotators, nitems = 3, 5, 5000
+        nclasses, nitems = 3, 500*8
         nsamples = 1000
 
         # create random model (this is our ground truth model)
-        true_model = ModelBt.create_initial_state(nclasses, nannotators)
+        true_model = ModelBtLoopDesign.create_initial_state(
+            nclasses,
+            theta=np.array([0.01, 0.1, 0.9, 0.7, 0.7, 0.7, 0.7, 0.7])
+        )
         # create random data
         annotations = true_model.generate_annotations(nitems)
 
         # create a new model
-        model = ModelBt.create_initial_state(nclasses, nannotators)
+        model = ModelBtLoopDesign.create_initial_state(nclasses)
         # get optimal parameters (to make sure we're at the optimum)
         model.map(annotations)
 
@@ -145,12 +115,12 @@ class TestModelBt(unittest.TestCase):
 
     def test_inference(self):
         # perfect annotation, check that inferred label is correct
-        nclasses, nannotators, nitems = 3, 5, 50*8
+        nclasses, nitems = 3, 50*8
 
         # create random model (this is our ground truth model)
         gamma = np.ones((nclasses,)) / float(nclasses)
         theta = np.ones((8,)) * 0.999
-        true_model = ModelBt(nclasses, nannotators, gamma, theta)
+        true_model = ModelBtLoopDesign(nclasses, gamma, theta)
         # create random data
         labels = true_model.generate_labels(nitems)
         annotations = true_model.generate_annotations_from_labels(labels)
@@ -163,11 +133,11 @@ class TestModelBt(unittest.TestCase):
         self.assertTrue(np.all(posterior[np.arange(nitems),inferred] > 0.999))
 
         # at chance annotation, disagreeing annotators: get back prior
-        gamma = ModelBt._random_gamma(nclasses)
-        theta = np.ones((nannotators,)) / float(nclasses)
-        model = ModelBt(nclasses, nannotators, gamma, theta)
+        gamma = ModelBtLoopDesign._random_gamma(nclasses)
+        theta = np.ones((8,)) / float(nclasses)
+        model = ModelBtLoopDesign(nclasses, gamma, theta)
 
-        data = np.array([[MV, 0, 1, 2, MV]])
+        data = np.array([[MV, 0, 1, 2, MV, MV, MV, MV,]])
         testing.assert_almost_equal(np.squeeze(model.infer_labels(data)),
                                     model.gamma, 6)
 
@@ -175,46 +145,41 @@ class TestModelBt(unittest.TestCase):
     def test_generate_annotations(self):
         # test to check that annotations are masked correctly when the number
         # of items is not divisible by the number of annotators
-        nclasses, nannotators, nitems = 5, 7, 201
+        nclasses, nitems = 5, 8*30+3
 
-        model = ModelBt.create_initial_state(nclasses, nannotators)
+        model = ModelBtLoopDesign.create_initial_state(nclasses)
         annotations = model.generate_annotations(nitems)
 
         valid = is_valid(annotations)
-        self.assertEqual(annotations.shape, (nitems, nannotators))
-        model.are_annotations_compatible(annotations)
-
-        # perfect annotators, annotations correspond to prior
-        nitems = 20000
-        model.theta[:] = 1.
-        annotations = model.generate_annotations(nitems)
-        freq = labels_frequency(annotations, nclasses)
-        np.testing.assert_almost_equal(freq, model.gamma, 2)
+        # check that on every row there are exactly 3 annotations
+        self.assertTrue(np.all(valid.sum(1) == 3))
 
 
     def test_annotations_compatibility(self):
         nclasses = 3
-        nannotators = 5
-        model = ModelBt.create_initial_state(nclasses, nannotators)
+        model = ModelBtLoopDesign.create_initial_state(nclasses)
 
         # test method that checks annotations compatibility
-        anno = np.array([[0, 1, MV, MV, MV]])
+        anno = np.array([[MV, MV, 0, 0, 1, MV, MV, MV]])
         self.assertTrue(model.are_annotations_compatible(anno))
 
-        anno = np.array([[0, 0, 0, 0]])
+        anno = np.array([[MV, MV, 0, 0, 1, MV, MV, MV, MV]])
         self.assertFalse(model.are_annotations_compatible(anno))
 
-        anno = np.array([[4, 0, 0, 0, 0]])
+        anno = np.array([[MV, MV, 0, 0, 3, MV, MV, MV]])
         self.assertFalse(model.are_annotations_compatible(anno))
 
-        anno = np.array([[-2, MV, MV, MV, MV]])
+        anno = np.array([[MV, MV, 0, 0, 2, 1, MV, MV]])
+        self.assertFalse(model.are_annotations_compatible(anno))
+
+        anno = np.array([[0, 0, MV, -2, MV, MV, MV, MV]])
         self.assertFalse(model.are_annotations_compatible(anno))
 
 
     def test_raise_error_on_incompatible_annotation(self):
-        nclasses, nannotators = 3, 7
-        model = ModelBt.create_initial_state(nclasses, nannotators)
-        anno = np.array([[MV, MV, 0, 0, 7, MV, MV]])
+        nclasses = 3
+        model = ModelBtLoopDesign.create_initial_state(nclasses)
+        anno = np.array([[MV, MV, 0, 0, 7, MV, MV, MV]])
 
         with self.assertRaises(PyannoValueError):
             model.mle(anno)
@@ -230,34 +195,6 @@ class TestModelBt(unittest.TestCase):
 
         with self.assertRaises(PyannoValueError):
             model.log_likelihood(anno)
-
-
-    def test_missing_annotations(self):
-        # test simple model, check that we get to global optimum
-
-        nclasses, nannotators, nitems = 2, 3, 10000
-        # create random model and data (this is our ground truth model)
-        true_model = ModelBt.create_initial_state(nclasses, nannotators)
-        annotations = true_model.generate_annotations(nitems)
-        # remove about 10% of the annotations
-        for _ in range(nitems*nannotators//10):
-            i = np.random.randint(nitems)
-            j = np.random.randint(nannotators)
-            annotations[i,j] = MV
-
-        # create a new, empty model and infer back the parameters
-        model = ModelBt.create_initial_state(nclasses, nannotators)
-        before_llhood = (model.log_likelihood(annotations)
-                         + model._log_prior(model.theta))
-        model.map(annotations)
-        after_llhood = (model.log_likelihood(annotations)
-                        + model._log_prior(model.theta))
-
-        testing.assert_allclose(model.gamma, true_model.gamma,
-                                atol=1e-1, rtol=0.)
-        testing.assert_allclose(model.theta, true_model.theta,
-                                atol=1e-1, rtol=0.)
-        self.assertGreater(after_llhood, before_llhood)
 
 
 if __name__ == '__main__':

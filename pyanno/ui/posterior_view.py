@@ -75,9 +75,9 @@ class PosteriorView(HasTraits):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno import ModelBt
+    from pyanno.modelBt_loopdesign import ModelBtLoopDesign
 
-    model = ModelBt.create_initial_state(5)
+    model = ModelBtLoopDesign.create_initial_state(5)
     annotations = model.generate_annotations(400)
     posterior = model.infer_labels(annotations)
 

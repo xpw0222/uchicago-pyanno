@@ -126,8 +126,8 @@ class AnnotationsStatisticsView(HasTraits):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno import ModelBt
-    model = ModelBt.create_initial_state(5)
+    from pyanno.modelBt_loopdesign import ModelBtLoopDesign
+    model = ModelBtLoopDesign.create_initial_state(5)
     annotations = model.generate_annotations(20)
 
     stats_view = AnnotationsStatisticsView(annotations=annotations, nclasses=5)

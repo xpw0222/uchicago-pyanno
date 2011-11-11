@@ -383,7 +383,7 @@ def plot_theta_parameters(modelBt, theta_samples=None,
     data to the clipboard (with Ctrl-C).
 
     Input:
-    modelBt -- an instance of ModelBt
+    modelBt -- an instance of ModelBt or ModelBtLoopDesign
     theta_samples -- if given, samples from the posterior over theta,
         as returned by modelBt.sample_posterior_over_accuracy
     type : string
@@ -411,9 +411,9 @@ def plot_theta_parameters(modelBt, theta_samples=None,
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno import ModelBt
+    from pyanno.modelBt_loopdesign import ModelBtLoopDesign
 
-    model = ModelBt.create_initial_state(5)
+    model = ModelBtLoopDesign.create_initial_state(5)
     annotations = model.generate_annotations(100)
     theta_samples = model.sample_posterior_over_accuracy(
         annotations, 100,
