@@ -85,18 +85,13 @@ class HintonDiagramPlot(PyannoPlotContainer):
     def _plot_default(self):
         distr_len = len(self.data)
 
-        # colormap for probability values
-        cm = Reds(DataRange1D(low=0., high=1.))
-        data_color_indices = cm.map_index(np.asarray(self.data))
-
         # PolygonPlot holding the circles of the Hinton diagram
         polyplot = Plot(self.plot_data)
         for idx in range(distr_len):
             p = polyplot.plot(('x%d' % idx, 'y%d' % idx),
                           type="polygon",
-                          face_color=cm.color_bands[data_color_indices[idx]],
-                          edge_color='black',
-                          color_mapper=cm)
+                          face_color=get_class_color(idx),
+                          edge_color='black')
 
         self._set_title(polyplot)
         self._remove_grid_and_axes(polyplot)
@@ -119,22 +114,8 @@ class HintonDiagramPlot(PyannoPlotContainer):
         polyplot.border_visible = False
         polyplot.padding = [0, 0, 25, 25]
 
-        # add colorbar
-        colorbar = ColorBar(index_mapper = LinearMapper(range=cm.range),
-                            color_mapper = cm,
-                            plot = p[0],
-                            orientation = 'v',
-                            resizable = '',
-                            width = 10,
-                            height = 80)
-        colorbar.padding_bottom = polyplot.padding_bottom
-        colorbar.padding_top = polyplot.padding_top
-        colorbar.padding_left = 40
-        colorbar.padding_right = 0
-
         # create a container to position the plot and the colorbar side-by-side
         container = HPlotContainer(use_backbuffer=True, valign='center')
-        container.add(colorbar)
         container.add(polyplot)
         container.bgcolor = 0xFFFFFF # light gray: 0xEEEEEE
 
