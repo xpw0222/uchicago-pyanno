@@ -37,8 +37,8 @@ def plot_pairwise_statistics(stat_func, annotations, nclasses=None, **kwargs):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    import pyanno
-    model = pyanno.ModelBt.create_initial_state(4)
+    from pyanno.modelBt_loopdesign import ModelBtLoopDesign
+    model = ModelBtLoopDesign.create_initial_state(4)
     annotations = model.generate_annotations(100)
     mv = plot_pairwise_statistics(measures.cohens_kappa, annotations)
     return mv

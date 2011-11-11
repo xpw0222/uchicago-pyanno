@@ -15,7 +15,10 @@ from traitsui.menu import OKCancelButtons
 from traitsui.view import View
 from traitsui.message import error
 
-from pyanno import ModelBt, ModelB, ModelA
+from pyanno.modelA import ModelA
+from pyanno.modelB import ModelB
+from pyanno.modelBt_loopdesign import ModelBtLoopDesign
+
 from pyanno.annotations import AnnotationsContainer
 from pyanno.database import PyannoDatabase
 from pyanno.plots.annotations_plot import PosteriorPlot
@@ -23,7 +26,7 @@ from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
 from pyanno.ui.annotations_view import AnnotationsView, CreateNewAnnotationsDialog
 from pyanno.ui.appbase.long_running_call import LongRunningCall
 from pyanno.ui.model_a_view import ModelAView
-from pyanno.ui.model_bt_view import ModelBtView
+from pyanno.ui.model_btloop_view import ModelBtLoopDesignView
 from pyanno.ui.model_b_view import ModelBView
 
 import numpy as np
@@ -40,18 +43,18 @@ class ModelDataView(HasTraits):
 
     #### Information about available models
 
-    model_name = Enum('Model B-with-theta',
+    model_name = Enum('Model B-with-theta (loop design)',
                       'Model B',
                       'Model A')
 
     _model_name_to_class = {
-        'Model B-with-theta': ModelBt,
+        'Model B-with-theta (loop design)': ModelBtLoopDesign,
         'Model B': ModelB,
         'Model A': ModelA
     }
 
     _model_class_to_view = {
-        ModelBt: ModelBtView,
+        ModelBtLoopDesign: ModelBtLoopDesignView,
         ModelB: ModelBView,
         ModelA: ModelAView
     }
@@ -559,7 +562,7 @@ def main():
     """ Entry point for standalone testing/debugging. """
     from pyanno.ui.model_data_view import ModelDataView
 
-    model = ModelBt.create_initial_state(5)
+    model = ModelBtLoopDesign.create_initial_state(5)
     model_data_view = ModelDataView()
     model_data_view.set_model(model)
 

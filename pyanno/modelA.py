@@ -423,7 +423,7 @@ class ModelA(AbstractModel):
 
 
     def _random_initial_parameters(self, annotations, estimate_omega):
-        # TODO duplication w/ ModelBt
+        # TODO duplication w/ ModelBtLoopDesign
         if estimate_omega:
             # estimate omega from observed annotations
             omega = labels_frequency(annotations, self.nclasses)
@@ -455,7 +455,7 @@ class ModelA(AbstractModel):
         counts = compute_counts(annotations, self.nclasses)
         return self._log_likelihood_counts(counts)
 
-    # TODO code duplication with ModelBt -> refactor
+    # TODO code duplication with ModelBtLoopDesign -> refactor
     def _log_likelihood_counts(self, counts):
         """Compute the log likelihood of annotations given the model.
 
