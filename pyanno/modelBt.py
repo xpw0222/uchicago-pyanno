@@ -18,17 +18,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# map of `n` to list of all possible triplets of `n` elements
-_triplet_combinations = {}
-def _get_triplet_combinations(n):
-    """Return array of all possible combinations of n elements in triplets.
-    """
-    if not _triplet_combinations.has_key(n):
-        _triplet_combinations[n] = (
-            np.array([i for i in np.ndindex(n,n,n)]) )
-    return _triplet_combinations[n]
-
-
 class ModelBt(AbstractModel):
     """Implementation of Model B-with-theta from (Rzhetsky et al., 2009).
 
@@ -46,10 +35,10 @@ class ModelBt(AbstractModel):
       More specifically, P( annotator j chooses k' | real label = k) is
       theta[j] for k' = k, or (1 - theta[j]) / sum(theta) if k' != k .
 
-    At the moment the implementation of the model assumes 1) a total of 8
-    annotators, and 2) each item is annotated by exactly 3 annotators.
-
     See the documentation for a more detailed description of the model.
+
+    For a version of this model optimized for the loop design described
+    in (Rzhetsky et al., 2009), see :class:`~ModelBtLoopDesign`.
 
     Reference
     ---------
@@ -57,15 +46,28 @@ class ModelBt(AbstractModel):
     your curation effort", PLoS Computational Biology, 5(5).
     """
 
+
+    ######## Model traits
+
+    # number of label classes
     nclasses = Int
-    nannotators = Int(8)
-    # number of annotators rating each item in the loop design
-    nannotators_per_item = Int(3)
+
+    # number of annotators
+    nannotators = Int
+
+    # gamma[k] is prior probability of class k
     gamma = Array(dtype=float, shape=(None,))
+
+    # theta[j] parametrizes P(annotator j chooses : | real label = k)
     theta = Array(dtype=float, shape=(None,))
 
-    def __init__(self, nclasses, gamma, theta, **traits):
+
+    def __init__(self, nclasses, nannotators,
+                 gamma, theta, **traits):
+
         self.nclasses = nclasses
+        self.nannotators = nannotators
+
         self.gamma = gamma
         self.theta = theta
 
@@ -75,7 +77,7 @@ class ModelBt(AbstractModel):
     ##### Model and data generation methods ###################################
 
     @staticmethod
-    def create_initial_state(nclasses, gamma=None, theta=None):
+    def create_initial_state(nclasses, nannotators, gamma=None, theta=None):
         """Factory method returning a model with random initial parameters.
 
         <behaviour>
@@ -83,7 +85,10 @@ class ModelBt(AbstractModel):
         Arguments
         ---------
         nclasses : int
-            number of categories
+            Number of label classes
+
+        nannotators : int
+            Number of annotators
 
         gamma : nparray
             An array of floats with size that holds the probability of each
@@ -103,10 +108,9 @@ class ModelBt(AbstractModel):
             gamma = ModelBt._random_gamma(nclasses)
 
         if theta is None:
-            nannotators = 8
             theta = ModelBt._random_theta(nannotators)
 
-        model = ModelBt(nclasses, gamma, theta)
+        model = ModelBt(nclasses, nannotators, gamma, theta)
         return model
 
 
@@ -130,21 +134,13 @@ class ModelBt(AbstractModel):
     def generate_annotations_from_labels(self, labels):
         """Generate random annotations given labels."""
         theta = self.theta
-        nannotators = self.nannotators
         nitems = labels.shape[0]
-        nitems_per_loop = np.ceil(float(nitems) / nannotators)
 
-        annotations = np.empty((nitems, nannotators), dtype=int)
-        for j in xrange(nannotators):
+        annotations = np.empty((nitems, self.nannotators), dtype=int)
+        for j in xrange(self.nannotators):
             for i in xrange(nitems):
                 distr = self._theta_to_categorical(theta[j], labels[i])
                 annotations[i,j]  = random_categorical(distr, 1)
-
-        # mask annotation value according to loop design
-        for l in xrange(nannotators):
-            label_idx = np.arange(l+self.nannotators_per_item, l+nannotators) % 8
-            annotations[l*nitems_per_loop:(l+1)*nitems_per_loop,
-                        label_idx] = MISSING_VALUE
 
         return annotations
 
@@ -183,12 +179,15 @@ class ModelBt(AbstractModel):
     def mle(self, annotations, estimate_gamma=True):
         self._raise_if_incompatible(annotations)
 
+        # mask missing annotations
+        missing_mask_nclasses = self._missing_mask(annotations)
+
         # wrap log likelihood function to give it to optimize.fmin
-        _llhood_counts = self._log_likelihood_counts
-        def _wrap_llhood(params, counts):
-            self.gamma, self.theta = self._vector_to_params(params)
+        _llhood = self._log_likelihood_core
+        def _wrap_llhood(params):
+            gamma, theta = self._vector_to_params(params)
             # minimize *negative* likelihood
-            return - _llhood_counts(counts)
+            return - _llhood(annotations, gamma, theta, missing_mask_nclasses)
 
         self._parameter_estimation(_wrap_llhood, annotations,
                                    estimate_gamma=estimate_gamma)
@@ -197,13 +196,17 @@ class ModelBt(AbstractModel):
     def map(self, annotations, estimate_gamma=True):
         self._raise_if_incompatible(annotations)
 
-        # wrap log likelihood function to give it to optimize.fmin
-        _llhood_counts = self._log_likelihood_counts
+        # mask missing annotations
+        missing_mask_nclasses = self._missing_mask(annotations)
+
+        # wrap objective function to give it to optimize.fmin
+        _llhood = self._log_likelihood_core
         _log_prior = self._log_prior
-        def _wrap_llhood(params, counts):
-            self.gamma, self.theta = self._vector_to_params(params)
+        def _wrap_llhood(params):
+            gamma, theta = self._vector_to_params(params)
             # minimize *negative* posterior probability of parameters
-            return - (_llhood_counts(counts) + _log_prior())
+            return - (_llhood(annotations, gamma, theta, missing_mask_nclasses)
+                      + _log_prior(theta))
 
         self._parameter_estimation(_wrap_llhood, annotations,
                                    estimate_gamma=estimate_gamma)
@@ -211,8 +214,6 @@ class ModelBt(AbstractModel):
 
     def _parameter_estimation(self, objective, annotations,
                               estimate_gamma=True):
-        counts = compute_counts(annotations, self.nclasses)
-
         params_start = self._random_initial_parameters(annotations,
                                                        estimate_gamma)
 
@@ -221,7 +222,6 @@ class ModelBt(AbstractModel):
         # TODO: use gradient, constrained optimization
         params_best = scipy.optimize.fmin(objective,
                                           params_start,
-                                          args=(counts,),
                                           xtol=1e-4, ftol=1e-4,
                                           disp=False, maxiter=10000)
 
@@ -270,86 +270,117 @@ class ModelBt(AbstractModel):
 
         self._raise_if_incompatible(annotations)
 
-        counts = compute_counts(annotations, self.nclasses)
-        return self._log_likelihood_counts(counts)
+        # mask missing annotations
+        missing_mask_nclasses = self._missing_mask(annotations)
+
+        return self._log_likelihood_core(annotations,
+                                         self.gamma, self.theta,
+                                         missing_mask_nclasses)
 
 
-    def _log_likelihood_counts(self, counts):
-        """Compute the log likelihood of annotations given the model.
+    def _log_likelihood_core(self, annotations,
+                             gamma, theta,
+                             missing_mask_nclasses):
 
-        This method assumes the data is in counts format.
-        """
-
-        # TODO: check if it's possible to replace these constraints with bounded optimization
         # check boundary conditions
-        if (min(min(self.gamma), min(self.theta)) < 0.
-            or max(max(self.gamma), max(self.theta)) > 1.):
-            #return np.inf
+        if (min(min(gamma), min(theta)) < 0.
+            or max(max(gamma), max(theta)) > 1.):
+            #return -np.inf
             return SMALLEST_FLOAT
 
-        llhood = 0.
-        # loop over the 8 combinations of annotators
-        for i in range(8):
-            # extract the theta parameters for this triplet
-            triplet_indices = np.arange(i, i+3) % self.nannotators
-            triplet_indices.sort()
-            theta_triplet = self.theta[triplet_indices]
+        unnorm_category = self._compute_category(
+            annotations, gamma, theta,
+            missing_mask_nclasses=missing_mask_nclasses,
+            normalize=False
+        )
 
-            # compute the likelihood for the triplet
-            llhood += self._log_likelihood_triplet(counts[:,i],
-                                                   theta_triplet)
+        llhood = np.log(unnorm_category.sum(1)).sum()
+        if np.isnan(llhood):
+            llhood = SMALLEST_FLOAT
 
         return llhood
 
 
-    def _log_likelihood_triplet(self, counts_triplet, theta_triplet):
-        """Compute the log likelihood of data for one triplet of annotators.
+    def _compute_category(self, annotations, gamma, theta,
+                          missing_mask_nclasses=None, normalize=True):
+        """Compute P(category[i] = k | model, annotations).
 
-        Input:
-        counts_triplet -- count data for one combination of annotators
-        theta_triplet -- theta parameters of the current triplet
+        Arguments
+        ---------
+        annotations : ndarray
+            Array of annotations
+
+        gamma : ndarray
+            Gamma parameters
+
+        theta : ndarray
+            Theta parameters
+
+        missing_mask_nclasses : ndarray, shape=(nitems, nannotators, n_classes)
+            Mask with True at missing values, tiled in the third dimension.
+            If None, it is computed, but it can be specified to speed-up
+            computations.
+
+        normalize : bool
+            If False, do not normalize the distribution.
+
+        Returns
+        -------
+        category : ndarray, shape = (n_items, n_classes)
+            category[i,k] is the (unnormalized) probability of class k for
+            item i
         """
 
-        # log \prod_n P(v_{ijk}^{n} | params)
-        # = \sum_n log P(v_{ijk}^{n} | params)
-        # = \sum_v_{ijk}  count(v_{ijk}) log P( v_{ijk} | params )
-        #
-        # where n is n-th annotation of triplet {ijk}]
+        nitems, nannotators = annotations.shape
 
-        # compute P( v_{ijk} | params )
-        pf = self._pattern_frequencies(theta_triplet)
-        log_pf = ninf_to_num(np.log(pf))
-        l = (counts_triplet * log_pf).sum()
+        # compute mask of invalid entries in annotations if necessary
+        if missing_mask_nclasses is None:
+            missing_mask_nclasses = self._missing_mask(annotations)
 
-        return l
+        accuracy = self._accuracy_tensor(theta)
+
+        # unnorm_category is P(category[i] = k | model, data), unnormalized
+        unnorm_category = np.tile(gamma.copy(), (nitems, 1))
+        # mask missing annotations
+        annotators = np.arange(nannotators)[None, :]
+        tmp = np.ma.masked_array(accuracy[annotators, :, annotations],
+                                 mask=missing_mask_nclasses)
+        unnorm_category *= tmp.prod(1)
+
+        if normalize:
+            return unnorm_category / unnorm_category.sum(1)[:,None]
+
+        return unnorm_category
 
 
-    def _pattern_frequencies(self, theta_triplet):
-        """Compute vector of P(v_{ijk}|params) for each combination of v_{ijk}.
+    def _accuracy_tensor(self, theta):
+        """Return the accuracy tensor.
+
+        theta[j,k,k'] = P( annotator j emits k | real class is k')
         """
-
-        gamma = self.gamma
+        nannotators = self.nannotators
         nclasses = self.nclasses
-        # list of all possible combinations of v_i, v_j, v_k elements
-        v_ijk_combinations = _get_triplet_combinations(nclasses)
 
-        # P( v_{ijk} | params ) = \sum_psi P( v_{ijk} | psi, params ) P( psi )
+        accuracy = np.empty((nannotators, nclasses, nclasses))
+        for j in range(nannotators):
+            for k in range(nclasses):
+                accuracy[j,k,:] = self._theta_to_categorical(theta[j], k)
 
-        pf = 0.
-        not_theta = (1.-theta_triplet) / (nclasses-1.)
-        p_v_ijk_given_psi = np.empty_like(v_ijk_combinations, dtype=float)
-        for psi in range(nclasses):
-            for j in range(3):
-                p_v_ijk_given_psi[:,j] = np.where(v_ijk_combinations[:,j]==psi,
-                                                  theta_triplet[j],
-                                                  not_theta[j])
-            pf += p_v_ijk_given_psi.prod(1) * gamma[psi]
-        return pf
+        return accuracy
 
 
-    def _log_prior(self):
+    def _missing_mask(self, annotations):
+        missing_mask = ~ is_valid(annotations)
+        missing_mask_nclasses = np.tile(missing_mask[:, :, None],
+            (1, 1, self.nclasses))
+        return missing_mask_nclasses
+
+
+    def _log_prior(self, theta=None):
         """Compute log probability of prior on the theta parameters."""
-        log_prob = scipy.stats.beta._logpdf(self.theta, 2., 1.).sum()
+        if theta is None:
+            theta = self.theta
+        log_prob = scipy.stats.beta._logpdf(theta, 2., 1.).sum()
         return log_prob
 
 
@@ -414,15 +445,18 @@ class ModelBt(AbstractModel):
                                                 burn_in_samples,
                                                 thin_samples)
 
-        # optimize step size
-        counts = compute_counts(annotations, self.nclasses)
+        # mask missing annotations
+        missing_mask_nclasses = self._missing_mask(annotations)
 
-        # wrap log likelihood function to give it to optimize_step_size and
+        # wrap objective function to give it to optimize_step_size and
         # sample_distribution
-        _llhood_counts = self._log_likelihood_counts
-        def _wrap_llhood(params, counts):
-            self.theta = params
-            return _llhood_counts(counts)
+        _llhood = self._log_likelihood_core
+        _log_prior = self._log_prior
+        gamma = self.gamma
+        def _wrap_llhood(params, args):
+            theta = params
+            return (_llhood(annotations, gamma, theta, missing_mask_nclasses)
+                    + _log_prior(theta))
 
         # TODO this save-reset is rather ugly, refactor: create copy of
         #      model and sample over it
@@ -433,7 +467,7 @@ class ModelBt(AbstractModel):
             params_start = self.theta.copy()
             params_upper = np.ones((self.nannotators,))
             params_lower = np.zeros((self.nannotators,))
-            step = optimize_step_size(_wrap_llhood, params_start, counts,
+            step = optimize_step_size(_wrap_llhood, params_start, None,
                                 params_lower, params_upper,
                                 step_optimization_nsamples,
                                 adjust_step_every,
@@ -441,7 +475,7 @@ class ModelBt(AbstractModel):
                                 rejection_rate_tolerance)
 
             # draw samples from posterior distribution over theta
-            samples = sample_distribution(_wrap_llhood, params_start, counts,
+            samples = sample_distribution(_wrap_llhood, params_start, None,
                                           step, nsamples,
                                           params_lower, params_upper)
             return self._post_process_samples(samples, burn_in_samples,
@@ -454,52 +488,16 @@ class ModelBt(AbstractModel):
     ##### Posterior distributions #############################################
 
     def infer_labels(self, annotations):
-        """Infer posterior distribution over true labels given theta."""
+        """Infer posterior distribution over true labels.
+
+        Returns P( label | annotations, parameters), where parameters is the
+        current point estimate of the parameters pi and theta.
+        """
 
         self._raise_if_incompatible(annotations)
 
-        nitems = annotations.shape[0]
-        gamma = self.gamma
-        nclasses = self.nclasses
+        category = self._compute_category(annotations,
+                                          self.gamma,
+                                          self.theta)
 
-        # get indices of annotators active in each row
-        valid_entries = is_valid(annotations).nonzero()
-        annotator_indices = np.reshape(valid_entries[1],
-            (nitems, self.nannotators_per_item))
-        valid_annotations = annotations[valid_entries]
-        valid_annotations = np.reshape(valid_annotations,
-            (nitems, self.nannotators_per_item))
-
-        # thetas of active annotators
-        theta_equal = self.theta[annotator_indices]
-        theta_not_equal = (1. - theta_equal) / (nclasses - 1.)
-
-        # compute posterior over psi
-        psi_distr = np.zeros((nitems, nclasses))
-        for psi in xrange(nclasses):
-            tmp = np.where(valid_annotations == psi,
-                           theta_equal, theta_not_equal)
-            psi_distr[:,psi] = gamma[psi] * tmp.prod(1)
-
-        # normalize distribution
-        psi_distr /= psi_distr.sum(1)[:,np.newaxis]
-        return psi_distr
-
-
-    ##### Verify input ########################################################
-
-    def are_annotations_compatible(self, annotations):
-        """Check if the annotations are compatible with the models' parameters.
-        """
-
-        if not super(ModelBt, self).are_annotations_compatible(annotations):
-            return False
-
-        masked_annotations = np.ma.masked_equal(annotations, MISSING_VALUE)
-
-        # exactly 3 annotations per row
-        nvalid = (~masked_annotations.mask).sum(1)
-        if not np.all(nvalid == self.nannotators_per_item):
-            return False
-
-        return True
+        return category
