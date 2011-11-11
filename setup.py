@@ -7,7 +7,7 @@ with open('README') as f:
     LONG_DESCRIPTION = f.read()
 
 setup(name = "pyanno",
-      version = "2.0dev-5",
+      version = "2.0dev-8",
       packages = find_packages(),
 
       author = 'pyAnno developers',
@@ -24,6 +24,8 @@ setup(name = "pyanno",
 
       package_data = {
           '': ['*.txt', '*.rst', 'data/*'],
+          'pyanno.ui': ['images/*'],
+          'pyanno.plots': ['images/*']
       },
       include_package_data = True,
 
