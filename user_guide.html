@@ -57,120 +57,54 @@
   <div class="section" id="user-guide">
 <h1>User guide<a class="headerlink" href="#user-guide" title="Permalink to this headline">¶</a></h1>
 <p>This user guide contains information about getting started
-with pyanno, running simulations and running model estimation.</p>
-<div class="section" id="license">
-<h2>LICENSE<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
-<p>pyAnno is distributed under the Apache 2.0 license.  See License.txt.</p>
+with pyAnno, running simulations and running model estimation.</p>
 </div>
-<div class="section" id="documentation">
-<h2>DOCUMENTATION<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
-<p>Functions are documented with code comments explaining
-inputs and outputs.</p>
+<div class="section" id="general-organization-of-pyanno">
+<h1>General organization of pyAnno<a class="headerlink" href="#general-organization-of-pyanno" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li>models</li>
+<li>database</li>
+<li>measures</li>
+<li>plots</li>
+<li>ui</li>
+</ul>
 </div>
-<div class="section" id="unit-tests">
-<h2>UNIT TESTS<a class="headerlink" href="#unit-tests" title="Permalink to this headline">¶</a></h2>
-<p>One way to see how the functions are intended to work
-is to study the unit tests.  These are in the top-level
-file unit_test.py.  There are only unit tests for pyanno.util
-and pyanno.kappa modules.</p>
+<div class="section" id="using-the-library-from-a-python-shell">
+<h1>Using the library from a Python shell<a class="headerlink" href="#using-the-library-from-a-python-shell" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="creating-a-new-model">
+<h2>Creating a new model<a class="headerlink" href="#creating-a-new-model" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="pyanno-kappa-kappa-and-other-agreement-statistics">
-<h2>pyanno.kappa:  KAPPA AND OTHER AGREEMENT STATISTICS<a class="headerlink" href="#pyanno-kappa-kappa-and-other-agreement-statistics" title="Permalink to this headline">¶</a></h2>
-<p>The pyanno.kappa module contains routines to estimate
-interannotator agreement statistics such as simple
-agreement, kappa, and pi.  Documentation for these
-functions is available in the code.</p>
+<div class="section" id="generating-data">
+<h2>Generating data<a class="headerlink" href="#generating-data" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="pyanno-multinom-model-estimation">
-<h2>pyanno.multinom:  MODEL ESTIMATION<a class="headerlink" href="#pyanno-multinom-model-estimation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="estimating-parameters">
+<h2>Estimating parameters<a class="headerlink" href="#estimating-parameters" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="maximum-likelihood-simulation">
-<h2>Maximum Likelihood Simulation<a class="headerlink" href="#maximum-likelihood-simulation" title="Permalink to this headline">¶</a></h2>
-<p>Simulating ordinal data and fitting using EM for the
-Dawid and Skene multinomial model can be done using:</p>
-<blockquote>
-<div>% cd $PYANNO_HOME
-% python examples/mle_sim.py</div></blockquote>
-<p>This will print out (a) sizing for simulated data, (b) a trace of EM
-epoch-by-epoch with log likelihoods, (c) estimated prevalences
-compared to simulated parameter and sample prevalence, (d) estimated
-accuracies compared to simulated values and sample values, and (e)
-estimated categories with simulated cateory indicated.  Here&#8217;s
-what the output should look like:</p>
-<blockquote>
-<div><p>SIZES
-I= 200
-J= 5
-K= 4
-N= 1000</p>
-<dl class="docutils">
-<dt>RUNNING EM</dt>
-<dd>epoch=     0  log likelihood=-1205.1652   diff=     1.#IO
-epoch=     1  log likelihood= -965.8246   diff=     1.#IO</dd>
-</dl>
-<blockquote>
-<div>epoch=    86  log likelihood= -945.8426   diff=    0.0011</div></blockquote>
-<dl class="docutils">
-<dt>PREVALENCE ESTIMATES</dt>
-<dd>k,   sim,  samp,   MLE,  d.sim, d.samp
-0, 0.038, 0.030, 0.048, +0.010, +0.018
-1, 0.326, 0.355, 0.327, +0.001, -0.028
-2, 0.536, 0.515, 0.447, -0.089, -0.068
-3, 0.100, 0.100, 0.178, +0.078, +0.078</dd>
-<dt>ACCURACY ESTIMATES</dt>
-<dd>j,k1,k2,   sim,  samp,   mle,  d.sim, d.samp
-0, 0, 0, 0.802, 0.667, 0.472, -0.330, -0.195
-0, 0, 1, 0.169, 0.333, 0.424, +0.255, +0.090
-0, 0, 2, 0.023, 0.000, 0.104, +0.081, +0.104
-0, 0, 3, 0.006, 0.000, 0.000, -0.006, +0.000</dd>
-</dl>
-<dl class="docutils">
-<dt>...</dt>
-<dd>4, 3, 2, 0.143, 0.200, 0.323, +0.180, +0.123
-4, 3, 3, 0.809, 0.750, 0.647, -0.163, -0.103</dd>
-<dt>CATEGORY ESTIMATES</dt>
-<dd>0   0: 0.000   1: 0.000   2:<a href="#id1"><span class="problematic" id="id2">*</span></a>0.996   3: 0.004
-1   0: 0.000   1:<a href="#id3"><span class="problematic" id="id4">*</span></a>0.986   2: 0.014   3: 0.000</dd>
-</dl>
-<p>...</p>
-</div></blockquote>
-<p>Note that you get comparisons with the simulated values as well as the
-sampled values.  This is because, for example, the prevalence of
-categories in the generated sample isn&#8217;t necessarily the same as in
-the parameter.  The best a model can do is fit the sampled data, so
-the estimated values are usually closer to sampled than simulated
-values.</p>
-<p>For the category estimates, an asterisk appears before
-the score of the true label.  For example, item 0 in
-the above has reference category 2, and item 1 has
-reference category 1.</p>
+<div class="section" id="plots">
+<h2>Plots<a class="headerlink" href="#plots" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="maximum-a-posteriori-map-estimation-simulation">
-<h2>Maximum a Posteriori (MAP) Estimation Simulation<a class="headerlink" href="#maximum-a-posteriori-map-estimation-simulation" title="Permalink to this headline">¶</a></h2>
-<p>Runs the same way as the MLE estimation simulation,</p>
-<blockquote>
-<div>% cd $PYANNO_HOME
-% python examples/map_sim.py</div></blockquote>
-<p>In addition to printing log likelihoods, you also get log priors and
-the sums during the run.  The output prevalence, accuracy and
-categories are as before.</p>
 </div>
-<div class="section" id="real-data-estimation">
-<h2>Real Data Estimation<a class="headerlink" href="#real-data-estimation" title="Permalink to this headline">¶</a></h2>
-<p>pyanno also ships with demos for the Rzhetsky et al. (2009)
-annotation paper.  The code reads the data out of a CSV file
-and populates the inputs for estimation.  This can be done
-with MLE or MAP estimates as follows:</p>
-<blockquote>
-<div>% cd $PYANNO_HOME</div></blockquote>
-<p>and then for MLE:</p>
-<blockquote>
-<div>% python examples/rzhetsky2009/mle.py examples/rzhetsky2009/data/p85.csv</div></blockquote>
-<p>or for MAP:</p>
-<blockquote>
-<div>% python examples/rzhetsky2009/map.py examples/rzhetsky2009/data/p85.csv</div></blockquote>
-<p>There are also data files e85.csv and f85.csv, which have
-slightly differently shaped data.</p>
+<div class="section" id="using-the-library-from-the-pyanno-gui">
+<h1>Using the library from the pyanno GUI<a class="headerlink" href="#using-the-library-from-the-pyanno-gui" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="starting-the-gui">
+<h2>Starting the GUI<a class="headerlink" href="#starting-the-gui" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="navigating-the-main-window">
+<h2>Navigating the main window<a class="headerlink" href="#navigating-the-main-window" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="the-database-window">
+<h2>The database window<a class="headerlink" href="#the-database-window" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="finding-help">
+<h2>Finding help<a class="headerlink" href="#finding-help" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Online API: [REF]</li>
+<li>One way to see how the functions are intended to work
+is to have a look at the unit tests, which can be found in
+the directory <cite>pyannotests</cite> of the pyanno library</li>
+<li>If everything else fails, please send your questions to
+<cite>arzhetsk&#64;medicine.bsd.uchicago.edu</cite>.</li>
+</ul>
 </div>
 </div>
 
@@ -182,15 +116,20 @@ slightly differently shaped data.</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">User guide</a><ul>
-<li><a class="reference internal" href="#license">LICENSE</a></li>
-<li><a class="reference internal" href="#documentation">DOCUMENTATION</a></li>
-<li><a class="reference internal" href="#unit-tests">UNIT TESTS</a></li>
-<li><a class="reference internal" href="#pyanno-kappa-kappa-and-other-agreement-statistics">pyanno.kappa:  KAPPA AND OTHER AGREEMENT STATISTICS</a></li>
-<li><a class="reference internal" href="#pyanno-multinom-model-estimation">pyanno.multinom:  MODEL ESTIMATION</a></li>
-<li><a class="reference internal" href="#maximum-likelihood-simulation">Maximum Likelihood Simulation</a></li>
-<li><a class="reference internal" href="#maximum-a-posteriori-map-estimation-simulation">Maximum a Posteriori (MAP) Estimation Simulation</a></li>
-<li><a class="reference internal" href="#real-data-estimation">Real Data Estimation</a></li>
+<li><a class="reference internal" href="#">User guide</a></li>
+<li><a class="reference internal" href="#general-organization-of-pyanno">General organization of pyAnno</a></li>
+<li><a class="reference internal" href="#using-the-library-from-a-python-shell">Using the library from a Python shell</a><ul>
+<li><a class="reference internal" href="#creating-a-new-model">Creating a new model</a></li>
+<li><a class="reference internal" href="#generating-data">Generating data</a></li>
+<li><a class="reference internal" href="#estimating-parameters">Estimating parameters</a></li>
+<li><a class="reference internal" href="#plots">Plots</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-the-library-from-the-pyanno-gui">Using the library from the pyanno GUI</a><ul>
+<li><a class="reference internal" href="#starting-the-gui">Starting the GUI</a></li>
+<li><a class="reference internal" href="#navigating-the-main-window">Navigating the main window</a></li>
+<li><a class="reference internal" href="#the-database-window">The database window</a></li>
+<li><a class="reference internal" href="#finding-help">Finding help</a></li>
 </ul>
 </li>
 </ul>

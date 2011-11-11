@@ -421,13 +421,12 @@ the step size estimation pahse</li>
 <span id="modelb-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">modelB</span></tt> Module<a class="headerlink" href="#module-pyanno.modelB" title="Permalink to this headline">¶</a></h2>
 <p>This module defines the class ModelB, a Bayesian generalization
 of the model proposed in (Dawid et al., 1979).</p>
-<div class="section" id="id2">
-<h3>Reference<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt>Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood</dt>
-<dd>estimation of observer error-rates using the EM algorithm.  Applied
-Statistics, 28(1):20&#8211;28.</dd>
-</dl>
+<p><strong>Reference:</strong></p>
+<ul class="simple">
+<li>Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
+estimation of observer error-rates using the EM algorithm.  Applied
+Statistics, 28(1):20&#8211;28.</li>
+</ul>
 <dl class="class">
 <dt id="pyanno.modelB.ModelB">
 <em class="property">class </em><tt class="descclassname">pyanno.modelB.</tt><tt class="descname">ModelB</tt><big>(</big><em>nclasses</em>, <em>nannotators</em>, <em>pi</em>, <em>theta</em>, <em>alpha=None</em>, <em>beta=None</em>, <em>**traits</em><big>)</big><a class="reference internal" href="modules/pyanno/modelB.html#ModelB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelB.ModelB" title="Permalink to this definition">¶</a></dt>
@@ -456,11 +455,14 @@ P( annotator j chooses k&#8217; | real label = k)</li>
 </ul>
 </div></blockquote>
 <p>See the documentation for a more detailed description of the model.</p>
-<p>Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
+<p><strong>References:</strong></p>
+<ul class="simple">
+<li>Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
 estimation of observer error-rates using the EM algorithm.  Applied
-Statistics, 28(1):20&#8211;28.</p>
-<p>Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). &#8220;How to get the most from
-your curation effort&#8221;, PLoS Computational Biology, 5(5).</p>
+Statistics, 28(1):20&#8211;28.</li>
+<li>Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). &#8220;How to get the most
+from your curation effort&#8221;, PLoS Computational Biology, 5(5).</li>
+</ul>
 <dl class="staticmethod">
 <dt id="pyanno.modelB.ModelB.create_initial_state">
 <em class="property">static </em><tt class="descname">create_initial_state</tt><big>(</big><em>nclasses</em>, <em>nannotators</em>, <em>alpha=None</em>, <em>beta=None</em><big>)</big><a class="reference internal" href="modules/pyanno/modelB.html#ModelB.create_initial_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelB.ModelB.create_initial_state" title="Permalink to this definition">¶</a></dt>
@@ -470,106 +472,8 @@ constructor, as one does not need to specify the initial model
 parameters.</p>
 <p>The parameters theta and pi, controlling accuracy and prevalence,
 are drawn at random from the prior alpha and beta:</p>
-<p><div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">\theta_j^k \sim \mathrm{Dirichlet}(\mathbf{lpha_k})</tt>)</p>
-latex exited with error:
-[stderr]
-
-[stdout]
-This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011)
- restricted \write18 enabled.
-entering extended mode
-(./math.tex
-LaTeX2e &lt;2009/09/24&gt;
-Babel &lt;v3.8l&gt; and hyphenation patterns for english, dumylang, nohyphenation, ba
-sque, danish, dutch, finnish, french, german, ngerman, swissgerman, hungarian, 
-italian, bokmal, nynorsk, polish, portuguese, spanish, swedish, loaded.
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/base/size12.clo))
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/base/inputenc.sty
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/ucs/utf8x.def))
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/ucs/ucs.sty
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/ucs/data/uni-global.def))
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsmath/amsmath.sty
-For additional information on amsmath, use the `?&#8217; option.
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsmath/amstext.sty
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsmath/amsgen.sty))
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsmath/amsbsy.sty)
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsmath/amsopn.sty))
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amscls/amsthm.sty)
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsfonts/amssymb.sty
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/tools/bm.sty) (./math.aux)
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/ucs/ucsencs.def)
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsfonts/umsa.fd)
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsfonts/umsb.fd)
-
-! Package inputenc Error: Keyboard character used is undefined
-(inputenc)                in inputencoding `utf8x&#8217;.
-
-See the inputenc package documentation for explanation.
-Type  H &lt;return&gt;  for immediate help.
- ...                                              
-                                                  
-l.12 ...\sim \mathrm{Dirichlet}(\mathbf{^^Glpha_k}
-                                                  )$
-[1] (./math.aux) )
-(see the transcript file for additional information)
-Output written on math.dvi (1 page, 488 bytes).
-Transcript written on math.log.
-</div>
-</p>
-<p><div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">\pi \sim \mathrm{Dirichlet}(\mathbf{eta})</tt>)</p>
-latex exited with error:
-[stderr]
-
-[stdout]
-This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011)
- restricted \write18 enabled.
-entering extended mode
-(./math.tex
-LaTeX2e &lt;2009/09/24&gt;
-Babel &lt;v3.8l&gt; and hyphenation patterns for english, dumylang, nohyphenation, ba
-sque, danish, dutch, finnish, french, german, ngerman, swissgerman, hungarian, 
-italian, bokmal, nynorsk, polish, portuguese, spanish, swedish, loaded.
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/base/size12.clo))
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/base/inputenc.sty
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/ucs/utf8x.def))
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/ucs/ucs.sty
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/ucs/data/uni-global.def))
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsmath/amsmath.sty
-For additional information on amsmath, use the `?&#8217; option.
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsmath/amstext.sty
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsmath/amsgen.sty))
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsmath/amsbsy.sty)
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsmath/amsopn.sty))
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amscls/amsthm.sty)
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsfonts/amssymb.sty
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/tools/bm.sty) (./math.aux)
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/ucs/ucsencs.def)
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsfonts/umsa.fd)
-(/usr/local/texlive/2011basic/texmf-dist/tex/latex/amsfonts/umsb.fd)
-
-! Package inputenc Error: Keyboard character used is undefined
-(inputenc)                in inputencoding `utf8x&#8217;.
-
-See the inputenc package documentation for explanation.
-Type  H &lt;return&gt;  for immediate help.
- ...                                              
-                                                  
-l.12 $\pi \sim \mathrm{Dirichlet}(\mathbf{^^Heta}
-                                                 )$
-[1] (./math.aux) )
-(see the transcript file for additional information)
-Output written on math.dvi (1 page, 376 bytes).
-Transcript written on math.log.
-</div>
-</p>
+<p><img class="math" src="images/math/89eb5c5b9c8f1b6450ca12bb52b9376df9d770d3.png" alt="\theta_j^k \sim \mathrm{Dirichlet}(\mathbf{\alpha_k})"/></p>
+<p><img class="math" src="images/math/a38435656269269650b418db6503d4c9365debfe.png" alt="\pi \sim \mathrm{Dirichlet}(\mathbf{\beta})"/></p>
 <p>If not defined, the prior parameters alpha ad beta are defined as
 described below.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -773,7 +677,6 @@ the auto-correlation in the sampling chain. This is called
 
 </dd></dl>
 
-</div>
 </div>
 <div class="section" id="module-pyanno.modelBt">
 <span id="modelbt-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">modelBt</span></tt> Module<a class="headerlink" href="#module-pyanno.modelBt" title="Permalink to this headline">¶</a></h2>
@@ -1138,7 +1041,7 @@ set.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>data_id</strong> (<em>string</em>) &#8211; Readable <strong>unique</strong> identifier for the annotations set (e.g.,
 the file name where the annotations are stored).</li>
-<li><strong>anno_container</strong> (<em>AnnotationsContainer</em>) &#8211; An annotations container (see :class:<a href="#id3"><span class="problematic" id="id4">`</span></a>~AnnotationsContainer).</li>
+<li><strong>anno_container</strong> (<em>AnnotationsContainer</em>) &#8211; An annotations container (see :class:<a href="#id2"><span class="problematic" id="id3">`</span></a>~AnnotationsContainer).</li>
 <li><strong>model</strong> (<em>object</em>) &#8211; pyAnno model object instance</li>
 <li><strong>value</strong> (<em>float</em>) &#8211; value of the objective function for the model-annotations pair,
 typically the log likelihood of the annotations given the model</li>
@@ -1309,10 +1212,7 @@ MISSING_VALUE.</p>
 <li><a class="reference internal" href="#reference">Reference</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-pyanno.modelB"><tt class="docutils literal"><span class="pre">modelB</span></tt> Module</a><ul>
-<li><a class="reference internal" href="#id2">Reference</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#module-pyanno.modelB"><tt class="docutils literal"><span class="pre">modelB</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pyanno.modelBt"><tt class="docutils literal"><span class="pre">modelBt</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pyanno.annotations"><tt class="docutils literal"><span class="pre">annotations</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pyanno.sampling"><tt class="docutils literal"><span class="pre">sampling</span></tt> Module</a></li>
