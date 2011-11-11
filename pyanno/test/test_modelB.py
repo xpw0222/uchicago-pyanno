@@ -116,7 +116,7 @@ class TestModelB(unittest.TestCase):
         annotations = true_model.generate_annotations(nitems)
 
         # create a new, empty model and infer back the parameters
-        model = ModelB(nclasses, nannotators)
+        model = ModelB.create_initial_state(nclasses, nannotators)
         before_llhood = (model.log_likelihood(annotations)
                          + model._log_prior(model.pi, model.theta))
         model.map(annotations, epsilon=1e-3, max_epochs=1000)
@@ -161,7 +161,7 @@ class TestModelB(unittest.TestCase):
         annotations = true_model.generate_annotations(nitems)
 
         # create a new, empty model and infer back the parameters
-        model = ModelB(nclasses, nannotators)
+        model = ModelB.create_initial_state(nclasses, nannotators)
         before_llhood = model.log_likelihood(annotations)
         model.mle(annotations, epsilon=1e-3, max_epochs=1000)
         after_llhood = model.log_likelihood(annotations)
@@ -189,7 +189,7 @@ class TestModelB(unittest.TestCase):
             annotations[i,j] = MV
 
         # create a new, empty model and infer back the parameters
-        model = ModelB(nclasses, nannotators)
+        model = ModelB.create_initial_state(nclasses, nannotators)
         before_llhood = (model.log_likelihood(annotations)
                          + model._log_prior(model.pi, model.theta))
         model.map(annotations, epsilon=1e-3, max_epochs=1000)
@@ -339,7 +339,7 @@ class TestModelB(unittest.TestCase):
     def test_annotations_compatibility(self):
         nclasses = 3
         nannotators = 5
-        model = ModelB(nclasses, nannotators)
+        model = ModelB.create_initial_state(nclasses, nannotators)
 
         # test method that checks annotations compatibility
         anno = np.array([[0, 1, MV, MV, MV]])

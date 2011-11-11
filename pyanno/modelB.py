@@ -77,22 +77,14 @@ class ModelB(AbstractModel):
 
 
     def __init__(self, nclasses, nannotators,
-                 pi=None, theta=None,
+                 pi, theta,
                  alpha=None, beta=None, **traits):
 
         self.nclasses = nclasses
         self.nannotators = nannotators
 
-        if pi is not None:
-            self.pi = pi.copy()
-        else:
-            self.pi = np.ones((nclasses,)) / nclasses
-
-        # theta[j,k,:] is P(annotator j chooses : | real label = k)
-        if theta is not None:
-            self.theta = theta.copy()
-        else:
-            self.theta = np.ones((nannotators, nclasses, nclasses)) / nclasses
+        self.pi = pi
+        self.theta = theta
 
         # initialize prior parameters if not specified
         if alpha is not None:
