@@ -2,7 +2,7 @@
 # Authors: Pietro Berkes <pberkes@enthought.com>, Andrey Rzhetsky
 # License: Modified BSD license (2-clause)
 
-"""This modules defines the class ModelA, an implementation of model A from
+"""This module defines the class ModelA, an implementation of model A from
 Rzhetsky et al., 2009.
 
 Reference
@@ -147,7 +147,7 @@ class ModelA(AbstractModel):
         Parameters
         ----------
         nclasses : int
-            number of possible annotation classes
+            Number of possible annotation classes
 
         theta : ndarray, shape = (n_annotators, )
             theta[j] is the probability of annotator j being correct
@@ -439,6 +439,8 @@ class ModelA(AbstractModel):
     def log_likelihood(self, annotations):
         """Compute the log likelihood of a set of annotations given the model.
 
+        Returns log P(annotations | current model parameters).
+
         Parameters
         ----------
         annotations : ndarray, shape = (n_items, n_annotators)
@@ -578,8 +580,8 @@ class ModelA(AbstractModel):
     ##### Sampling posterior over parameters ##################################
 
     def sample_posterior_over_accuracy(self, annotations, nsamples,
-                                       burn_in_samples = 0,
-                                       thin_samples = 1,
+                                       burn_in_samples = 100,
+                                       thin_samples = 5,
                                        target_rejection_rate = 0.3,
                                        rejection_rate_tolerance = 0.2,
                                        step_optimization_nsamples = 500,

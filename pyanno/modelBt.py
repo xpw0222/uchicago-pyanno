@@ -356,7 +356,7 @@ class ModelBt(AbstractModel):
     def _accuracy_tensor(self, theta):
         """Return the accuracy tensor.
 
-        theta[j,k,k'] = P( annotator j emits k | real class is k')
+        theta[j,k,k'] = P( annotator j emits k' | real class is k)
         """
         nannotators = self.nannotators
         nclasses = self.nclasses
@@ -388,8 +388,8 @@ class ModelBt(AbstractModel):
 
     # TODO arguments for burn-in, thinning
     def sample_posterior_over_accuracy(self, annotations, nsamples,
-                                       burn_in_samples = 0,
-                                       thin_samples = 1,
+                                       burn_in_samples = 100,
+                                       thin_samples = 5,
                                        target_rejection_rate = 0.3,
                                        rejection_rate_tolerance = 0.2,
                                        step_optimization_nsamples = 500,
