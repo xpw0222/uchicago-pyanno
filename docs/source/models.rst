@@ -20,6 +20,23 @@ At present, pyAnno implements three probabilistic models of data annotation:
     estimation of observer error-rates using the EM algorithm.  Applied
     Statistics, 28(1):20--28.
 
+Glossary
+--------
+
+labels
+    The possible annotations. They may be numbers, or strings, or any
+    discrete set of objects
+
+class
+    Every set of labels is ordered and numbered from 0 to K. The number
+    associated with each label is the label class
+
+prevalence
+    The prior probability of label classes
+
+accuracy
+    The probability of an annotator reporting the correct label class
+
 
 Model A
 -------

@@ -2,7 +2,15 @@
 # Authors: Pietro Berkes <pberkes@enthought.com>, Bob Carpenter
 # License: Modified BSD license (2-clause)
 
-"""Definition of model B full."""
+"""This module defines the class ModelB, a Bayesian generalization
+of the model proposed in (Dawid et al., 1979).
+
+**Reference:**
+
+* Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
+  estimation of observer error-rates using the EM algorithm.  Applied
+  Statistics, 28(1):20--28.
+"""
 
 from traits.api import Int, Array
 import numpy as np
@@ -20,34 +28,35 @@ class ModelB(AbstractModel):
 
     Model B is a hierarchical generative model over annotations. The model
     assumes the existence of "true" underlying labels for each item,
-    which are drawn from a categorical distribution, pi. Annotators report
-    this labels with some noise.
+    which are drawn from a categorical distribution,
+    :math:`\pi`. Annotators report this labels with some noise, depending
+    on their accuracy, :math:`\\theta`.
 
     The model parameters are:
 
-        - pi[k] is the probability of label k
+        - `pi[k]` is the probability of label k
 
-        - theta[j,k,k'] is the probability that annotator j reports label k'
+        - `theta[j,k,k']` is the probability that annotator j reports label k'
           for an item whose real label is k, i.e.
           P( annotator j chooses k' | real label = k)
 
     The parameters themselves are random variables with hyperparameters
 
-        - beta are the parameters of a Dirichlet distribution over pi
+        - `beta` are the parameters of a Dirichlet distribution over `pi`
 
-        - alpha[k,:] are the parameters of Dirichlet distributions over
-          theta[j,k,:]
+        - `alpha[k,:]` are the parameters of Dirichlet distributions over
+          `theta[j,k,:]`
 
     See the documentation for a more detailed description of the model.
 
-    Reference
-    ---------
-    Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
-    estimation of observer error-rates using the EM algorithm.  Applied
-    Statistics, 28(1):20--28.
+    **References:**
 
-    Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most from
-    your curation effort", PLoS Computational Biology, 5(5).
+    * Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
+      estimation of observer error-rates using the EM algorithm.  Applied
+      Statistics, 28(1):20--28.
+
+    * Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most
+      from your curation effort", PLoS Computational Biology, 5(5).
     """
 
 
@@ -79,6 +88,31 @@ class ModelB(AbstractModel):
     def __init__(self, nclasses, nannotators,
                  pi, theta,
                  alpha=None, beta=None, **traits):
+        """Create an instance of ModelB.
+
+        Parameters
+        ----------
+        nclasses : int
+            Number of possible annotation classes
+
+        nannotators : int
+            Number of annotators
+
+        pi : ndarray, shape = (n_classes,)
+            pi[k] is the prior probability of class k.
+
+        theta : ndarray, shape = (n_annotators, n_classes, n_classes)
+            theta[j,k,k'] is the probability of annotator j reporting class k',
+            while the true label is k.
+
+        alpha : ndarray, shape = (n_classes, n_classes)
+            Parameters of Dirichlet prior over annotator choices
+            Default: peaks at correct annotation, decays to 1
+
+        beta : ndarray
+            Parameters of Dirichlet prior over model categories
+            Default: beta[i] = 2.0
+         """
 
         self.nclasses = nclasses
         self.nannotators = nannotators
@@ -106,7 +140,19 @@ class ModelB(AbstractModel):
     def create_initial_state(nclasses, nannotators, alpha=None, beta=None):
         """Factory method returning a model with random initial parameters.
 
-        <describe distr used for priors>
+        It is often more convenient to use this factory method over the
+        constructor, as one does not need to specify the initial model
+        parameters.
+
+        The parameters theta and pi, controlling accuracy and prevalence,
+        are drawn at random from the prior alpha and beta:
+
+        :math:`\\theta_j^k \sim \mathrm{Dirichlet}(\mathbf{\\alpha_k})`
+
+        :math:`\pi \sim \mathrm{Dirichlet}(\mathbf{\\beta})`
+
+        If not defined, the prior parameters alpha ad beta are defined as
+        described below.
 
         Arguments
         ---------
@@ -118,11 +164,13 @@ class ModelB(AbstractModel):
 
         alpha : ndarray
             Parameters of Dirichlet prior over annotator choices
-            Default: peaks at correct annotation, decays to 1
+            Default value is a band matrix that peaks at the correct
+            annotation, with a value of 16 and decays to 1 with diverging
+            classes. This prior is ideal for ordinal annotations.
 
         beta : ndarray
             Parameters of Dirichlet prior over model categories
-            Default: beta[i] = 2.0
+            Default value for beta[i] is 1.0 .
         """
 
         # NOTE: this is Bob Carpenter's prior; it is a *very* strong prior
@@ -160,9 +208,11 @@ class ModelB(AbstractModel):
                 theta[j, k, :] = np.random.dirichlet(alpha[k, :])
         return theta
 
+
     @staticmethod
     def default_beta(nclasses):
         return np.ones((nclasses,))
+
 
     @staticmethod
     def default_alpha(nclasses):
@@ -175,7 +225,24 @@ class ModelB(AbstractModel):
 
 
     def generate_annotations_from_labels(self, labels):
-        """Generate random annotations given labels."""
+        """Generate random annotations from the model, given labels
+
+        The method samples random annotations from the conditional probability
+        distribution of annotations, :math:`x_i^j`
+        given labels, :math:`y_i`:
+
+        :math:`x_i^j \sim \mathrm{Categorical}(\mathbf{\\theta_j^{y_i}})`
+
+        Parameters
+        ----------
+        labels : ndarray, shape = (n_items,), dtype = int
+            Set of "true" labels
+
+        Returns
+        -------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+        """
         nitems = labels.shape[0]
         annotations = np.empty((nitems, self.nannotators), dtype=int)
         for j in xrange(self.nannotators):
@@ -189,7 +256,12 @@ class ModelB(AbstractModel):
         """Generate a random annotation set from the model.
 
         Sample a random set of annotations from the probability distribution
-        defined the current model parameters.
+        defined the current model parameters:
+
+            1) Label classes are generated from the prior distribution, pi
+
+            2) Annotations are generated from the conditional distribution of
+               annotations given classes, theta
 
         Arguments
         ---------
@@ -210,49 +282,64 @@ class ModelB(AbstractModel):
     # TODO start from sample frequencies
     def map(self, annotations,
             epsilon=0.00001, init_accuracy=0.6, max_epochs=1000):
-        """Computes maximum a posteriori (MAP) estimate of parameters.
+        """Computes maximum a posteriori (MAP) estimation of parameters.
 
-        See the documentation for pyanno.multinom.mle() in this module for
-        a description of all but the following inputs:
+        Estimate the parameters :attr:`theta` and :attr:`pi` from a set of
+        observed annotations using maximum a posteriori estimation.
 
-        Input:
-        annotations -- annotations[i,j] is the annotation of annotator `j`
-                       for item `i`
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
 
-        Output:
-        Tuple (diff,ll,lp,cat) consisting of final difference, log likelihood,
-        log prior p(acc|alpha) * p(prev|beta), and item category estimates
+        epsilon : float
+            The estimation is interrupted when the objective function has
+            changed less than `epsilon` on average over the last 10 iterations
 
-        The estimates of the label frequency and accuracy parameters,
-        are stored in the class attributes `pi` and `theta`.
+        initial_accuracy : float
+            Initialize the accuracy parameters, `theta` to a set of
+            distributions where theta[j,k,k'] = initial_accuracy if k==k',
+            and (1-initial_accuracy) / (n_classes - 1)
+
+        max_epoch : int
+            Interrupt the estimation after `max_epoch` iterations
         """
 
         self._raise_if_incompatible(annotations)
 
         map_em_generator = self._map_em_step(annotations, init_accuracy)
-        return self._parameter_estimation(map_em_generator, epsilon, max_epochs)
+        self._parameter_estimation(map_em_generator, epsilon, max_epochs)
 
 
     def mle(self, annotations,
             epsilon=1e-5, init_accuracy=0.6, max_epochs=1000):
         """Computes maximum likelihood estimate (MLE) of parameters.
 
-        Input:
-        annotations -- annotations[i,j] is the annotation of annotator `j`
-                       for item `i`
+        Estimate the parameters :attr:`theta` and :attr:`pi` from a set of
+        observed annotations using maximum likelihood estimation.
 
-        Output:
-        Tuple (diff,ll,lp,cat) consisting of final difference, log likelihood,
-        log prior p(acc|alpha) * p(prev|beta), and item category estimates
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
 
-        The estimates of the label frequency and accuracy parameters,
-        are stored in the class attributes `pi` and `theta`.
+        epsilon : float
+            The estimation is interrupted when the objective function has
+            changed less than `epsilon` on average over the last 10 iterations
+
+        initial_accuracy : float
+            Initialize the accuracy parameters, `theta` to a set of
+            distributions where theta[j,k,k'] = initial_accuracy if k==k',
+            and (1-initial_accuracy) / (n_classes - 1)
+
+        max_epoch : int
+            Interrupt the estimation after `max_epoch` iterations
         """
 
         self._raise_if_incompatible(annotations)
 
         mle_em_generator = self._mle_em_step(annotations, init_accuracy)
-        return self._parameter_estimation(mle_em_generator, epsilon, max_epochs)
+        self._parameter_estimation(mle_em_generator, epsilon, max_epochs)
 
 
     def _parameter_estimation(self, learning_iterator, epsilon, max_epochs):
@@ -384,7 +471,7 @@ class ModelB(AbstractModel):
 
 
     def _initial_accuracy(self, init_accuracy):
-        """Return initial estimation of accuracy."""
+        """Return initial setting for accuracy."""
         nannotators = self.nannotators
         nclasses = self.nclasses
 
@@ -399,7 +486,13 @@ class ModelB(AbstractModel):
     def _compute_accuracy(self, category, annotations, use_prior):
         """Return accuracy, P(annotation_j = k' | category=k)
 
-        accuracy[j,k,k'] = P(annotation_j = k' | category=k).
+        Helper function to compute an estimate of the accuracy parameters
+        theta, given labels and annotations.
+
+        Returns
+        -------
+        accuracy : ndarray, shape = (n_annotators, n_classes, n_classes)
+            accuracy[j,k,k'] = P(annotation_j = k' | category=k).
         """
         nitems, nannotators = annotations.shape
         # alpha - 1 : the mode of a Dirichlet is  (alpha_i - 1) / (alpha_0 - K)
@@ -534,6 +627,40 @@ class ModelB(AbstractModel):
     def sample_posterior_over_accuracy(self, annotations, nsamples,
                                        burn_in_samples=0,
                                        thin_samples=1):
+        """Return samples from posterior distribution over theta given data.
+
+        Samples are drawn using Gibbs sampling, i.e., alternating between
+        sampling from the conditional distribution of theta given the
+        annotations and the label classes, and sampling from the conditional
+        distribution of the classes given theta and the annotations.
+
+        This results in a fast-mixing sampler, and so the parameters
+        controlling burn-in and thinning can be set to a small number
+        of samples.
+
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+
+        nsamples : int
+            number of samples to draw from the posterior
+
+        burn_in_samples : int
+            Discard the first `burn_in_samples` during the initial burn-in
+            phase, where the Monte Carlo chain converges to the posterior
+
+        thin_samples : int
+            Only return one every `thin_samples` samples in order to reduce
+            the auto-correlation in the sampling chain. This is called
+            "thinning" in MCMC parlance.
+
+        Returns
+        -------
+        samples : ndarray, shape = (n_samples, n_annotators, nclasses, nclasses)
+            samples[i,...] is one sample from the posterior distribution over
+            the parameters `theta`
+        """
 
         self._raise_if_incompatible(annotations)
         nsamples = self._compute_total_nsamples(nsamples,
@@ -595,10 +722,21 @@ class ModelB(AbstractModel):
     ##### Posterior distributions #############################################
 
     def infer_labels(self, annotations):
-        """Infer posterior distribution over true labels.
+        """Infer posterior distribution over label classes.
 
-        Returns P( label | annotations, parameters), where parameters is the
-        current point estimate of the parameters pi and theta.
+        Compute the posterior distribution over label classes given observed
+        annotations, :math:`P( \mathbf{y} | \mathbf{x}, \\theta, \omega)`.
+
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+
+        Returns
+        -------
+        posterior : ndarray, shape = (n_items, n_classes)
+            posterior[i,k] is the posterior probability of class k given the
+            annotation observed in item i.
         """
 
         self._raise_if_incompatible(annotations)
