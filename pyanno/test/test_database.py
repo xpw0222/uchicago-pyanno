@@ -134,5 +134,22 @@ class TestDatabase(unittest.TestCase):
             self.assertTrue(isinstance(db.database[self.data_id1][0].model,
                                        self.model1.__class__))
 
+
+    def test_tmp_dataname(self):
+        # behavior: the method get_available_id should return a new ID of the
+        # form <name_N>, that is not yet present in the database
+
+        with closing(PyannoDatabase(self.tmp_filename)) as db:
+            id1 = db.get_available_id()
+            self.assertEqual(id1, '<name_0>')
+            self.assert_(not db.database.has_key(id1))
+            db.store_result(id1, self.anno_container1,
+                            self.model1, self.value1)
+
+            id2 = db.get_available_id()
+            self.assertNotEqual(id1, id2)
+            self.assert_(not db.database.has_key(id2))
+
+
 if __name__ == '__main__':
     unittest.main()

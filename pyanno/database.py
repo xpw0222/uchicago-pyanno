@@ -89,6 +89,21 @@ class PyannoDatabase(object):
         self.closed = True
 
 
+    def get_available_id(self):
+        """Return an data ID that has is not present in the database.
+
+        The returned IDs have the form "<new_data_N>", where N is an integer
+        number.
+        """
+        n = 0
+        while True:
+            id = '<name_{}>'.format(n)
+            if not self.database.has_key(id):
+                break
+            n += 1
+        return id
+
+
     def _check_consistency(self, data_id, anno_container):
         """Make sure that all entries with same ID have the same annotations.
         """
