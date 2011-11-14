@@ -56,7 +56,7 @@ class ModelDataView(HasTraits):
         'Model B-with-theta': ModelBt,
         'Model B-with-theta (loop design)': ModelBtLoopDesign,
         'Model B': ModelB,
-        'Model A': ModelA
+        'Model A (loop design)': ModelA
     }
 
     _model_class_to_view = {
