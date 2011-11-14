@@ -1,0 +1,743 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyanno.modelBt_loopdesign &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyanno.modelBt_loopdesign</h1><div class="highlight"><pre>
+<span class="c"># Copyright (c) 2011, Enthought, Ltd.</span>
+<span class="c"># Authors: Pietro Berkes &lt;pberkes@enthought.com&gt;, Andrey Rzhetsky</span>
+<span class="c"># License: Modified BSD license (2-clause)</span>
+
+<span class="sd">&quot;&quot;&quot;This module defines model B-with-theta, optimized for a loop design.</span>
+
+<span class="sd">The implementation assumes that there are a total or 8 annotators. Each item is</span>
+<span class="sd">annotated by a triplet of annotators, according to the loop design described</span>
+<span class="sd">in Rzhetsky et al., 2009.</span>
+
+<span class="sd">E.g., for 16 items the loop design looks like this (`A` indicates a label,</span>
+<span class="sd">`*` indicates a missing value): ::</span>
+
+<span class="sd">    A A A * * * * *</span>
+<span class="sd">    A A A * * * * *</span>
+<span class="sd">    * A A A * * * *</span>
+<span class="sd">    * A A A * * * *</span>
+<span class="sd">    * * A A A * * *</span>
+<span class="sd">    * * A A A * * *</span>
+<span class="sd">    * * * A A A * *</span>
+<span class="sd">    * * * A A A * *</span>
+<span class="sd">    * * * * A A A *</span>
+<span class="sd">    * * * * A A A *</span>
+<span class="sd">    * * * * * A A A</span>
+<span class="sd">    * * * * * A A A</span>
+<span class="sd">    A * * * * * A A</span>
+<span class="sd">    A * * * * * A A</span>
+<span class="sd">    A A * * * * * A</span>
+<span class="sd">    A A * * * * * A</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.optimize</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">from</span> <span class="nn">traits.api</span> <span class="kn">import</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Array</span>
+<span class="kn">from</span> <span class="nn">pyanno.abstract_model</span> <span class="kn">import</span> <span class="n">AbstractModel</span>
+<span class="kn">from</span> <span class="nn">pyanno.sampling</span> <span class="kn">import</span> <span class="n">optimize_step_size</span><span class="p">,</span> <span class="n">sample_distribution</span>
+<span class="kn">from</span> <span class="nn">pyanno.util</span> <span class="kn">import</span> <span class="p">(</span><span class="n">random_categorical</span><span class="p">,</span> <span class="n">compute_counts</span><span class="p">,</span>
+                         <span class="n">SMALLEST_FLOAT</span><span class="p">,</span> <span class="n">MISSING_VALUE</span><span class="p">,</span> <span class="n">labels_frequency</span><span class="p">,</span>
+                         <span class="n">is_valid</span><span class="p">,</span> <span class="n">ninf_to_num</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="c"># map of `n` to list of all possible triplets of `n` elements</span>
+<span class="n">_triplet_combinations</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">def</span> <span class="nf">_get_triplet_combinations</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return array of all possible combinations of n elements in triplets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_triplet_combinations</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">_triplet_combinations</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">)])</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_triplet_combinations</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="ModelBtLoopDesign"><a class="viewcode-back" href="../../pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign">[docs]</a><span class="k">class</span> <span class="nc">ModelBtLoopDesign</span><span class="p">(</span><span class="n">AbstractModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Model B-with-theta from (Rzhetsky et al., 2009).</span>
+
+<span class="sd">    The model assumes the existence of &quot;true&quot; underlying labels for each item,</span>
+<span class="sd">    which are drawn from a categorical distribution, gamma. Annotators report</span>
+<span class="sd">    this labels with some noise.</span>
+
+<span class="sd">    This model is closely related to :class:`~ModelB`, but, crucially,</span>
+<span class="sd">    the noise distribution is described by a small number of parameters (one</span>
+<span class="sd">    per annotator), which makes their estimation efficient and less sensitive</span>
+<span class="sd">    to local optima.</span>
+
+<span class="sd">    The model parameters are:</span>
+
+<span class="sd">    - gamma[k] is the probability of label k</span>
+
+<span class="sd">    - theta[j] parametrized the probability that annotator j reports label k&#39;.</span>
+<span class="sd">      More specifically, P( annotator j chooses k&#39; | real label = k) is</span>
+<span class="sd">      theta[j] for k&#39; = k, or (1 - theta[j]) / sum(theta) if k&#39; != k .</span>
+
+<span class="sd">    This implementation is optimized for he loop design introduced in</span>
+<span class="sd">    (Rzhetsky et al., 2009), which assumes that each item is annotated by 3</span>
+<span class="sd">    out of 8 annotators. For a more general implementation, see</span>
+<span class="sd">    :class:`~ModelBt`</span>
+
+<span class="sd">    See the documentation for a more detailed description of the model.</span>
+
+<span class="sd">    **Reference**</span>
+
+<span class="sd">    * Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). &quot;How to get the most</span>
+<span class="sd">      from your curation effort&quot;, PLoS Computational Biology, 5(5).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">nclasses</span> <span class="o">=</span> <span class="n">Int</span>
+    <span class="n">nannotators</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+    <span class="c"># number of annotators rating each item in the loop design</span>
+    <span class="n">nannotators_per_item</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,))</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="o">**</span><span class="n">traits</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create an instance of ModelB.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nclasses : int</span>
+<span class="sd">            Number of possible annotation classes</span>
+
+<span class="sd">        nannotators : int</span>
+<span class="sd">            Number of annotators</span>
+
+<span class="sd">        gamma : ndarray, shape = (n_classes, )</span>
+<span class="sd">            gamma[k] is the prior probability of label class k</span>
+
+<span class="sd">        theta : ndarray, shape = (n_annotators, )</span>
+<span class="sd">            theta[j] parametrizes the accuracy of annotator j. Specifically,</span>
+<span class="sd">            `P( annotator j chooses k&#39; | real label = k)` is</span>
+<span class="sd">            `theta[j]` for k&#39; = k, or `(1 - theta[j]) / sum(theta)`</span>
+<span class="sd">            if `k&#39; != k `.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">nclasses</span> <span class="o">=</span> <span class="n">nclasses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">theta</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ModelBtLoopDesign</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">traits</span><span class="p">)</span>
+
+
+    <span class="c">##### Model and data generation methods ###################################</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ModelBtLoopDesign.create_initial_state"><a class="viewcode-back" href="../../pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.create_initial_state">[docs]</a>    <span class="k">def</span> <span class="nf">create_initial_state</span><span class="p">(</span><span class="n">nclasses</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Factory method returning a model with random initial parameters.</span>
+
+<span class="sd">        It is often more convenient to use this factory method over the</span>
+<span class="sd">        constructor, as one does not need to specify the initial model</span>
+<span class="sd">        parameters.</span>
+
+<span class="sd">        The parameters theta and gamma, controlling accuracy and prevalence,</span>
+<span class="sd">        are initialized at random as follows:</span>
+
+<span class="sd">        :math:`\\theta_j \sim \mathrm{Uniform}(0.6, 0.95)`</span>
+
+<span class="sd">        :math:`\gamma \sim \mathrm{Dirichlet}(2.0)`</span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        nclasses : int</span>
+<span class="sd">            number of categories</span>
+
+<span class="sd">        gamma : nparray</span>
+<span class="sd">            An array of floats with size that holds the probability of each</span>
+<span class="sd">            annotation value. Default is None</span>
+
+<span class="sd">        theta : nparray</span>
+<span class="sd">            An array of floats that the parameters of P( v_i | psi ) (one for</span>
+<span class="sd">            each annotator)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        model : :class:`~ModelBtLoopDesign`</span>
+<span class="sd">            Instance of ModelBtLoopDesign</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">gamma</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="n">ModelBtLoopDesign</span><span class="o">.</span><span class="n">_random_gamma</span><span class="p">(</span><span class="n">nclasses</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">theta</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">nannotators</span> <span class="o">=</span> <span class="mi">8</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">ModelBtLoopDesign</span><span class="o">.</span><span class="n">_random_theta</span><span class="p">(</span><span class="n">nannotators</span><span class="p">)</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="n">ModelBtLoopDesign</span><span class="p">(</span><span class="n">nclasses</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span>
+
+</div>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_random_gamma</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">nclasses</span><span class="p">,))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_random_theta</span><span class="p">(</span><span class="n">nannotators</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+                                 <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">nannotators</span><span class="p">,))</span>
+
+
+<div class="viewcode-block" id="ModelBtLoopDesign.generate_labels"><a class="viewcode-back" href="../../pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_labels">[docs]</a>    <span class="k">def</span> <span class="nf">generate_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nitems</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate random labels from the model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">random_categorical</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span> <span class="n">nitems</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ModelBtLoopDesign.generate_annotations_from_labels"><a class="viewcode-back" href="../../pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_annotations_from_labels">[docs]</a>    <span class="k">def</span> <span class="nf">generate_annotations_from_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate random annotations from the model, given labels</span>
+
+<span class="sd">        The method samples random annotations from the conditional probability</span>
+<span class="sd">        distribution of annotations, :math:`x_i^j`</span>
+<span class="sd">        given labels, :math:`y_i`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        labels : ndarray, shape = (n_items,), dtype = int</span>
+<span class="sd">            Set of &quot;true&quot; labels</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        annotations : ndarray, shape = (n_items, n_annotators)</span>
+<span class="sd">            annotations[i,j] is the annotation of annotator j for item i</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span>
+        <span class="n">nannotators</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nannotators</span>
+        <span class="n">nitems</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">nitems_per_loop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">nitems</span><span class="p">)</span> <span class="o">/</span> <span class="n">nannotators</span><span class="p">)</span>
+
+        <span class="n">annotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nitems</span><span class="p">,</span> <span class="n">nannotators</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nannotators</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nitems</span><span class="p">):</span>
+                <span class="n">distr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta_to_categorical</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">annotations</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>  <span class="o">=</span> <span class="n">random_categorical</span><span class="p">(</span><span class="n">distr</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c"># mask annotation value according to loop design</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nannotators</span><span class="p">):</span>
+            <span class="n">label_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">l</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">nannotators_per_item</span><span class="p">,</span> <span class="n">l</span><span class="o">+</span><span class="n">nannotators</span><span class="p">)</span> <span class="o">%</span> <span class="mi">8</span>
+            <span class="n">annotations</span><span class="p">[</span><span class="n">l</span><span class="o">*</span><span class="n">nitems_per_loop</span><span class="p">:(</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">nitems_per_loop</span><span class="p">,</span>
+                        <span class="n">label_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">MISSING_VALUE</span>
+
+        <span class="k">return</span> <span class="n">annotations</span>
+
+</div>
+<div class="viewcode-block" id="ModelBtLoopDesign.generate_annotations"><a class="viewcode-back" href="../../pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_annotations">[docs]</a>    <span class="k">def</span> <span class="nf">generate_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nitems</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a random annotation set from the model.</span>
+
+<span class="sd">        Sample a random set of annotations from the probability distribution</span>
+<span class="sd">        defined the current model parameters:</span>
+
+<span class="sd">            1) Label classes are generated from the prior distribution, pi</span>
+
+<span class="sd">            2) Annotations are generated from the conditional distribution of</span>
+<span class="sd">               annotations given classes, parametrized by theta</span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        nitems : int</span>
+<span class="sd">            Number of items to sample</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        annotations : ndarray, shape = (n_items, n_annotators)</span>
+<span class="sd">            annotations[i,j] is the annotation of annotator j for item i</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_labels</span><span class="p">(</span><span class="n">nitems</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_annotations_from_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_theta_to_categorical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">psi</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns P( v_i = psi | theta_i ) as a distribution.&quot;&quot;&quot;</span>
+        <span class="n">distr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nclasses</span><span class="p">,))</span>
+        <span class="n">distr</span><span class="o">.</span><span class="n">fill</span><span class="p">((</span><span class="mf">1.</span><span class="o">-</span><span class="n">theta</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nclasses</span><span class="o">-</span><span class="mf">1.</span><span class="p">))</span>
+        <span class="n">distr</span><span class="p">[</span><span class="n">psi</span><span class="p">]</span> <span class="o">=</span> <span class="n">theta</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">distr</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">distr</span>
+
+
+    <span class="c">##### Parameters estimation methods #######################################</span>
+
+<div class="viewcode-block" id="ModelBtLoopDesign.mle"><a class="viewcode-back" href="../../pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.mle">[docs]</a>    <span class="k">def</span> <span class="nf">mle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="n">estimate_gamma</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Computes maximum likelihood estimate (MLE) of parameters.</span>
+
+<span class="sd">        Estimate the parameters :attr:`theta` and :attr:`gamma` from a set of</span>
+<span class="sd">        observed annotations using maximum likelihood estimation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        annotations : ndarray, shape = (n_items, n_annotators)</span>
+<span class="sd">            annotations[i,j] is the annotation of annotator j for item i</span>
+
+<span class="sd">        estimate_gamma : bool</span>
+<span class="sd">            If True, the parameters :attr:`gamma` are estimated by the empirical</span>
+<span class="sd">            class frequency. If False, :attr:`gamma` is left unchanged.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raise_if_incompatible</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span>
+
+        <span class="c"># wrap log likelihood function to give it to optimize.fmin</span>
+        <span class="n">_llhood_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_likelihood_counts</span>
+        <span class="k">def</span> <span class="nf">_wrap_llhood</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">counts</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vector_to_params</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="c"># minimize *negative* likelihood</span>
+            <span class="k">return</span> <span class="o">-</span> <span class="n">_llhood_counts</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameter_estimation</span><span class="p">(</span><span class="n">_wrap_llhood</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span>
+                                   <span class="n">estimate_gamma</span><span class="o">=</span><span class="n">estimate_gamma</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ModelBtLoopDesign.map"><a class="viewcode-back" href="../../pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.map">[docs]</a>    <span class="k">def</span> <span class="nf">map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="n">estimate_gamma</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Computes maximum a posteriori (MAP) estimate of parameters.</span>
+
+<span class="sd">        Estimate the parameters :attr:`theta` and :attr:`gamma` from a set of</span>
+<span class="sd">        observed annotations using maximum a posteriori estimation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        annotations : ndarray, shape = (n_items, n_annotators)</span>
+<span class="sd">            annotations[i,j] is the annotation of annotator j for item i</span>
+
+<span class="sd">        estimate_gamma : bool</span>
+<span class="sd">            If True, the parameters :attr:`gamma` are estimated by the empirical</span>
+<span class="sd">            class frequency. If False, :attr:`gamma` is left unchanged.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raise_if_incompatible</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span>
+
+        <span class="c"># wrap log likelihood function to give it to optimize.fmin</span>
+        <span class="n">_llhood_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_likelihood_counts</span>
+        <span class="n">_log_prior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_prior</span>
+        <span class="k">def</span> <span class="nf">_wrap_llhood</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">counts</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vector_to_params</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="c"># minimize *negative* posterior probability of parameters</span>
+            <span class="k">return</span> <span class="o">-</span> <span class="p">(</span><span class="n">_llhood_counts</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span> <span class="o">+</span> <span class="n">_log_prior</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameter_estimation</span><span class="p">(</span><span class="n">_wrap_llhood</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span>
+                                   <span class="n">estimate_gamma</span><span class="o">=</span><span class="n">estimate_gamma</span><span class="p">)</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_parameter_estimation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objective</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span>
+                              <span class="n">estimate_gamma</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">compute_counts</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclasses</span><span class="p">)</span>
+
+        <span class="n">params_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_random_initial_parameters</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span>
+                                                       <span class="n">estimate_gamma</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Start parameters optimization...&#39;</span><span class="p">)</span>
+
+        <span class="c"># TODO: use gradient, constrained optimization</span>
+        <span class="n">params_best</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">objective</span><span class="p">,</span>
+                                          <span class="n">params_start</span><span class="p">,</span>
+                                          <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">counts</span><span class="p">,),</span>
+                                          <span class="n">xtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
+                                          <span class="n">disp</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Parameters optimization finished&#39;</span><span class="p">)</span>
+
+        <span class="c"># parse arguments and update</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vector_to_params</span><span class="p">(</span><span class="n">params_best</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_random_initial_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="n">estimate_gamma</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">estimate_gamma</span><span class="p">:</span>
+            <span class="c"># estimate gamma from observed annotations</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="n">labels_frequency</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclasses</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="n">ModelBtLoopDesign</span><span class="o">.</span><span class="n">_random_gamma</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nclasses</span><span class="p">)</span>
+
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">ModelBtLoopDesign</span><span class="o">.</span><span class="n">_random_theta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nannotators</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params_to_vector</span><span class="p">(</span><span class="n">gamma</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_params_to_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert the tuple (gamma, theta) to a parameters vector.</span>
+
+<span class="sd">        Used to interface with the optimization routines.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">gamma</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">theta</span><span class="p">]</span>
+
+
+    <span class="k">def</span> <span class="nf">_vector_to_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert a parameters vector to (gamma, theta) tuple.</span>
+
+<span class="sd">        Used to interface with the optimization routines.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nclasses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclasses</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nclasses</span><span class="p">,))</span>
+        <span class="n">gamma</span><span class="p">[:</span><span class="n">nclasses</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[:</span><span class="n">nclasses</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">gamma</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">gamma</span><span class="p">[:</span><span class="n">nclasses</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">nclasses</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">theta</span>
+
+
+    <span class="c">##### Model likelihood methods ############################################</span>
+
+<div class="viewcode-block" id="ModelBtLoopDesign.log_likelihood"><a class="viewcode-back" href="../../pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.log_likelihood">[docs]</a>    <span class="k">def</span> <span class="nf">log_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotations</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute the log likelihood of a set of annotations given the model.</span>
+
+<span class="sd">        Returns :math:`\log P(\mathbf{x} | \gamma, \\theta)`,</span>
+<span class="sd">        where :math:`\mathbf{x}` is the array of annotations.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        annotations : ndarray, shape = (n_items, n_annotators)</span>
+<span class="sd">            annotations[i,j] is the annotation of annotator j for item i</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        log_lhood : float</span>
+<span class="sd">            log likelihood of `annotations`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raise_if_incompatible</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span>
+
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">compute_counts</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclasses</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_likelihood_counts</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_log_likelihood_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute the log likelihood of annotations given the model.</span>
+
+<span class="sd">        This method assumes the data is in counts format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># TODO: check if it&#39;s possible to replace these constraints with bounded optimization</span>
+        <span class="c"># check boundary conditions</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">0.</span>
+            <span class="ow">or</span> <span class="nb">max</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">1.</span><span class="p">):</span>
+            <span class="c">#return np.inf</span>
+            <span class="k">return</span> <span class="n">SMALLEST_FLOAT</span>
+
+        <span class="n">llhood</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="c"># loop over the 8 combinations of annotators</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+            <span class="c"># extract the theta parameters for this triplet</span>
+            <span class="n">triplet_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nannotators</span>
+            <span class="n">triplet_indices</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="n">theta_triplet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">triplet_indices</span><span class="p">]</span>
+
+            <span class="c"># compute the likelihood for the triplet</span>
+            <span class="n">llhood</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_likelihood_triplet</span><span class="p">(</span><span class="n">counts</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span>
+                                                   <span class="n">theta_triplet</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">llhood</span>
+
+
+    <span class="k">def</span> <span class="nf">_log_likelihood_triplet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts_triplet</span><span class="p">,</span> <span class="n">theta_triplet</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute the log likelihood of data for one triplet of annotators.</span>
+
+<span class="sd">        Input:</span>
+<span class="sd">        counts_triplet -- count data for one combination of annotators</span>
+<span class="sd">        theta_triplet -- theta parameters of the current triplet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># log \prod_n P(v_{ijk}^{n} | params)</span>
+        <span class="c"># = \sum_n log P(v_{ijk}^{n} | params)</span>
+        <span class="c"># = \sum_v_{ijk}  count(v_{ijk}) log P( v_{ijk} | params )</span>
+        <span class="c">#</span>
+        <span class="c"># where n is n-th annotation of triplet {ijk}]</span>
+
+        <span class="c"># compute P( v_{ijk} | params )</span>
+        <span class="n">pf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pattern_frequencies</span><span class="p">(</span><span class="n">theta_triplet</span><span class="p">)</span>
+        <span class="n">log_pf</span> <span class="o">=</span> <span class="n">ninf_to_num</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">pf</span><span class="p">))</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="p">(</span><span class="n">counts_triplet</span> <span class="o">*</span> <span class="n">log_pf</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">l</span>
+
+
+    <span class="k">def</span> <span class="nf">_pattern_frequencies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta_triplet</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute vector of P(v_{ijk}|params) for each combination of v_{ijk}.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span>
+        <span class="n">nclasses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclasses</span>
+        <span class="c"># list of all possible combinations of v_i, v_j, v_k elements</span>
+        <span class="n">v_ijk_combinations</span> <span class="o">=</span> <span class="n">_get_triplet_combinations</span><span class="p">(</span><span class="n">nclasses</span><span class="p">)</span>
+
+        <span class="c"># P( v_{ijk} | params ) = \sum_psi P( v_{ijk} | psi, params ) P( psi )</span>
+
+        <span class="n">pf</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="n">not_theta</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">theta_triplet</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nclasses</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span>
+        <span class="n">p_v_ijk_given_psi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">v_ijk_combinations</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">psi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+                <span class="n">p_v_ijk_given_psi</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">v_ijk_combinations</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span><span class="o">==</span><span class="n">psi</span><span class="p">,</span>
+                                                  <span class="n">theta_triplet</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                                                  <span class="n">not_theta</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">pf</span> <span class="o">+=</span> <span class="n">p_v_ijk_given_psi</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">[</span><span class="n">psi</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pf</span>
+
+
+    <span class="k">def</span> <span class="nf">_log_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute log probability of prior on the theta parameters.&quot;&quot;&quot;</span>
+        <span class="n">log_prob</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">_logpdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">log_prob</span>
+
+
+    <span class="c">##### Sampling posterior over parameters ##################################</span>
+
+<div class="viewcode-block" id="ModelBtLoopDesign.sample_posterior_over_accuracy"><a class="viewcode-back" href="../../pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.sample_posterior_over_accuracy">[docs]</a>    <span class="k">def</span> <span class="nf">sample_posterior_over_accuracy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">,</span>
+                                       <span class="n">burn_in_samples</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+                                       <span class="n">thin_samples</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+                                       <span class="n">target_rejection_rate</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
+                                       <span class="n">rejection_rate_tolerance</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+                                       <span class="n">step_optimization_nsamples</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
+                                       <span class="n">adjust_step_every</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return samples from posterior distribution over theta given data.</span>
+
+<span class="sd">        Samples are drawn using a variant of a Metropolis-Hasting Markov Chain</span>
+<span class="sd">        Monte Carlo (MCMC) algorithm. Sampling proceeds in two phases:</span>
+
+<span class="sd">            1) *step size estimation phase*: first, the step size in the</span>
+<span class="sd">               MCMC algorithm is adjusted to achieve a given rejection rate.</span>
+
+<span class="sd">            2) *sampling phase*: second, samples are collected using the</span>
+<span class="sd">               step size from phase 1.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        annotations : ndarray, shape = (n_items, n_annotators)</span>
+<span class="sd">            annotations[i,j] is the annotation of annotator j for item i</span>
+
+<span class="sd">        nsamples : int</span>
+<span class="sd">            Number of samples to return (i.e., burn-in and thinning samples</span>
+<span class="sd">            are not included)</span>
+
+<span class="sd">        burn_in_samples : int</span>
+<span class="sd">            Discard the first `burn_in_samples` during the initial burn-in</span>
+<span class="sd">            phase, where the Monte Carlo chain converges to the posterior</span>
+
+<span class="sd">        thin_samples : int</span>
+<span class="sd">            Only return one every `thin_samples` samples in order to reduce</span>
+<span class="sd">            the auto-correlation in the sampling chain. This is called</span>
+<span class="sd">            &quot;thinning&quot; in MCMC parlance.</span>
+
+<span class="sd">        target_rejection_rate : float</span>
+<span class="sd">            target rejection rate for the step size estimation phase</span>
+
+<span class="sd">        rejection_rate_tolerance : float</span>
+<span class="sd">            the step size estimation phase is ended when the rejection rate for</span>
+<span class="sd">            all parameters is within `rejection_rate_tolerance` from</span>
+<span class="sd">            `target_rejection_rate`</span>
+
+<span class="sd">        step_optimization_nsamples : int</span>
+<span class="sd">            number of samples to draw in the step size estimation phase</span>
+
+<span class="sd">        adjust_step_every : int</span>
+<span class="sd">            number of samples after which the step size is adjusted during</span>
+<span class="sd">            the step size estimation pahse</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        samples : ndarray, shape = (n_samples, n_annotators)</span>
+<span class="sd">            samples[i,:] is one sample from the posterior distribution over the</span>
+<span class="sd">            parameters `theta`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raise_if_incompatible</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span>
+        <span class="n">nsamples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_total_nsamples</span><span class="p">(</span><span class="n">nsamples</span><span class="p">,</span>
+                                                <span class="n">burn_in_samples</span><span class="p">,</span>
+                                                <span class="n">thin_samples</span><span class="p">)</span>
+
+        <span class="c"># optimize step size</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">compute_counts</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclasses</span><span class="p">)</span>
+
+        <span class="c"># wrap log likelihood function to give it to optimize_step_size and</span>
+        <span class="c"># sample_distribution</span>
+        <span class="n">_llhood_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_likelihood_counts</span>
+        <span class="n">_log_prior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_prior</span>
+        <span class="k">def</span> <span class="nf">_wrap_llhood</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">counts</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">params</span>
+            <span class="k">return</span> <span class="n">_llhood_counts</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span> <span class="o">+</span> <span class="n">_log_prior</span><span class="p">()</span>
+
+        <span class="c"># TODO this save-reset is rather ugly, refactor: create copy of</span>
+        <span class="c">#      model and sample over it</span>
+        <span class="c"># save internal parameters to reset at the end of sampling</span>
+        <span class="n">save_params</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c"># compute optimal step size for given target rejection rate</span>
+            <span class="n">params_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">params_upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nannotators</span><span class="p">,))</span>
+            <span class="n">params_lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nannotators</span><span class="p">,))</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="n">optimize_step_size</span><span class="p">(</span><span class="n">_wrap_llhood</span><span class="p">,</span> <span class="n">params_start</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span>
+                                <span class="n">params_lower</span><span class="p">,</span> <span class="n">params_upper</span><span class="p">,</span>
+                                <span class="n">step_optimization_nsamples</span><span class="p">,</span>
+                                <span class="n">adjust_step_every</span><span class="p">,</span>
+                                <span class="n">target_rejection_rate</span><span class="p">,</span>
+                                <span class="n">rejection_rate_tolerance</span><span class="p">)</span>
+
+            <span class="c"># draw samples from posterior distribution over theta</span>
+            <span class="n">samples</span> <span class="o">=</span> <span class="n">sample_distribution</span><span class="p">(</span><span class="n">_wrap_llhood</span><span class="p">,</span> <span class="n">params_start</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span>
+                                          <span class="n">step</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">,</span>
+                                          <span class="n">params_lower</span><span class="p">,</span> <span class="n">params_upper</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_post_process_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">burn_in_samples</span><span class="p">,</span>
+                                              <span class="n">thin_samples</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c"># reset parameters</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">save_params</span>
+
+
+    <span class="c">##### Posterior distributions #############################################</span>
+</div>
+<div class="viewcode-block" id="ModelBtLoopDesign.infer_labels"><a class="viewcode-back" href="../../pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.infer_labels">[docs]</a>    <span class="k">def</span> <span class="nf">infer_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotations</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Infer posterior distribution over label classes.</span>
+
+<span class="sd">         Compute the posterior distribution over label classes given observed</span>
+<span class="sd">         annotations, :math:`P( \mathbf{y} | \mathbf{x}, \\theta, \omega)`.</span>
+
+<span class="sd">         Parameters</span>
+<span class="sd">         ----------</span>
+<span class="sd">         annotations : ndarray, shape = (n_items, n_annotators)</span>
+<span class="sd">             annotations[i,j] is the annotation of annotator j for item i</span>
+
+<span class="sd">         Returns</span>
+<span class="sd">         -------</span>
+<span class="sd">         posterior : ndarray, shape = (n_items, n_classes)</span>
+<span class="sd">             posterior[i,k] is the posterior probability of class k given the</span>
+<span class="sd">             annotation observed in item i.</span>
+<span class="sd">         &quot;&quot;&quot;</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raise_if_incompatible</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span>
+
+        <span class="n">nitems</span> <span class="o">=</span> <span class="n">annotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span>
+        <span class="n">nclasses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nclasses</span>
+
+        <span class="c"># get indices of annotators active in each row</span>
+        <span class="n">valid_entries</span> <span class="o">=</span> <span class="n">is_valid</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()</span>
+        <span class="n">annotator_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">valid_entries</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="p">(</span><span class="n">nitems</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nannotators_per_item</span><span class="p">))</span>
+        <span class="n">valid_annotations</span> <span class="o">=</span> <span class="n">annotations</span><span class="p">[</span><span class="n">valid_entries</span><span class="p">]</span>
+        <span class="n">valid_annotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">valid_annotations</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">nitems</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nannotators_per_item</span><span class="p">))</span>
+
+        <span class="c"># thetas of active annotators</span>
+        <span class="n">theta_equal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">annotator_indices</span><span class="p">]</span>
+        <span class="n">theta_not_equal</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">theta_equal</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nclasses</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span>
+
+        <span class="c"># compute posterior over psi</span>
+        <span class="n">psi_distr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nitems</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">psi</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid_annotations</span> <span class="o">==</span> <span class="n">psi</span><span class="p">,</span>
+                           <span class="n">theta_equal</span><span class="p">,</span> <span class="n">theta_not_equal</span><span class="p">)</span>
+            <span class="n">psi_distr</span><span class="p">[:,</span><span class="n">psi</span><span class="p">]</span> <span class="o">=</span> <span class="n">gamma</span><span class="p">[</span><span class="n">psi</span><span class="p">]</span> <span class="o">*</span> <span class="n">tmp</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c"># normalize distribution</span>
+        <span class="n">psi_distr</span> <span class="o">/=</span> <span class="n">psi_distr</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">psi_distr</span>
+
+
+    <span class="c">##### Verify input ########################################################</span>
+</div>
+<div class="viewcode-block" id="ModelBtLoopDesign.are_annotations_compatible"><a class="viewcode-back" href="../../pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.are_annotations_compatible">[docs]</a>    <span class="k">def</span> <span class="nf">are_annotations_compatible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotations</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if the annotations are compatible with the models&#39; parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">super</span><span class="p">(</span><span class="n">ModelBtLoopDesign</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">are_annotations_compatible</span><span class="p">(</span>
+            <span class="n">annotations</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="n">masked_annotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="n">MISSING_VALUE</span><span class="p">)</span>
+
+        <span class="c"># exactly 3 annotations per row</span>
+        <span class="n">nvalid</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">masked_annotations</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">nvalid</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nannotators_per_item</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">return</span> <span class="bp">True</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

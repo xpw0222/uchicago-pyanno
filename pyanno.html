@@ -194,10 +194,33 @@ the auto-correlation in the sampling chain. This is called
 <span id="modela-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">modelA</span></tt> Module<a class="headerlink" href="#module-pyanno.modelA" title="Permalink to this headline">¶</a></h2>
 <p>This module defines the class ModelA, an implementation of model A from
 Rzhetsky et al., 2009.</p>
-<div class="section" id="reference">
-<h3>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h3>
-<p>Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). &#8220;How to get the most from
-your curation effort&#8221;, PLoS Computational Biology, 5(5).</p>
+<p>The implementation assumes that there are a total or 8 annotators. Each item is
+annotated by a triplet of annotators, according to the loop design described
+in Rzhetsky et al., 2009.</p>
+<p>E.g., for 16 items the loop design looks like this (<cite>A</cite> indicates a label,
+<cite>*</cite> indicates a missing value):</p>
+<div class="highlight-python"><pre>A A A * * * * *
+A A A * * * * *
+* A A A * * * *
+* A A A * * * *
+* * A A A * * *
+* * A A A * * *
+* * * A A A * *
+* * * A A A * *
+* * * * A A A *
+* * * * A A A *
+* * * * * A A A
+* * * * * A A A
+A * * * * * A A
+A * * * * * A A
+A A * * * * * A
+A A * * * * * A</pre>
+</div>
+<p><strong>Reference</strong></p>
+<ul class="simple">
+<li>Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). &#8220;How to get the most from
+your curation effort&#8221;, PLoS Computational Biology, 5(5).</li>
+</ul>
 <dl class="class">
 <dt id="pyanno.modelA.ModelA">
 <em class="property">class </em><tt class="descclassname">pyanno.modelA.</tt><tt class="descname">ModelA</tt><big>(</big><em>nclasses</em>, <em>theta</em>, <em>omega</em>, <em>**traits</em><big>)</big><a class="reference internal" href="modules/pyanno/modelA.html#ModelA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelA.ModelA" title="Permalink to this definition">¶</a></dt>
@@ -227,8 +250,11 @@ over all items and annotators</li>
 <p>At the moment the implementation of the model assumes 1) a total of 8
 annotators, and 2) each item is annotated by exactly 3 annotators.</p>
 <p>See the documentation for a more detailed description of the model.</p>
-<p>Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). &#8220;How to get the most from
-your curation effort&#8221;, PLoS Computational Biology, 5(5).</p>
+<p><strong>Reference</strong></p>
+<ul class="simple">
+<li>Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). &#8220;How to get the most
+from your curation effort&#8221;, PLoS Computational Biology, 5(5).</li>
+</ul>
 <dl class="method">
 <dt id="pyanno.modelA.ModelA.are_annotations_compatible">
 <tt class="descname">are_annotations_compatible</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="modules/pyanno/modelA.html#ModelA.are_annotations_compatible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelA.ModelA.are_annotations_compatible" title="Permalink to this definition">¶</a></dt>
@@ -315,7 +341,8 @@ annotations, <img class="math" src="images/math/3486cefe86b6062b8244d973dd240d6e
 <dt id="pyanno.modelA.ModelA.log_likelihood">
 <tt class="descname">log_likelihood</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="modules/pyanno/modelA.html#ModelA.log_likelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelA.ModelA.log_likelihood" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the log likelihood of a set of annotations given the model.</p>
-<p>Returns log P(annotations | current model parameters).</p>
+<p>Returns <img class="math" src="images/math/9739a7d38dd7197ac336b4d26557f430f2a6cfa0.png" alt="\log P(\mathbf{x} | \omega, \theta)"/>,
+where <img class="math" src="images/math/5f61118f2ae912f86e683687c005145b5eb54aec.png" alt="\mathbf{x}"/> is the array of annotations.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -416,7 +443,6 @@ the step size estimation pahse</li>
 </dd></dl>
 
 </div>
-</div>
 <div class="section" id="module-pyanno.modelB">
 <span id="modelb-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">modelB</span></tt> Module<a class="headerlink" href="#module-pyanno.modelB" title="Permalink to this headline">¶</a></h2>
 <p>This module defines the class ModelB, a Bayesian generalization
@@ -471,7 +497,7 @@ from your curation effort&#8221;, PLoS Computational Biology, 5(5).</li>
 constructor, as one does not need to specify the initial model
 parameters.</p>
 <p>The parameters theta and pi, controlling accuracy and prevalence,
-are drawn at random from the prior alpha and beta:</p>
+are initialized at random from the prior alpha and beta:</p>
 <p><img class="math" src="images/math/89eb5c5b9c8f1b6450ca12bb52b9376df9d770d3.png" alt="\theta_j^k \sim \mathrm{Dirichlet}(\mathbf{\alpha_k})"/></p>
 <p><img class="math" src="images/math/a38435656269269650b418db6503d4c9365debfe.png" alt="\pi \sim \mathrm{Dirichlet}(\mathbf{\beta})"/></p>
 <p>If not defined, the prior parameters alpha ad beta are defined as
@@ -480,7 +506,7 @@ described below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of label classes</li>
 <li><strong>nannotators</strong> (<em>int</em>) &#8211; Number of annotators</li>
 <li><strong>alpha</strong> (<em>ndarray</em>) &#8211; Parameters of Dirichlet prior over annotator choices
@@ -490,6 +516,9 @@ classes. This prior is ideal for ordinal annotations.</li>
 <li><strong>beta</strong> (<em>ndarray</em>) &#8211; Parameters of Dirichlet prior over model categories
 Default value for beta[i] is 1.0 .</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>model</strong> (<a class="reference internal" href="#pyanno.modelB.ModelB" title="pyanno.modelB.ModelB"><tt class="xref py py-class docutils literal"><span class="pre">ModelB</span></tt></a>) - Instance of ModelB</p>
 </td>
 </tr>
 </tbody>
@@ -680,7 +709,10 @@ the auto-correlation in the sampling chain. This is called
 </div>
 <div class="section" id="module-pyanno.modelBt">
 <span id="modelbt-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">modelBt</span></tt> Module<a class="headerlink" href="#module-pyanno.modelBt" title="Permalink to this headline">¶</a></h2>
-<p>Definition of model B-with-theta.</p>
+<p>This module defines model B-with-theta.</p>
+<p>pyAnno includes another implementation of B-with-theta,
+<a href="#id2"><span class="problematic" id="id3">:module:`pyanno.modelBt_loopdesign`</span></a>, which is optimized for a loop design
+where each item is annotated by 3 out of 8 annotators.</p>
 <dl class="class">
 <dt id="pyanno.modelBt.ModelBt">
 <em class="property">class </em><tt class="descclassname">pyanno.modelBt.</tt><tt class="descname">ModelBt</tt><big>(</big><em>nclasses</em>, <em>nannotators</em>, <em>gamma</em>, <em>theta</em>, <em>**traits</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt.html#ModelBt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt.ModelBt" title="Permalink to this definition">¶</a></dt>
@@ -688,26 +720,38 @@ the auto-correlation in the sampling chain. This is called
 <p>Implementation of Model B-with-theta from (Rzhetsky et al., 2009).</p>
 <p>The model assumes the existence of &#8220;true&#8221; underlying labels for each item,
 which are drawn from a categorical distribution, gamma. Annotators report
-this labels with some noise. Crucially, the noise distribution is
-described by a small number of parameters (one per annotator),
-which their estimation efficient and less sensitive to local optima.</p>
+this labels with some noise, according to their accuracy, theta.</p>
+<p>This model is closely related to <tt class="xref py py-class docutils literal"><span class="pre">ModelB</span></tt>, but, crucially,
+the noise distribution is described by a small number of parameters (one
+per annotator), which makes their estimation efficient and less sensitive
+to local optima.</p>
 <p>The model parameters are:</p>
 <ul class="simple">
-<li>gamma[k] is the probability of label k</li>
-<li>theta[j] parametrized the probability that annotator j reports label k&#8217;.
-More specifically, P( annotator j chooses k&#8217; | real label = k) is
-theta[j] for k&#8217; = k, or (1 - theta[j]) / sum(theta) if k&#8217; != k .</li>
+<li><cite>gamma[k]</cite> is the probability of label k</li>
+<li><cite>theta[j]</cite> parametrizes the probability that annotator <cite>j</cite> reports label</li>
 </ul>
+<p><cite>k&#8217;</cite> given ground truth, <cite>k</cite>. More specifically,
+<cite>P( annotator j chooses k&#8217; | real label = k)</cite> is
+<cite>theta[j]</cite> for k&#8217; = k, or <cite>(1 - theta[j]) / sum(theta)</cite> if <a href="#id4"><span class="problematic" id="id5">`</span></a>k&#8217; != k <a href="#id6"><span class="problematic" id="id7">`</span></a>.</p>
 <p>See the documentation for a more detailed description of the model.</p>
 <p>For a version of this model optimized for the loop design described
 in (Rzhetsky et al., 2009), see <tt class="xref py py-class docutils literal"><span class="pre">ModelBtLoopDesign</span></tt>.</p>
-<p>Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). &#8220;How to get the most from
-your curation effort&#8221;, PLoS Computational Biology, 5(5).</p>
+<p><strong>Reference</strong></p>
+<ul class="simple">
+<li>Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). &#8220;How to get the most
+from your curation effort&#8221;, PLoS Computational Biology, 5(5).</li>
+</ul>
 <dl class="staticmethod">
 <dt id="pyanno.modelBt.ModelBt.create_initial_state">
 <em class="property">static </em><tt class="descname">create_initial_state</tt><big>(</big><em>nclasses</em>, <em>nannotators</em>, <em>gamma=None</em>, <em>theta=None</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt.html#ModelBt.create_initial_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt.ModelBt.create_initial_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Factory method returning a model with random initial parameters.</p>
-<p>&lt;behaviour&gt;</p>
+<p>It is often more convenient to use this factory method over the
+constructor, as one does not need to specify the initial model
+parameters.</p>
+<p>The parameters theta and gamma, controlling accuracy and prevalence,
+are initialized at random as follows:</p>
+<p><img class="math" src="images/math/7f234c409ac81a31d0dac1c7c28322b5cf345337.png" alt="\theta_j \sim \mathrm{Uniform}(0.6, 0.95)"/></p>
+<p><img class="math" src="images/math/6b8a34f432fdad8e2b538964bd6d514527d6ae02.png" alt="\gamma \sim \mathrm{Dirichlet}(2.0)"/></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -715,10 +759,11 @@ your curation effort&#8221;, PLoS Computational Biology, 5(5).</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of label classes</li>
 <li><strong>nannotators</strong> (<em>int</em>) &#8211; Number of annotators</li>
-<li><strong>gamma</strong> (<em>nparray</em>) &#8211; An array of floats with size that holds the probability of each
-annotation value. Default is None</li>
-<li><strong>theta</strong> (<em>nparray</em>) &#8211; An array of floats that the parameters of P( v_i | psi ) (one for
-each annotator)</li>
+<li><strong>gamma</strong> (<em>ndarray, shape = (n_classes, )</em>) &#8211; gamma[k] is the prior probability of label class k</li>
+<li><strong>theta</strong> (<em>ndarray, shape = (n_annotators, )</em>) &#8211; theta[j] parametrizes the accuracy of annotator j. Specifically,
+<cite>P( annotator j chooses k&#8217; | real label = k)</cite> is
+<cite>theta[j]</cite> for k&#8217; = k, or <cite>(1 - theta[j]) / sum(theta)</cite>
+if <a href="#id8"><span class="problematic" id="id9">`</span></a>k&#8217; != k <a href="#id10"><span class="problematic" id="id11">`</span></a>.</li>
 </ul>
 </td>
 </tr>
@@ -734,7 +779,14 @@ each annotator)</li>
 <tt class="descname">generate_annotations</tt><big>(</big><em>nitems</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt.html#ModelBt.generate_annotations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt.ModelBt.generate_annotations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a random annotation set from the model.</p>
 <p>Sample a random set of annotations from the probability distribution
-defined the current model parameters.</p>
+defined the current model parameters:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Label classes are generated from the prior distribution, pi</li>
+<li>Annotations are generated from the conditional distribution of
+annotations given classes, parametrized by theta</li>
+</ol>
+</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -750,7 +802,20 @@ defined the current model parameters.</p>
 <dl class="method">
 <dt id="pyanno.modelBt.ModelBt.generate_annotations_from_labels">
 <tt class="descname">generate_annotations_from_labels</tt><big>(</big><em>labels</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt.html#ModelBt.generate_annotations_from_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt.ModelBt.generate_annotations_from_labels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate random annotations given labels.</p>
+<dd><p>Generate random annotations from the model, given labels</p>
+<p>The method samples random annotations from the conditional probability
+distribution of annotations, <img class="math" src="images/math/391d16aa9be108ec679aeaf14a6f3b532f4fef19.png" alt="x_i^j"/>
+given labels, <img class="math" src="images/math/6e6ceb79ebc4bf613298e0144eae25dd73de9be3.png" alt="y_i"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>labels</strong> (<em>ndarray, shape = (n_items,), dtype = int</em>) &#8211; Set of &#8220;true&#8221; labels</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>annotations</strong> (ndarray, shape = (n_items, n_annotators)) - annotations[i,j] is the annotation of annotator j for item i</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -762,34 +827,361 @@ defined the current model parameters.</p>
 <dl class="method">
 <dt id="pyanno.modelBt.ModelBt.infer_labels">
 <tt class="descname">infer_labels</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt.html#ModelBt.infer_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt.ModelBt.infer_labels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Infer posterior distribution over true labels.</p>
-<p>Returns P( label | annotations, parameters), where parameters is the
-current point estimate of the parameters pi and theta.</p>
+<dd><p>Infer posterior distribution over label classes.</p>
+<p>Compute the posterior distribution over label classes given observed
+annotations, <img class="math" src="images/math/3486cefe86b6062b8244d973dd240d6e23913353.png" alt="P( \mathbf{y} | \mathbf{x}, \theta, \omega)"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>posterior</strong> (ndarray, shape = (n_items, n_classes)) - posterior[i,k] is the posterior probability of class k given the annotation observed in item i.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyanno.modelBt.ModelBt.log_likelihood">
 <tt class="descname">log_likelihood</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt.html#ModelBt.log_likelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt.ModelBt.log_likelihood" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the log likelihood of annotations given the model.</p>
+<dd><p>Compute the log likelihood of a set of annotations given the model.</p>
+<p>Returns <img class="math" src="images/math/c815e2772f6be8bc0b9386b6c9a9d95fd2505181.png" alt="\log P(\mathbf{x} | \gamma, \theta)"/>,
+where <img class="math" src="images/math/5f61118f2ae912f86e683687c005145b5eb54aec.png" alt="\mathbf{x}"/> is the array of annotations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>log_lhood</strong> (float) - log likelihood of <cite>annotations</cite></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyanno.modelBt.ModelBt.map">
 <tt class="descname">map</tt><big>(</big><em>annotations</em>, <em>estimate_gamma=True</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt.html#ModelBt.map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt.ModelBt.map" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Computes maximum a posteriori (MAP) estimate of parameters.</p>
+<p>Estimate the parameters <tt class="xref py py-attr docutils literal"><span class="pre">theta</span></tt> and <tt class="xref py py-attr docutils literal"><span class="pre">gamma</span></tt> from a set of
+observed annotations using maximum a posteriori estimation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</li>
+<li><strong>estimate_gamma</strong> (<em>bool</em>) &#8211; If True, the parameters <tt class="xref py py-attr docutils literal"><span class="pre">gamma</span></tt> are estimated by the empirical
+class frequency. If False, <tt class="xref py py-attr docutils literal"><span class="pre">gamma</span></tt> is left unchanged.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyanno.modelBt.ModelBt.mle">
 <tt class="descname">mle</tt><big>(</big><em>annotations</em>, <em>estimate_gamma=True</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt.html#ModelBt.mle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt.ModelBt.mle" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Computes maximum likelihood estimate (MLE) of parameters.</p>
+<p>Estimate the parameters <tt class="xref py py-attr docutils literal"><span class="pre">theta</span></tt> and <tt class="xref py py-attr docutils literal"><span class="pre">gamma</span></tt> from a set of
+observed annotations using maximum likelihood estimation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</li>
+<li><strong>estimate_gamma</strong> (<em>bool</em>) &#8211; If True, the parameters <tt class="xref py py-attr docutils literal"><span class="pre">gamma</span></tt> are estimated by the empirical
+class frequency. If False, <tt class="xref py py-attr docutils literal"><span class="pre">gamma</span></tt> is left unchanged.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyanno.modelBt.ModelBt.sample_posterior_over_accuracy">
 <tt class="descname">sample_posterior_over_accuracy</tt><big>(</big><em>annotations</em>, <em>nsamples</em>, <em>burn_in_samples=100</em>, <em>thin_samples=5</em>, <em>target_rejection_rate=0.3</em>, <em>rejection_rate_tolerance=0.2</em>, <em>step_optimization_nsamples=500</em>, <em>adjust_step_every=100</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt.html#ModelBt.sample_posterior_over_accuracy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt.ModelBt.sample_posterior_over_accuracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return samples from posterior distribution over theta given data.</p>
-<p>Draw samples from P(theta | data, model parameters).
-The accuracy parameters, theta, control the probability of an annotator
-reporting the correct label (see <a class="reference internal" href="#pyanno.modelBt.ModelBt" title="pyanno.modelBt.ModelBt"><tt class="xref py py-class docutils literal"><span class="pre">ModelBt</span></tt></a>).</p>
+<p>Samples are drawn using a variant of a Metropolis-Hasting Markov Chain
+Monte Carlo (MCMC) algorithm. Sampling proceeds in two phases:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><em>step size estimation phase</em>: first, the step size in the
+MCMC algorithm is adjusted to achieve a given rejection rate.</li>
+<li><em>sampling phase</em>: second, samples are collected using the
+step size from phase 1.</li>
+</ol>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</li>
+<li><strong>nsamples</strong> (<em>int</em>) &#8211; Number of samples to return (i.e., burn-in and thinning samples
+are not included)</li>
+<li><strong>burn_in_samples</strong> (<em>int</em>) &#8211; Discard the first <cite>burn_in_samples</cite> during the initial burn-in
+phase, where the Monte Carlo chain converges to the posterior</li>
+<li><strong>thin_samples</strong> (<em>int</em>) &#8211; Only return one every <cite>thin_samples</cite> samples in order to reduce
+the auto-correlation in the sampling chain. This is called
+&#8220;thinning&#8221; in MCMC parlance.</li>
+<li><strong>target_rejection_rate</strong> (<em>float</em>) &#8211; target rejection rate for the step size estimation phase</li>
+<li><strong>rejection_rate_tolerance</strong> (<em>float</em>) &#8211; the step size estimation phase is ended when the rejection rate for
+all parameters is within <cite>rejection_rate_tolerance</cite> from
+<cite>target_rejection_rate</cite></li>
+<li><strong>step_optimization_nsamples</strong> (<em>int</em>) &#8211; number of samples to draw in the step size estimation phase</li>
+<li><strong>adjust_step_every</strong> (<em>int</em>) &#8211; number of samples after which the step size is adjusted during
+the step size estimation pahse</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>samples</strong> (ndarray, shape = (n_samples, n_annotators)) - samples[i,:] is one sample from the posterior distribution over the parameters <cite>theta</cite></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="modelbt-loopdesign-module">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">modelBt_loopdesign</span></tt> Module<a class="headerlink" href="#modelbt-loopdesign-module" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-pyanno.modelBt_loopdesign"></span><p>This module defines model B-with-theta, optimized for a loop design.</p>
+<p>The implementation assumes that there are a total or 8 annotators. Each item is
+annotated by a triplet of annotators, according to the loop design described
+in Rzhetsky et al., 2009.</p>
+<p>E.g., for 16 items the loop design looks like this (<cite>A</cite> indicates a label,
+<cite>*</cite> indicates a missing value):</p>
+<div class="highlight-python"><pre>A A A * * * * *
+A A A * * * * *
+* A A A * * * *
+* A A A * * * *
+* * A A A * * *
+* * A A A * * *
+* * * A A A * *
+* * * A A A * *
+* * * * A A A *
+* * * * A A A *
+* * * * * A A A
+* * * * * A A A
+A * * * * * A A
+A * * * * * A A
+A A * * * * * A
+A A * * * * * A</pre>
+</div>
+<dl class="class">
+<dt id="pyanno.modelBt_loopdesign.ModelBtLoopDesign">
+<em class="property">class </em><tt class="descclassname">pyanno.modelBt_loopdesign.</tt><tt class="descname">ModelBtLoopDesign</tt><big>(</big><em>nclasses</em>, <em>gamma</em>, <em>theta</em>, <em>**traits</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt_loopdesign.html#ModelBtLoopDesign"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt_loopdesign.ModelBtLoopDesign" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyanno.abstract_model.AbstractModel" title="pyanno.abstract_model.AbstractModel"><tt class="xref py py-class docutils literal"><span class="pre">pyanno.abstract_model.AbstractModel</span></tt></a></p>
+<p>Implementation of Model B-with-theta from (Rzhetsky et al., 2009).</p>
+<p>The model assumes the existence of &#8220;true&#8221; underlying labels for each item,
+which are drawn from a categorical distribution, gamma. Annotators report
+this labels with some noise.</p>
+<p>This model is closely related to <tt class="xref py py-class docutils literal"><span class="pre">ModelB</span></tt>, but, crucially,
+the noise distribution is described by a small number of parameters (one
+per annotator), which makes their estimation efficient and less sensitive
+to local optima.</p>
+<p>The model parameters are:</p>
+<ul class="simple">
+<li>gamma[k] is the probability of label k</li>
+<li>theta[j] parametrized the probability that annotator j reports label k&#8217;.
+More specifically, P( annotator j chooses k&#8217; | real label = k) is
+theta[j] for k&#8217; = k, or (1 - theta[j]) / sum(theta) if k&#8217; != k .</li>
+</ul>
+<p>This implementation is optimized for he loop design introduced in
+(Rzhetsky et al., 2009), which assumes that each item is annotated by 3
+out of 8 annotators. For a more general implementation, see
+<tt class="xref py py-class docutils literal"><span class="pre">ModelBt</span></tt></p>
+<p>See the documentation for a more detailed description of the model.</p>
+<p><strong>Reference</strong></p>
+<ul class="simple">
+<li>Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). &#8220;How to get the most
+from your curation effort&#8221;, PLoS Computational Biology, 5(5).</li>
+</ul>
+<dl class="method">
+<dt id="pyanno.modelBt_loopdesign.ModelBtLoopDesign.are_annotations_compatible">
+<tt class="descname">are_annotations_compatible</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt_loopdesign.html#ModelBtLoopDesign.are_annotations_compatible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt_loopdesign.ModelBtLoopDesign.are_annotations_compatible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the annotations are compatible with the models&#8217; parameters.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="pyanno.modelBt_loopdesign.ModelBtLoopDesign.create_initial_state">
+<em class="property">static </em><tt class="descname">create_initial_state</tt><big>(</big><em>nclasses</em>, <em>gamma=None</em>, <em>theta=None</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt_loopdesign.html#ModelBtLoopDesign.create_initial_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt_loopdesign.ModelBtLoopDesign.create_initial_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory method returning a model with random initial parameters.</p>
+<p>It is often more convenient to use this factory method over the
+constructor, as one does not need to specify the initial model
+parameters.</p>
+<p>The parameters theta and gamma, controlling accuracy and prevalence,
+are initialized at random as follows:</p>
+<p><img class="math" src="images/math/7f234c409ac81a31d0dac1c7c28322b5cf345337.png" alt="\theta_j \sim \mathrm{Uniform}(0.6, 0.95)"/></p>
+<p><img class="math" src="images/math/6b8a34f432fdad8e2b538964bd6d514527d6ae02.png" alt="\gamma \sim \mathrm{Dirichlet}(2.0)"/></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>nclasses</strong> (<em>int</em>) &#8211; number of categories</li>
+<li><strong>gamma</strong> (<em>nparray</em>) &#8211; An array of floats with size that holds the probability of each
+annotation value. Default is None</li>
+<li><strong>theta</strong> (<em>nparray</em>) &#8211; An array of floats that the parameters of P( v_i | psi ) (one for
+each annotator)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>model</strong> (<a class="reference internal" href="#pyanno.modelBt_loopdesign.ModelBtLoopDesign" title="pyanno.modelBt_loopdesign.ModelBtLoopDesign"><tt class="xref py py-class docutils literal"><span class="pre">ModelBtLoopDesign</span></tt></a>) - Instance of ModelBtLoopDesign</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_annotations">
+<tt class="descname">generate_annotations</tt><big>(</big><em>nitems</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt_loopdesign.html#ModelBtLoopDesign.generate_annotations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_annotations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a random annotation set from the model.</p>
+<p>Sample a random set of annotations from the probability distribution
+defined the current model parameters:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Label classes are generated from the prior distribution, pi</li>
+<li>Annotations are generated from the conditional distribution of
+annotations given classes, parametrized by theta</li>
+</ol>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nitems</strong> (<em>int</em>) &#8211; Number of items to sample</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>annotations</strong> (ndarray, shape = (n_items, n_annotators)) - annotations[i,j] is the annotation of annotator j for item i</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_annotations_from_labels">
+<tt class="descname">generate_annotations_from_labels</tt><big>(</big><em>labels</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt_loopdesign.html#ModelBtLoopDesign.generate_annotations_from_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_annotations_from_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate random annotations from the model, given labels</p>
+<p>The method samples random annotations from the conditional probability
+distribution of annotations, <img class="math" src="images/math/391d16aa9be108ec679aeaf14a6f3b532f4fef19.png" alt="x_i^j"/>
+given labels, <img class="math" src="images/math/6e6ceb79ebc4bf613298e0144eae25dd73de9be3.png" alt="y_i"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>labels</strong> (<em>ndarray, shape = (n_items,), dtype = int</em>) &#8211; Set of &#8220;true&#8221; labels</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>annotations</strong> (ndarray, shape = (n_items, n_annotators)) - annotations[i,j] is the annotation of annotator j for item i</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_labels">
+<tt class="descname">generate_labels</tt><big>(</big><em>nitems</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt_loopdesign.html#ModelBtLoopDesign.generate_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate random labels from the model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.modelBt_loopdesign.ModelBtLoopDesign.infer_labels">
+<tt class="descname">infer_labels</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt_loopdesign.html#ModelBtLoopDesign.infer_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt_loopdesign.ModelBtLoopDesign.infer_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infer posterior distribution over label classes.</p>
+<p>Compute the posterior distribution over label classes given observed
+annotations, <img class="math" src="images/math/3486cefe86b6062b8244d973dd240d6e23913353.png" alt="P( \mathbf{y} | \mathbf{x}, \theta, \omega)"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>posterior</strong> (ndarray, shape = (n_items, n_classes)) - posterior[i,k] is the posterior probability of class k given the annotation observed in item i.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.modelBt_loopdesign.ModelBtLoopDesign.log_likelihood">
+<tt class="descname">log_likelihood</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt_loopdesign.html#ModelBtLoopDesign.log_likelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt_loopdesign.ModelBtLoopDesign.log_likelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the log likelihood of a set of annotations given the model.</p>
+<p>Returns <img class="math" src="images/math/c815e2772f6be8bc0b9386b6c9a9d95fd2505181.png" alt="\log P(\mathbf{x} | \gamma, \theta)"/>,
+where <img class="math" src="images/math/5f61118f2ae912f86e683687c005145b5eb54aec.png" alt="\mathbf{x}"/> is the array of annotations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>log_lhood</strong> (float) - log likelihood of <cite>annotations</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.modelBt_loopdesign.ModelBtLoopDesign.map">
+<tt class="descname">map</tt><big>(</big><em>annotations</em>, <em>estimate_gamma=True</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt_loopdesign.html#ModelBtLoopDesign.map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt_loopdesign.ModelBtLoopDesign.map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes maximum a posteriori (MAP) estimate of parameters.</p>
+<p>Estimate the parameters <tt class="xref py py-attr docutils literal"><span class="pre">theta</span></tt> and <tt class="xref py py-attr docutils literal"><span class="pre">gamma</span></tt> from a set of
+observed annotations using maximum a posteriori estimation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</li>
+<li><strong>estimate_gamma</strong> (<em>bool</em>) &#8211; If True, the parameters <tt class="xref py py-attr docutils literal"><span class="pre">gamma</span></tt> are estimated by the empirical
+class frequency. If False, <tt class="xref py py-attr docutils literal"><span class="pre">gamma</span></tt> is left unchanged.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.modelBt_loopdesign.ModelBtLoopDesign.mle">
+<tt class="descname">mle</tt><big>(</big><em>annotations</em>, <em>estimate_gamma=True</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt_loopdesign.html#ModelBtLoopDesign.mle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt_loopdesign.ModelBtLoopDesign.mle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes maximum likelihood estimate (MLE) of parameters.</p>
+<p>Estimate the parameters <tt class="xref py py-attr docutils literal"><span class="pre">theta</span></tt> and <tt class="xref py py-attr docutils literal"><span class="pre">gamma</span></tt> from a set of
+observed annotations using maximum likelihood estimation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</li>
+<li><strong>estimate_gamma</strong> (<em>bool</em>) &#8211; If True, the parameters <tt class="xref py py-attr docutils literal"><span class="pre">gamma</span></tt> are estimated by the empirical
+class frequency. If False, <tt class="xref py py-attr docutils literal"><span class="pre">gamma</span></tt> is left unchanged.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.modelBt_loopdesign.ModelBtLoopDesign.sample_posterior_over_accuracy">
+<tt class="descname">sample_posterior_over_accuracy</tt><big>(</big><em>annotations</em>, <em>nsamples</em>, <em>burn_in_samples=100</em>, <em>thin_samples=5</em>, <em>target_rejection_rate=0.3</em>, <em>rejection_rate_tolerance=0.2</em>, <em>step_optimization_nsamples=500</em>, <em>adjust_step_every=100</em><big>)</big><a class="reference internal" href="modules/pyanno/modelBt_loopdesign.html#ModelBtLoopDesign.sample_posterior_over_accuracy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.modelBt_loopdesign.ModelBtLoopDesign.sample_posterior_over_accuracy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return samples from posterior distribution over theta given data.</p>
+<p>Samples are drawn using a variant of a Metropolis-Hasting Markov Chain
+Monte Carlo (MCMC) algorithm. Sampling proceeds in two phases:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><em>step size estimation phase</em>: first, the step size in the
+MCMC algorithm is adjusted to achieve a given rejection rate.</li>
+<li><em>sampling phase</em>: second, samples are collected using the
+step size from phase 1.</li>
+</ol>
+</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -892,107 +1284,6 @@ missing_values &#8211; list of labels that are considered missing values.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-pyanno.sampling">
-<span id="sampling-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">sampling</span></tt> Module<a class="headerlink" href="#module-pyanno.sampling" title="Permalink to this headline">¶</a></h2>
-<p>This module defines functions to sample from a distribution given its
-log likelihood.</p>
-<dl class="function">
-<dt id="pyanno.sampling.optimize_step_size">
-<tt class="descclassname">pyanno.sampling.</tt><tt class="descname">optimize_step_size</tt><big>(</big><em>likelihood</em>, <em>x0</em>, <em>arguments</em>, <em>x_lower</em>, <em>x_upper</em>, <em>n_samples</em>, <em>recomputing_cycle</em>, <em>target_rejection_rate</em>, <em>tolerance</em><big>)</big><a class="reference internal" href="modules/pyanno/sampling.html#optimize_step_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.sampling.optimize_step_size" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute optimum jump for MCMC estimation of credible intervals.</p>
-<p>Adjust jump size in Metropolis-Hasting MC to achieve target rejection rate.
-Jump size is estimated for each parameter separately.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>likelihood</strong> (<em>function(params, arguments)</em>) &#8211; Function returning the <em>unnormalized</em> log likelihood of data given
-the parameters. The function accepts two arguments:
-<cite>params</cite> is the vector of parameters; <cite>arguments</cite> contains any
-additional argument that is needed to compute the log likelihood.</li>
-<li><strong>x0</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Initial parameters value.</li>
-<li><strong>arguments</strong> (<em>any</em>) &#8211; Additional argument passed to the function <cite>likelihood</cite>.</li>
-<li><strong>x_lower</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Lower bound for the parameters.</li>
-<li><strong>x_upper</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Upper bound for the parameters.</li>
-<li><strong>n_samples</strong> (<em>int</em>) &#8211; Total number of samples to draw during the optimization.</li>
-<li><strong>recomputing_cycle</strong> (<em>int</em>) &#8211; Number of samples over which the rejection rates are computed. After
-<cite>recomputing_cycle</cite> samples, the step size is adapted and the
-rejection rates are reset to 0.</li>
-<li><strong>target_rejection_rate</strong> (<em>float</em>) &#8211; Target rejection rate. If the rejection rate over the latest cycle is
-closer than <cite>tolerance</cite> to this target, the optimization phase is
-concluded.</li>
-<li><strong>tolerance</strong> (<em>float</em>) &#8211; Tolerated deviation from <cite>target_rejection_rate</cite>.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>step</strong> (ndarray, shape = (n_parameters, )) - The final optimized step size.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyanno.sampling.sample_distribution">
-<tt class="descclassname">pyanno.sampling.</tt><tt class="descname">sample_distribution</tt><big>(</big><em>likelihood</em>, <em>x0</em>, <em>arguments</em>, <em>step</em>, <em>nsamples</em>, <em>x_lower</em>, <em>x_upper</em><big>)</big><a class="reference internal" href="modules/pyanno/sampling.html#sample_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.sampling.sample_distribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>General-purpose sampling routine for MCMC sampling.</p>
-<p>Draw samples from a distribution given its unnormalized log likelihood
-using the Metropolis-Hasting Monte Carlo algorithm.</p>
-<p>It is recommended to optimize the step size, <cite>step</cite>, using the function
-<a class="reference internal" href="#pyanno.sampling.optimize_step_size" title="pyanno.sampling.optimize_step_size"><tt class="xref py py-func docutils literal"><span class="pre">optimize_step_size()</span></tt></a> in order to reduce the autocorrelation between</p>
-<blockquote>
-<div>successive samples.</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>likelihood</strong> (<em>function(params, arguments)</em>) &#8211; Function returning the <em>unnormalized</em> log likelihood of data given
-the parameters. The function accepts two arguments:
-<cite>params</cite> is the vector of parameters; <cite>arguments</cite> contains any
-additional argument that is needed to compute the log likelihood.</li>
-<li><strong>x0</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Initial parameters value.</li>
-<li><strong>arguments</strong> (<em>any</em>) &#8211; Additional argument passed to the function <cite>likelihood</cite>.</li>
-<li><strong>step</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Width of the proposal distribution over the parameters.</li>
-<li><strong>nsamples</strong> (<em>int</em>) &#8211; Number of samples to draw from the distribution.</li>
-<li><strong>x_lower</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Lower bound for the parameters.</li>
-<li><strong>x_upper</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Upper bound for the parameters.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyanno.sampling.sample_from_proposal_distribution">
-<tt class="descclassname">pyanno.sampling.</tt><tt class="descname">sample_from_proposal_distribution</tt><big>(</big><em>theta</em>, <em>step</em>, <em>lower</em>, <em>upper</em><big>)</big><a class="reference internal" href="modules/pyanno/sampling.html#sample_from_proposal_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.sampling.sample_from_proposal_distribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns one sample from the proposal distribution.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>theta</strong> (<em>float</em>) &#8211; current parameter value</li>
-<li><strong>step</strong> (<em>float</em>) &#8211; width of the proposal distribution over <cite>theta</cite></li>
-<li><strong>lower</strong> (<em>float</em>) &#8211; lower bound for <cite>theta</cite></li>
-<li><strong>upper</strong> (<em>float</em>) &#8211; upper bound for <cite>theta</cite></li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
-<li><strong>theta_new</strong> (float) - new sample from the distribution over theta</li>
-<li><strong>log_q_ratio</strong> (float) - log-ratio of probability of new value given old value to probability of old value given new value</li>
-</ul>
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
 <div class="section" id="module-pyanno.database">
 <span id="database-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">database</span></tt> Module<a class="headerlink" href="#module-pyanno.database" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -1003,6 +1294,14 @@ additional argument that is needed to compute the log likelihood.</li>
 <dt id="pyanno.database.PyannoDatabase.close">
 <tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="modules/pyanno/database.html#PyannoDatabase.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.database.PyannoDatabase.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.database.PyannoDatabase.get_available_id">
+<tt class="descname">get_available_id</tt><big>(</big><big>)</big><a class="headerlink" href="#pyanno.database.PyannoDatabase.get_available_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an data ID that has is not present in the database.</p>
+<p>The returned IDs have the form &#8220;&lt;new_data_N&gt;&#8221;, where N is an integer
+number.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1041,7 +1340,7 @@ set.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>data_id</strong> (<em>string</em>) &#8211; Readable <strong>unique</strong> identifier for the annotations set (e.g.,
 the file name where the annotations are stored).</li>
-<li><strong>anno_container</strong> (<em>AnnotationsContainer</em>) &#8211; An annotations container (see :class:<a href="#id2"><span class="problematic" id="id3">`</span></a>~AnnotationsContainer).</li>
+<li><strong>anno_container</strong> (<em>AnnotationsContainer</em>) &#8211; An annotations container (see :class:<a href="#id12"><span class="problematic" id="id13">`</span></a>~AnnotationsContainer).</li>
 <li><strong>model</strong> (<em>object</em>) &#8211; pyAnno model object instance</li>
 <li><strong>value</strong> (<em>float</em>) &#8211; value of the objective function for the model-annotations pair,
 typically the log likelihood of the annotations given the model</li>
@@ -1171,6 +1470,107 @@ MISSING_VALUE.</p>
 <dd></dd></dl>
 
 </div>
+<div class="section" id="module-pyanno.sampling">
+<span id="sampling-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">sampling</span></tt> Module<a class="headerlink" href="#module-pyanno.sampling" title="Permalink to this headline">¶</a></h2>
+<p>This module defines functions to sample from a distribution given its
+log likelihood.</p>
+<dl class="function">
+<dt id="pyanno.sampling.optimize_step_size">
+<tt class="descclassname">pyanno.sampling.</tt><tt class="descname">optimize_step_size</tt><big>(</big><em>likelihood</em>, <em>x0</em>, <em>arguments</em>, <em>x_lower</em>, <em>x_upper</em>, <em>n_samples</em>, <em>recomputing_cycle</em>, <em>target_rejection_rate</em>, <em>tolerance</em><big>)</big><a class="reference internal" href="modules/pyanno/sampling.html#optimize_step_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.sampling.optimize_step_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute optimum jump for MCMC estimation of credible intervals.</p>
+<p>Adjust jump size in Metropolis-Hasting MC to achieve target rejection rate.
+Jump size is estimated for each parameter separately.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>likelihood</strong> (<em>function(params, arguments)</em>) &#8211; Function returning the <em>unnormalized</em> log likelihood of data given
+the parameters. The function accepts two arguments:
+<cite>params</cite> is the vector of parameters; <cite>arguments</cite> contains any
+additional argument that is needed to compute the log likelihood.</li>
+<li><strong>x0</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Initial parameters value.</li>
+<li><strong>arguments</strong> (<em>any</em>) &#8211; Additional argument passed to the function <cite>likelihood</cite>.</li>
+<li><strong>x_lower</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Lower bound for the parameters.</li>
+<li><strong>x_upper</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Upper bound for the parameters.</li>
+<li><strong>n_samples</strong> (<em>int</em>) &#8211; Total number of samples to draw during the optimization.</li>
+<li><strong>recomputing_cycle</strong> (<em>int</em>) &#8211; Number of samples over which the rejection rates are computed. After
+<cite>recomputing_cycle</cite> samples, the step size is adapted and the
+rejection rates are reset to 0.</li>
+<li><strong>target_rejection_rate</strong> (<em>float</em>) &#8211; Target rejection rate. If the rejection rate over the latest cycle is
+closer than <cite>tolerance</cite> to this target, the optimization phase is
+concluded.</li>
+<li><strong>tolerance</strong> (<em>float</em>) &#8211; Tolerated deviation from <cite>target_rejection_rate</cite>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>step</strong> (ndarray, shape = (n_parameters, )) - The final optimized step size.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.sampling.sample_distribution">
+<tt class="descclassname">pyanno.sampling.</tt><tt class="descname">sample_distribution</tt><big>(</big><em>likelihood</em>, <em>x0</em>, <em>arguments</em>, <em>step</em>, <em>nsamples</em>, <em>x_lower</em>, <em>x_upper</em><big>)</big><a class="reference internal" href="modules/pyanno/sampling.html#sample_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.sampling.sample_distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>General-purpose sampling routine for MCMC sampling.</p>
+<p>Draw samples from a distribution given its unnormalized log likelihood
+using the Metropolis-Hasting Monte Carlo algorithm.</p>
+<p>It is recommended to optimize the step size, <cite>step</cite>, using the function
+<a class="reference internal" href="#pyanno.sampling.optimize_step_size" title="pyanno.sampling.optimize_step_size"><tt class="xref py py-func docutils literal"><span class="pre">optimize_step_size()</span></tt></a> in order to reduce the autocorrelation between</p>
+<blockquote>
+<div>successive samples.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>likelihood</strong> (<em>function(params, arguments)</em>) &#8211; Function returning the <em>unnormalized</em> log likelihood of data given
+the parameters. The function accepts two arguments:
+<cite>params</cite> is the vector of parameters; <cite>arguments</cite> contains any
+additional argument that is needed to compute the log likelihood.</li>
+<li><strong>x0</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Initial parameters value.</li>
+<li><strong>arguments</strong> (<em>any</em>) &#8211; Additional argument passed to the function <cite>likelihood</cite>.</li>
+<li><strong>step</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Width of the proposal distribution over the parameters.</li>
+<li><strong>nsamples</strong> (<em>int</em>) &#8211; Number of samples to draw from the distribution.</li>
+<li><strong>x_lower</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Lower bound for the parameters.</li>
+<li><strong>x_upper</strong> (<em>ndarray, shape = (n_parameters, )</em>) &#8211; Upper bound for the parameters.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.sampling.sample_from_proposal_distribution">
+<tt class="descclassname">pyanno.sampling.</tt><tt class="descname">sample_from_proposal_distribution</tt><big>(</big><em>theta</em>, <em>step</em>, <em>lower</em>, <em>upper</em><big>)</big><a class="reference internal" href="modules/pyanno/sampling.html#sample_from_proposal_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.sampling.sample_from_proposal_distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns one sample from the proposal distribution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>theta</strong> (<em>float</em>) &#8211; current parameter value</li>
+<li><strong>step</strong> (<em>float</em>) &#8211; width of the proposal distribution over <cite>theta</cite></li>
+<li><strong>lower</strong> (<em>float</em>) &#8211; lower bound for <cite>theta</cite></li>
+<li><strong>upper</strong> (<em>float</em>) &#8211; upper bound for <cite>theta</cite></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>theta_new</strong> (float) - new sample from the distribution over theta</li>
+<li><strong>log_q_ratio</strong> (float) - log-ratio of probability of new value given old value to probability of old value given new value</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 <div class="section" id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
@@ -1208,16 +1608,14 @@ MISSING_VALUE.</p>
 <li><a class="reference internal" href="#">pyanno Package</a><ul>
 <li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">pyanno</span></tt> Package</a></li>
 <li><a class="reference internal" href="#abstract-model-module"><tt class="docutils literal"><span class="pre">abstract_model</span></tt> Module</a></li>
-<li><a class="reference internal" href="#module-pyanno.modelA"><tt class="docutils literal"><span class="pre">modelA</span></tt> Module</a><ul>
-<li><a class="reference internal" href="#reference">Reference</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#module-pyanno.modelA"><tt class="docutils literal"><span class="pre">modelA</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pyanno.modelB"><tt class="docutils literal"><span class="pre">modelB</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pyanno.modelBt"><tt class="docutils literal"><span class="pre">modelBt</span></tt> Module</a></li>
+<li><a class="reference internal" href="#modelbt-loopdesign-module"><tt class="docutils literal"><span class="pre">modelBt_loopdesign</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pyanno.annotations"><tt class="docutils literal"><span class="pre">annotations</span></tt> Module</a></li>
-<li><a class="reference internal" href="#module-pyanno.sampling"><tt class="docutils literal"><span class="pre">sampling</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pyanno.database"><tt class="docutils literal"><span class="pre">database</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pyanno.util"><tt class="docutils literal"><span class="pre">util</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-pyanno.sampling"><tt class="docutils literal"><span class="pre">sampling</span></tt> Module</a></li>
 <li><a class="reference internal" href="#subpackages">Subpackages</a><ul>
 </ul>
 </li>
