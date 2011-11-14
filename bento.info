@@ -1,7 +1,7 @@
 Name: pyanno
 Version: 2.0
 Summary: Package for curating data annotation efforts.
-Url: https://github.com/enthought/uchicago-pyanno
+Url: http://github.enthought.com/uchicago-pyanno/
 DownloadUrl: https://github.com/enthought/uchicago-pyanno
 Description:
     pyAnno 2.0 is a Python library for the analysis and diagnostic testing of
@@ -16,9 +16,7 @@ Description:
 
 Author: ['Pietro Berkes', 'Bob Carpenter', 'Andrey Rzhetsky', 'James Evans']
 AuthorEmail: ['pberkes@enthought.com', 'carp@lingpipe.com']
-Maintainer: ['Pietro Berkes', 'Bob Carpenter', 'Andrey Rzhetsky', 'James Evans']
-MaintainerEmail: ['pberkes@enthought.com', 'carp@lingpipe.com']
-License: LICENSE.txt
+License: BSD
 Platforms: UNKNOWN
 
 Path: gendatadir
