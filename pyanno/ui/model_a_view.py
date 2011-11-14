@@ -33,7 +33,6 @@ class NewModelADialog(NewModelDialog):
              editor=RangeEditor(mode='spinner', low=3, high=1000),
              label='Number of annotation classes:',
              width=100),
-        group_theme = 'white_theme.png'
     )
 
 

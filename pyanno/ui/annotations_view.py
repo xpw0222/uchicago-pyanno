@@ -46,7 +46,6 @@ class DataView(HasTraits):
                     show_label=False,
                     width=w_table,
                     padding=10),
-                group_theme = 'white_theme.png'
             ),
             title='Annotations',
             width=w_view,
@@ -230,8 +229,8 @@ class SaveAnnotationsDialog(HasTraits):
              editor=FileEditor(allow_dir=False,
                                dialog_style='save',
                                entries=0),
-             style='simple',
-             item_theme='white_theme.png'),
+             style='simple'
+        ),
         width = 400,
         resizable = True,
         buttons = ['OK', 'Cancel']
@@ -270,7 +269,6 @@ class CreateNewAnnotationsDialog(HasTraits):
                     editor=RangeEditor(mode='spinner', low=2, high=1000000),
                     label='Number of items'
                 ),
-                group_theme = 'white_theme.png'
             ),
             buttons = ['OK', 'Cancel']
         )

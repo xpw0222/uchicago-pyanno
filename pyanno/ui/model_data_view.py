@@ -433,7 +433,6 @@ class ModelDataView(HasTraits):
                         width=400
                     ),
                     label = 'Model view',
-                    group_theme = 'white_theme.png',
                 ),
 
             ),
@@ -469,7 +468,6 @@ class ModelDataView(HasTraits):
                  show_label=False,
                  visible_when='annotations_are_defined'),
             label = 'Data view',
-            group_theme = 'white_theme.png',
         )
 
         data_group = (
@@ -514,7 +512,6 @@ class ModelDataView(HasTraits):
                     data_group
                 ),
                 model_data_group,
-                group_theme = 'white_theme.png',
             ),
             title='PyAnno - Models of data annotations by multiple curators',
             width = 1300,
@@ -554,7 +551,6 @@ class _SamplingParamsDialog(HasTraits):
                                       is_float=False),
                  width = 100
             ),
-            group_theme = 'white_theme.png'
         ),
         buttons = OKCancelButtons
     )

@@ -7,10 +7,15 @@
 from enthought.etsconfig.api import ETSConfig
 from pyanno.ui.pyanno_ui_application import pyanno_application
 
-ETSConfig.toolkit = 'wx'
-
 import logging
 
+ETSConfig.toolkit = 'wx'
+
+# set the default color of windows to white
+import wx
+import traitsui.wx.constants
+traitsui.wx.constants.WindowColor = wx.WHITE
+traitsui.wx.constants.BorderedGroupColor = wx.WHITE
 
 def main():
     """Create and start the application."""

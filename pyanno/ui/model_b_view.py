@@ -51,7 +51,6 @@ class NewModelBDialog(NewModelDialog):
              editor=RangeEditor(mode='spinner', low=2, high=1000),
              label='Number of annotators:',
              width=100),
-        group_theme = 'white_theme.png'
     )
 
 
@@ -209,7 +208,6 @@ class ModelB_PriorView(HasTraits):
                       height = h_table,
                       padding = 10
                 ),
-                group_theme = 'white_theme.png'
             ),
             width = w_view,
             height = h_view,

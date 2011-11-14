@@ -47,7 +47,6 @@ class ParametersTabularView(HasTraits):
                        height = h_table,
                        padding = 10,
                        show_label=False),
-                  group_theme = 'white_theme.png',
             ),
             title     = self.title,
             width     = w_view,
