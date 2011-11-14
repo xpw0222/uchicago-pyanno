@@ -2,9 +2,9 @@
 # Authors: Pietro Berkes <pberkes@enthought.com>, Andrey Rzhetsky
 # License: Modified BSD license (2-clause)
 
-"""Definition of model B-with-theta, optimized for a loop design.
+"""This module defines model B-with-theta, optimized for a loop design.
 
-This definition assumes that there are a total or 8 annotators. Each item is
+The implementation assumes that there are a total or 8 annotators. Each item is
 annotated by a triplet of annotators, according to the loop design described
 in Rzhetsky et al., 2009.
 

@@ -2,7 +2,12 @@
 # Authors: Pietro Berkes <pberkes@enthought.com>, Andrey Rzhetsky
 # License: Modified BSD license (2-clause)
 
-"""Definition of model B-with-theta."""
+"""This module defines model B-with-theta.
+
+pyAnno includes another implementation of B-with-theta,
+:module:`pyanno.modelBt_loopdesign`, which is optimized for a loop design
+where each item is annotated by 3 out of 8 annotators.
+"""
 
 import numpy as np
 import scipy.optimize
@@ -10,9 +15,9 @@ import scipy.stats
 from traits.api import Int, Array
 from pyanno.abstract_model import AbstractModel
 from pyanno.sampling import optimize_step_size, sample_distribution
-from pyanno.util import (random_categorical, compute_counts,
-                         SMALLEST_FLOAT, MISSING_VALUE, labels_frequency,
-                         is_valid, ninf_to_num)
+from pyanno.util import (random_categorical,
+                         SMALLEST_FLOAT, labels_frequency,
+                         is_valid )
 
 import logging
 logger = logging.getLogger(__name__)

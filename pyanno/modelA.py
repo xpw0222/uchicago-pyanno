@@ -5,6 +5,30 @@
 """This module defines the class ModelA, an implementation of model A from
 Rzhetsky et al., 2009.
 
+The implementation assumes that there are a total or 8 annotators. Each item is
+annotated by a triplet of annotators, according to the loop design described
+in Rzhetsky et al., 2009.
+
+E.g., for 16 items the loop design looks like this (`A` indicates a label,
+`*` indicates a missing value): ::
+
+    A A A * * * * *
+    A A A * * * * *
+    * A A A * * * *
+    * A A A * * * *
+    * * A A A * * *
+    * * A A A * * *
+    * * * A A A * *
+    * * * A A A * *
+    * * * * A A A *
+    * * * * A A A *
+    * * * * * A A A
+    * * * * * A A A
+    A * * * * * A A
+    A * * * * * A A
+    A A * * * * * A
+    A A * * * * * A
+
 Reference
 ---------
 Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most from
@@ -15,14 +39,13 @@ from collections import defaultdict
 import numpy as np
 import scipy.optimize
 import scipy.stats
-from traits.has_traits import HasStrictTraits
 from traits.trait_numeric import Array
 from traits.trait_types import Int
 from pyanno.abstract_model import AbstractModel
 from pyanno.sampling import optimize_step_size, sample_distribution
 from pyanno.util import (compute_counts, random_categorical,
                          labels_frequency, MISSING_VALUE, SMALLEST_FLOAT,
-                         ninf_to_num, PyannoValueError)
+                         ninf_to_num )
 
 import logging
 logger = logging.getLogger(__name__)
