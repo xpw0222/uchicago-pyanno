@@ -47,7 +47,11 @@ class ThetaTensorPlot(PyannoPlotContainer):
 
     def _label_name(self, k):
         """Return a name for the data with index `k`."""
-        return 'theta[{},{},:]'.format(self.annotator_idx,k)
+        nclasses = self.theta.shape[0]
+        ndigits = int(np.ceil(np.log10(nclasses)))
+        format_str = 'theta[{{}},{{:{}d}},:]'.format(ndigits)
+
+        return format_str.format(self.annotator_idx,k)
 
 
     def _plot_samples(self, plot, plot_data):

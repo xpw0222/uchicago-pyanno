@@ -266,6 +266,12 @@ class ThetaDistrPlot(PyannoPlotContainer):
     # chaco plot of the tensor
     theta_plot = Any
 
+    def _theta_name(self, k):
+        nannotators = self.theta.shape[0]
+        ndigits = int(np.ceil(np.log10(nannotators)))
+        format_str = 'theta[{{:{}d}}]'.format(ndigits)
+        return format_str.format(k)
+
     def _theta_plot_default(self):
         theta = self.theta
         nannotators = theta.shape[0]
@@ -282,12 +288,12 @@ class ThetaDistrPlot(PyannoPlotContainer):
         plot_data.set_data('line_extr', [0., 1.])
 
         for k in range(nannotators):
-            name = 'theta[{}]'.format(k)
+            name = self._theta_name(k)
             plot_data.set_data(name, [theta[k], theta[k]])
 
         plots = {}
         for k in range(nannotators):
-            name = 'theta[{}]'.format(k)
+            name = self._theta_name(k)
             line_plot = plot.plot(
                 (name, 'line_extr'),
                 line_width = 2.,
@@ -302,7 +308,7 @@ class ThetaDistrPlot(PyannoPlotContainer):
             bins = np.linspace(0., 1., 100)
             max_hist = 0.
             for k in range(nannotators):
-                name = 'theta_{}_distr_'.format(k)
+                name = self._theta_name(k) + '_distr_'
                 hist, x = np.histogram(samples[:,k], bins=bins)
                 hist = hist / float(hist.sum())
                 max_hist = max(max_hist, hist.max())
@@ -313,7 +319,7 @@ class ThetaDistrPlot(PyannoPlotContainer):
                 plot_data.set_data(name+'y', y)
 
             for k in range(nannotators):
-                name = 'theta_{}_distr_'.format(k)
+                name = self._theta_name(k) + '_distr_'
                 plot.plot((name+'x', name+'y'),
                           line_width = 2.,
                           color = get_annotator_color(k)
