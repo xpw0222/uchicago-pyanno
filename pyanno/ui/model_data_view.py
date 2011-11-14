@@ -21,7 +21,6 @@ from pyanno.modelBt import ModelBt
 from pyanno.modelBt_loopdesign import ModelBtLoopDesign
 
 from pyanno.annotations import AnnotationsContainer
-from pyanno.database import PyannoDatabase
 from pyanno.plots.annotations_plot import PosteriorPlot
 from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
 from pyanno.ui.annotations_view import AnnotationsView, CreateNewAnnotationsDialog
@@ -39,7 +38,6 @@ from pyanno.util import PyannoValueError
 
 import logging
 logger = logging.getLogger(__name__)
-
 
 class ModelDataView(HasTraits):
 
@@ -201,7 +199,6 @@ class ModelDataView(HasTraits):
     # create a new model
     new_model = Button(label='Create...')
 
-    # TODO: get_info shows docstring
     # show informations about the selected model
     get_info_on_model = Button(label='Info...')
 
@@ -255,8 +252,9 @@ class ModelDataView(HasTraits):
         """Create an empty annotations set."""
         annotations = CreateNewAnnotationsDialog.create_annotations_dialog()
         if annotations is not None:
+            name = self.application.database.get_available_id()
             anno_cont = AnnotationsContainer.from_array(annotations,
-                                                        name='<new_model>')
+                                                        name=name)
             self.set_annotations(anno_cont)
 
 
