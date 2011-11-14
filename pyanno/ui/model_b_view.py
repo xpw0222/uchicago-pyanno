@@ -83,7 +83,6 @@ class ModelB_MultipleThetaView(HasTraits):
     theta_j_view = Instance(HasTraits)
 
     def traits_view(self):
-
         traits_view = View(
             VGroup(
                 Item('annotator_idx',
@@ -92,10 +91,10 @@ class ModelB_MultipleThetaView(HasTraits):
                                         low=0, high=self.theta.shape[0]-1,
                                         ),
                 ),
-                VGroup(
+                HGroup(
                     Item('theta_j_view',
                          style='custom',
-                         show_label=False)
+                         show_label=False),
                 ),
             ),
             width = 500,
@@ -108,14 +107,17 @@ class ModelB_MultipleThetaView(HasTraits):
 class ModelB_TabularThetaView(ModelB_MultipleThetaView):
     """Theta view is a tabular view."""
 
-    def _theta_j_view_default(self):
+    def _create_theta_j_view(self, j):
         return ParametersTabularView(
-            data = self.theta[self.annotator_idx,:,:].tolist()
+            data = self.theta[j,:,:].tolist(),
         )
+
+    def _theta_j_view_default(self):
+        return self._create_theta_j_view(self.annotator_idx)
 
     @on_trait_change('annotator_idx')
     def _theta_j_update(self):
-        self.theta_j_view.data = self.theta[self.annotator_idx,:,:].tolist()
+        self.theta_j_view = self._create_theta_j_view(self.annotator_idx)
 
 
 class ModelB_MatrixThetaView(ModelB_MultipleThetaView):

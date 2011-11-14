@@ -11,7 +11,7 @@ from traitsui.editors.file_editor import FileEditor
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.file_dialog import save_file
-from traitsui.group import HGroup, VGrid
+from traitsui.group import HGroup, VGrid, Group
 from traitsui.item import Item, Spring, Label
 from traitsui.menu import OKCancelButtons
 from pyanno.annotations import AnnotationsContainer
@@ -24,24 +24,32 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+WIDTH_CELL = 40
+MAX_WIDTH = 800
+W_MARGIN = 50
+
 class DataView(HasTraits):
     data = Array(dtype=object)
 
     def traits_view(self):
+        ncolumns = len(self.data[0])
+        w_table = WIDTH_CELL * ncolumns
+        w_view = min(w_table + W_MARGIN, MAX_WIDTH)
         return View(
-            VGroup(
+            Group(
                 Item('data',
                     editor=TabularEditor
                         (
-                        adapter=Array2DAdapter(ncolumns=len(self.data[0]),
+                        adapter=Array2DAdapter(ncolumns=ncolumns,
                                                format='%s',
                                                show_index=True)),
                     show_label=False,
-                    width=600),
+                    width=w_table,
+                    padding=10),
                 group_theme = 'white_theme.png'
             ),
             title='Annotations',
-            width=500,
+            width=w_view,
             height=800,
             resizable=True,
             buttons=OKCancelButtons
