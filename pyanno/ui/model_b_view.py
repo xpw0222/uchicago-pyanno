@@ -24,6 +24,14 @@ from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
 
 import numpy as np
 
+
+WIDTH_CELL = 100
+HEIGHT_CELL = 20
+MAX_WIDTH = 800
+MAX_HEIGHT = 800
+W_MARGIN = 50
+H_MARGIN = 250
+
 MODEL_B_NAME = 'Model B (full model)'
 
 
@@ -170,9 +178,11 @@ class ModelB_PriorView(HasTraits):
 
     def traits_view(self):
         nclasses = self.beta.shape[1]
-        width = 100*nclasses
-        height = 30*nclasses
-        margin = 50
+        w_table = WIDTH_CELL * nclasses
+        h_table = HEIGHT_CELL * nclasses
+        w_view = min(MAX_WIDTH, w_table + W_MARGIN)
+        h_view = min(MAX_HEIGHT, h_table + HEIGHT_CELL + H_MARGIN)
+
         view = View(
             VGroup(
                 Label('Beta parameters (prior over pi):'),
@@ -182,8 +192,8 @@ class ModelB_PriorView(HasTraits):
                                                  format='%.4f',
                                                  show_index=True),
                           ),
-                      width = width,
-                      height = 40,
+                      width = w_table,
+                      height = HEIGHT_CELL,
                       padding = 10
                 ),
                 Label('Alpha parameters (prior over theta):'),
@@ -193,14 +203,14 @@ class ModelB_PriorView(HasTraits):
                                                  format='%.4f',
                                                  show_index=True),
                           ),
-                      width = width,
-                      height = height,
+                      width = w_table,
+                      height = h_table,
                       padding = 10
                 ),
                 group_theme = 'white_theme.png'
             ),
-            width = min(width + margin, 800),
-            height = min(height + 100 + margin, 800),
+            width = w_view,
+            height = h_view,
             scrollable = True,
             resizable = True,
             buttons = ['OK', 'Cancel']
