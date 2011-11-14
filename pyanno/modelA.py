@@ -439,7 +439,8 @@ class ModelA(AbstractModel):
     def log_likelihood(self, annotations):
         """Compute the log likelihood of a set of annotations given the model.
 
-        Returns log P(annotations | current model parameters).
+        Returns :math:`\log P(\mathbf{x} | \omega, \\theta)`,
+        where :math:`\mathbf{x}` is the array of annotations.
 
         Parameters
         ----------

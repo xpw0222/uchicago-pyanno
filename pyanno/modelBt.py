@@ -23,17 +23,21 @@ class ModelBt(AbstractModel):
 
     The model assumes the existence of "true" underlying labels for each item,
     which are drawn from a categorical distribution, gamma. Annotators report
-    this labels with some noise. Crucially, the noise distribution is
-    described by a small number of parameters (one per annotator),
-    which their estimation efficient and less sensitive to local optima.
+    this labels with some noise, according to their accuracy, theta.
+
+    This model is closely related to :class:`~ModelB`, but, crucially,
+    the noise distribution is described by a small number of parameters (one
+    per annotator), which makes their estimation efficient and less sensitive
+    to local optima.
 
     The model parameters are:
 
-    - gamma[k] is the probability of label k
+    - `gamma[k]` is the probability of label k
 
-    - theta[j] parametrized the probability that annotator j reports label k'.
-      More specifically, P( annotator j chooses k' | real label = k) is
-      theta[j] for k' = k, or (1 - theta[j]) / sum(theta) if k' != k .
+    - `theta[j]` parametrizes the probability that annotator `j` reports label
+    `k'` given ground truth, `k`. More specifically,
+    `P( annotator j chooses k' | real label = k)` is
+    `theta[j]` for k' = k, or `(1 - theta[j]) / sum(theta)` if `k' != k `.
 
     See the documentation for a more detailed description of the model.
 
@@ -64,6 +68,25 @@ class ModelBt(AbstractModel):
 
     def __init__(self, nclasses, nannotators,
                  gamma, theta, **traits):
+        """Create an instance of ModelB.
+
+        Parameters
+        ----------
+        nclasses : int
+            Number of possible annotation classes
+
+        nannotators : int
+            Number of annotators
+
+        gamma : ndarray, shape = (n_classes, )
+            gamma[k] is the prior probability of label class k
+
+        theta : ndarray, shape = (n_annotators, )
+            theta[j] parametrizes the accuracy of annotator j. Specifically,
+            `P( annotator j chooses k' | real label = k)` is
+            `theta[j]` for k' = k, or `(1 - theta[j]) / sum(theta)`
+            if `k' != k `.
+        """
 
         self.nclasses = nclasses
         self.nannotators = nannotators
@@ -80,7 +103,16 @@ class ModelBt(AbstractModel):
     def create_initial_state(nclasses, nannotators, gamma=None, theta=None):
         """Factory method returning a model with random initial parameters.
 
-        <behaviour>
+        It is often more convenient to use this factory method over the
+        constructor, as one does not need to specify the initial model
+        parameters.
+
+        The parameters theta and gamma, controlling accuracy and prevalence,
+        are initialized at random as follows:
+
+        :math:`\\theta_j \sim \mathrm{Uniform}(0.6, 0.95)`
+
+        :math:`\gamma \sim \mathrm{Dirichlet}(2.0)`
 
         Arguments
         ---------
@@ -90,13 +122,14 @@ class ModelBt(AbstractModel):
         nannotators : int
             Number of annotators
 
-        gamma : nparray
-            An array of floats with size that holds the probability of each
-            annotation value. Default is None
+        gamma : ndarray, shape = (n_classes, )
+            gamma[k] is the prior probability of label class k
 
-        theta : nparray
-            An array of floats that the parameters of P( v_i | psi ) (one for
-            each annotator)
+        theta : ndarray, shape = (n_annotators, )
+            theta[j] parametrizes the accuracy of annotator j. Specifically,
+            `P( annotator j chooses k' | real label = k)` is
+            `theta[j]` for k' = k, or `(1 - theta[j]) / sum(theta)`
+            if `k' != k `.
 
         Returns
         -------
@@ -132,7 +165,22 @@ class ModelBt(AbstractModel):
 
 
     def generate_annotations_from_labels(self, labels):
-        """Generate random annotations given labels."""
+        """Generate random annotations from the model, given labels
+
+        The method samples random annotations from the conditional probability
+        distribution of annotations, :math:`x_i^j`
+        given labels, :math:`y_i`.
+
+        Parameters
+        ----------
+        labels : ndarray, shape = (n_items,), dtype = int
+            Set of "true" labels
+
+        Returns
+        -------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+        """
         theta = self.theta
         nitems = labels.shape[0]
 
@@ -149,7 +197,12 @@ class ModelBt(AbstractModel):
         """Generate a random annotation set from the model.
 
         Sample a random set of annotations from the probability distribution
-        defined the current model parameters.
+        defined the current model parameters:
+
+            1) Label classes are generated from the prior distribution, pi
+
+            2) Annotations are generated from the conditional distribution of
+               annotations given classes, parametrized by theta
 
         Arguments
         ---------
@@ -177,6 +230,20 @@ class ModelBt(AbstractModel):
     ##### Parameters estimation methods #######################################
 
     def mle(self, annotations, estimate_gamma=True):
+        """Computes maximum likelihood estimate (MLE) of parameters.
+
+        Estimate the parameters :attr:`theta` and :attr:`gamma` from a set of
+        observed annotations using maximum likelihood estimation.
+
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+
+        estimate_gamma : bool
+            If True, the parameters :attr:`gamma` are estimated by the empirical
+            class frequency. If False, :attr:`gamma` is left unchanged.
+        """
         self._raise_if_incompatible(annotations)
 
         # mask missing annotations
@@ -194,6 +261,20 @@ class ModelBt(AbstractModel):
 
 
     def map(self, annotations, estimate_gamma=True):
+        """Computes maximum a posteriori (MAP) estimate of parameters.
+
+        Estimate the parameters :attr:`theta` and :attr:`gamma` from a set of
+        observed annotations using maximum a posteriori estimation.
+
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+
+        estimate_gamma : bool
+            If True, the parameters :attr:`gamma` are estimated by the empirical
+            class frequency. If False, :attr:`gamma` is left unchanged.
+        """
         self._raise_if_incompatible(annotations)
 
         # mask missing annotations
@@ -266,7 +347,21 @@ class ModelBt(AbstractModel):
     ##### Model likelihood methods ############################################
 
     def log_likelihood(self, annotations):
-        """Compute the log likelihood of annotations given the model."""
+        """Compute the log likelihood of a set of annotations given the model.
+
+        Returns :math:`\log P(\mathbf{x} | \gamma, \\theta)`,
+        where :math:`\mathbf{x}` is the array of annotations.
+
+        Parameters
+        ----------
+        annotations : ndarray, shape = (n_items, n_annotators)
+            annotations[i,j] is the annotation of annotator j for item i
+
+        Returns
+        -------
+        log_lhood : float
+            log likelihood of `annotations`
+        """
 
         self._raise_if_incompatible(annotations)
 
@@ -396,9 +491,14 @@ class ModelBt(AbstractModel):
                                        adjust_step_every = 100):
         """Return samples from posterior distribution over theta given data.
 
-        Draw samples from P(theta | data, model parameters).
-        The accuracy parameters, theta, control the probability of an annotator
-        reporting the correct label (see :class:`~ModelBt`).
+        Samples are drawn using a variant of a Metropolis-Hasting Markov Chain
+        Monte Carlo (MCMC) algorithm. Sampling proceeds in two phases:
+
+            1) *step size estimation phase*: first, the step size in the
+               MCMC algorithm is adjusted to achieve a given rejection rate.
+
+            2) *sampling phase*: second, samples are collected using the
+               step size from phase 1.
 
         Parameters
         ----------
@@ -488,11 +588,22 @@ class ModelBt(AbstractModel):
     ##### Posterior distributions #############################################
 
     def infer_labels(self, annotations):
-        """Infer posterior distribution over true labels.
+        """Infer posterior distribution over label classes.
 
-        Returns P( label | annotations, parameters), where parameters is the
-        current point estimate of the parameters pi and theta.
-        """
+         Compute the posterior distribution over label classes given observed
+         annotations, :math:`P( \mathbf{y} | \mathbf{x}, \\theta, \omega)`.
+
+         Parameters
+         ----------
+         annotations : ndarray, shape = (n_items, n_annotators)
+             annotations[i,j] is the annotation of annotator j for item i
+
+         Returns
+         -------
+         posterior : ndarray, shape = (n_items, n_classes)
+             posterior[i,k] is the posterior probability of class k given the
+             annotation observed in item i.
+         """
 
         self._raise_if_incompatible(annotations)
 

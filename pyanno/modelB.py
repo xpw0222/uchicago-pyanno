@@ -145,7 +145,7 @@ class ModelB(AbstractModel):
         parameters.
 
         The parameters theta and pi, controlling accuracy and prevalence,
-        are drawn at random from the prior alpha and beta:
+        are initialized at random from the prior alpha and beta:
 
         :math:`\\theta_j^k \sim \mathrm{Dirichlet}(\mathbf{\\alpha_k})`
 
@@ -171,6 +171,11 @@ class ModelB(AbstractModel):
         beta : ndarray
             Parameters of Dirichlet prior over model categories
             Default value for beta[i] is 1.0 .
+
+        Returns
+        -------
+        model : :class:`~ModelB`
+            Instance of ModelB
         """
 
         # NOTE: this is Bob Carpenter's prior; it is a *very* strong prior

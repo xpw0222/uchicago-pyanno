@@ -23,13 +23,19 @@ At present, pyAnno implements three probabilistic models of data annotation:
 Glossary
 --------
 
+annotations
+    The values emitted by the annotator on the available data items.
+    In the documentation,
+    :math:`x_i^j`, indicates the i-th annotation for annotator j.
+
 labels
     The possible annotations. They may be numbers, or strings, or any
-    discrete set of objects
+    discrete set of objects.
 
 class
     Every set of labels is ordered and numbered from 0 to K. The number
-    associated with each label is the label class
+    associated with each label is the label class. The ground truth label class
+    for each data item, i, is indicated in the documentation as :math:`y_i`.
 
 prevalence
     The prior probability of label classes
