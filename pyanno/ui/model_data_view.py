@@ -444,7 +444,7 @@ class ModelDataView(HasTraits):
             #Label('Open annotation file:', width=800),
             HGroup(
                 Item('annotations_file', style='simple', label='Open file:',
-                     width=400, height=25),
+                     width=350, height=25),
                 UItem('new_annotations', height=25)
             ),
             label = 'Load/create annotations',
@@ -456,7 +456,7 @@ class ModelDataView(HasTraits):
                  style='custom',
                  show_label=False,
                  visible_when='annotations_are_defined',
-                 width=700
+                 width=500
             ),
 
             Spring(),
@@ -514,8 +514,8 @@ class ModelDataView(HasTraits):
                 model_data_group,
             ),
             title='PyAnno - Models of data annotations by multiple curators',
-            width = 1300,
-            height = 850,
+            width = 1024,
+            height = 768,
             resizable = False
 
         )

@@ -62,7 +62,7 @@ class ThetaScatterPlot(ModelView, PyannoPlotContainer):
         self.data['theta_samples'] = theta_samples
 
     #### plot-related traits
-    title = Str('Accuracy of annotators (theta)')
+    title = Str('Accuracy (theta)')
 
     theta_plot_data = Instance(ArrayPlotData)
     theta_plot = Any
@@ -243,7 +243,7 @@ class ThetaScatterPlot(ModelView, PyannoPlotContainer):
         editor=ComponentEditor(),
         resizable=False,
         show_label=False,
-        height=-280
+        height=-220
         #width=-320,
         #height=-300
         )
@@ -327,7 +327,7 @@ class ThetaDistrPlot(PyannoPlotContainer):
 
         # --- adjust plot appearance
 
-        plot.aspect_ratio = 1.7
+        plot.aspect_ratio = 1.6
         plot.padding = [20,0,10,40]
 
         # adjust axis bounds
@@ -377,7 +377,7 @@ class ThetaDistrPlot(PyannoPlotContainer):
         editor=ComponentEditor(),
         resizable=False,
         show_label=False,
-        height=-280,
+        height=-220,
         )
 
 

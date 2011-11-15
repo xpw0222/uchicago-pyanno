@@ -153,7 +153,7 @@ class ModelBtLoopDesignView(PyannoModelView):
                      style='custom',
                      resizable=False,
                      show_label=False,
-                     width=480
+                     width=350
                 ),
                 Spring()
             ),
@@ -175,7 +175,7 @@ class ModelBtLoopDesignView(PyannoModelView):
                 UItem('handler.theta_view',
                      style='custom',
                      resizable=False,
-                     width=480
+                     width=350
                 ),
                 Spring()
             ),

@@ -153,7 +153,7 @@ class ThetaTensorPlot(PyannoPlotContainer):
 
         # --- adjust plot appearance
 
-        plot.aspect_ratio = 1.7
+        plot.aspect_ratio = 1.6
 
         # adjust axis bounds
         y_high = theta.max()
@@ -178,7 +178,7 @@ class ThetaTensorPlot(PyannoPlotContainer):
         legend = Legend(component=plot, plots=plots,
                         align="ur", border_padding=10)
         legend.tools.append(LegendTool(legend, drag_button="left"))
-        legend.padding_right = -110
+        legend.padding_right = -100
         plot.overlays.append(legend)
 
         container = VPlotContainer(width=plot.width + 100, halign='left')
@@ -208,7 +208,7 @@ class ThetaTensorPlot(PyannoPlotContainer):
         editor=ComponentEditor(),
         resizable=False,
         show_label=False,
-        height=-250,
+        height=-200,
         )
 
 

@@ -183,7 +183,7 @@ class AnnotationsView(HasTraits):
                      style='custom',
                      resizable=False,
                      show_label=False,
-                     width=450
+                     width=350
                 ),
                 Spring()
             ),
