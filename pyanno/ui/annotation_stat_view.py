@@ -110,6 +110,7 @@ class AnnotationsStatisticsView(HasTraits):
                     Item("statistics_name", show_label=False),
                     Item("info_button", show_label=False, enabled_when="False")
                 ),
+                Spring(),
                 HGroup(
                     Spring(),
                     Item("stats_view",
@@ -118,8 +119,7 @@ class AnnotationsStatisticsView(HasTraits):
                          width=300,
                          resizable=False),
                     Spring()
-                )
-                #Spring()
+                ),
             ),
             width=400,
             resizable = True

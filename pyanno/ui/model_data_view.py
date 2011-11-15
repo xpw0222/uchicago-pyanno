@@ -25,6 +25,7 @@ from pyanno.plots.annotations_plot import PosteriorPlot
 from pyanno.ui.annotation_stat_view import AnnotationsStatisticsView
 from pyanno.ui.annotations_view import AnnotationsView, CreateNewAnnotationsDialog
 from pyanno.ui.appbase.long_running_call import LongRunningCall
+from pyanno.ui.appbase.wx_utils import is_display_small
 from pyanno.ui.model_a_view import ModelAView
 from pyanno.ui.model_bt_view import ModelBtView
 from pyanno.ui.model_btloop_view import ModelBtLoopDesignView
@@ -411,6 +412,20 @@ class ModelDataView(HasTraits):
     def traits_view(self):
         ## Model view
 
+        # adjust sizes to display size
+        if is_display_small():
+            # full view size
+            w_view, h_view = 1024, 768
+            w_data_create_group = 350
+            w_data_info_group = 500
+            h_annotations_stats = 270
+        else:
+            w_view, h_view = 1300, 850
+            w_data_create_group = 400
+            w_data_info_group = 700
+            h_annotations_stats = 330
+
+
         model_create_group = (
             VGroup(
                 HGroup(
@@ -444,7 +459,7 @@ class ModelDataView(HasTraits):
             #Label('Open annotation file:', width=800),
             HGroup(
                 Item('annotations_file', style='simple', label='Open file:',
-                     width=400, height=25),
+                     width=w_data_create_group, height=25),
                 UItem('new_annotations', height=25)
             ),
             label = 'Load/create annotations',
@@ -456,17 +471,15 @@ class ModelDataView(HasTraits):
                  style='custom',
                  show_label=False,
                  visible_when='annotations_are_defined',
-                 width=700
+                 width=w_data_info_group,
             ),
-
-            Spring(),
-            Item('_', visible_when='annotations_are_defined'),
-            Spring(),
 
             Item('annotations_stats_view',
                  style='custom',
                  show_label=False,
-                 visible_when='annotations_are_defined'),
+                 visible_when='annotations_are_defined',
+                 height=h_annotations_stats),
+
             label = 'Data view',
         )
 
@@ -514,10 +527,9 @@ class ModelDataView(HasTraits):
                 model_data_group,
             ),
             title='PyAnno - Models of data annotations by multiple curators',
-            width = 1300,
-            height = 850,
+            width = w_view,
+            height = h_view,
             resizable = False
-
         )
 
         return full_view

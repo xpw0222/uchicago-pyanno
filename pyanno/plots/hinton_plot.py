@@ -134,13 +134,16 @@ class HintonDiagramPlot(PyannoPlotContainer):
         height = 400
         )
 
-    traits_plot_item = Item(
-        'plot',
-        editor=ComponentEditor(),
-        resizable=False,
-        show_label=False,
-        height=-110,
-        )
+    traits_plot_item = Instance(Item)
+
+    def _traits_plot_item_default(self):
+        return Item(
+                    'plot',
+                    editor=ComponentEditor(),
+                    resizable=False,
+                    show_label=False,
+                    height=-110,
+                    )
 
 
 def plot_hinton_diagram(data, **kwargs):

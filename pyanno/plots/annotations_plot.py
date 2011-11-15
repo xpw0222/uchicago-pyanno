@@ -29,8 +29,8 @@ class PosteriorPlot(PyannoPlotContainer):
     posterior = Array
 
     ### plot-related traits
-    plot_width = Float(500)
-    plot_height = Float(750)
+    plot_width = Float(450)
+    plot_height = Float(600)
 
     colormap_low = Float(0.0)
     colormap_high = Float(1.0)
@@ -69,12 +69,12 @@ class PosteriorPlot(PyannoPlotContainer):
                                  xbounds=(0, nclasses),
                                  ybounds=(0, nannotations),
                                  colormap=self._create_colormap())[0]
-        ndisp = 60
+        ndisp = 55
         img_plot.y_mapper.range.high = ndisp
         img_plot.y_mapper.domain_limits=((0, nannotations))
 
         self._set_title(plot)
-        plot.padding_top = 100
+        plot.padding_top = 80
 
         # create x axis for labels
         label_axis = self._create_increment_one_axis(plot, 0.5, nclasses, 'top')
@@ -171,7 +171,7 @@ class PosteriorPlot(PyannoPlotContainer):
                 resizable_plot_item,
             ),
             width = 450,
-            height = 800,
+            height = 760,
             #scrollable = True,
             resizable = True
         )
