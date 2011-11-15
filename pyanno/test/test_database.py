@@ -8,7 +8,7 @@ import shelve
 from tempfile import TemporaryFile, tempdir, mktemp, gettempdir
 
 import unittest
-import pyanno
+from pyanno.models import ModelA, ModelB
 from pyanno.annotations import AnnotationsContainer
 from pyanno.database import PyannoDatabase, PyannoResult
 from pyanno.util import PyannoValueError
@@ -21,14 +21,14 @@ class TestDatabase(unittest.TestCase):
         self.tmp_filename = mktemp(prefix='tmp_pyanno_db_')
 
         # fixtures
-        self.model1 = pyanno.ModelA.create_initial_state(4)
+        self.model1 = ModelA.create_initial_state(4)
         self.annotations1 = self.model1.generate_annotations(100)
         self.value1 = self.model1.log_likelihood(self.annotations1)
         self.anno_container1 = AnnotationsContainer.from_array(
             self.annotations1)
         self.data_id1 = 'bogus.txt'
 
-        self.model2 = pyanno.ModelB.create_initial_state(4, 8)
+        self.model2 = ModelB.create_initial_state(4, 8)
         self.annotations2 = self.model2.generate_annotations(100)
         self.value2 = self.model2.log_likelihood(self.annotations2)
         self.anno_container2 = AnnotationsContainer.from_array(

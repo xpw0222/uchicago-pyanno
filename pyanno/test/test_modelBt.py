@@ -5,8 +5,7 @@
 import unittest
 import numpy as np
 from numpy import testing
-from pyanno import ModelBt
-from pyanno.modelBt_loopdesign import ModelBtLoopDesign
+from pyanno.models import ModelBt, ModelBtLoopDesign
 from pyanno.util import MISSING_VALUE as MV, is_valid, PyannoValueError, labels_frequency
 
 

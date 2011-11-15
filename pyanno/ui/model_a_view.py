@@ -192,7 +192,7 @@ class ModelAView(PyannoModelView):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno import ModelA
+    from pyanno.models import ModelA
 
     model = ModelA.create_initial_state(4)
     model_view = ModelAView(model=model)

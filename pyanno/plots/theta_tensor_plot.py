@@ -260,7 +260,7 @@ def plot_theta_tensor(modelB, annotator_idx, theta_samples=None, **kwargs):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno import ModelB
+    from pyanno.models import ModelB
 
     model = ModelB.create_initial_state(4, 5)
     anno = model.generate_annotations(100)

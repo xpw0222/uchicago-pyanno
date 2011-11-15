@@ -2,25 +2,13 @@
 # Author: Pietro Berkes <pberkes@enthought.com>
 # License: Modified BSD license (2-clause)
 
-from traits.has_traits import on_trait_change
-from traits.trait_types import Button, List, CFloat, Str, Range, Int, Enum, Any
-from traitsui.api import View, Item, VGroup
+from traits.trait_types import    Str, Int
+from traitsui.api import  Item, VGroup
 from traitsui.editors.range_editor import RangeEditor
-from traitsui.group import VGrid, HGroup
-from traitsui.handler import Handler
-from traitsui.include import Include
-from traitsui.item import Spring, UItem
-from traitsui.menu import OKButton
-from traits.api import Instance
-import numpy as np
 from pyanno.modelBt import ModelBt
 
-from pyanno.plots.hinton_plot import HintonDiagramPlot
-from pyanno.plots.plots_superclass import PyannoPlotContainer
-from pyanno.plots.theta_plot import ThetaScatterPlot, ThetaDistrPlot
 from pyanno.ui.model_btloop_view import ModelBtLoopDesignView
-from pyanno.ui.model_view import PyannoModelView, NewModelDialog
-from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
+from pyanno.ui.model_view import  NewModelDialog
 
 
 MODEL_BT_NAME = 'Model B-with-theta'
@@ -62,7 +50,7 @@ class ModelBtView(ModelBtLoopDesignView):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno import ModelBt
+    from pyanno.models import ModelBt
 
     model = ModelBt.create_initial_state(5, 12)
     anno = model.generate_annotations(100)

@@ -379,7 +379,7 @@ class ModelBView(PyannoModelView):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from pyanno import ModelB
+    from pyanno.models import ModelB
 
     model = ModelB.create_initial_state(4, 5)
     anno = model.generate_annotations(100)

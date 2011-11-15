@@ -5,7 +5,7 @@
 import unittest
 import numpy as np
 from numpy import testing
-from pyanno import ModelB
+from pyanno.models import ModelB
 from pyanno.util import MISSING_VALUE as MV, PyannoValueError, labels_frequency
 
 
