@@ -11,5 +11,5 @@ def is_display_small():
     size = wx.GetDisplaySize()
     if size is not None:
         w, h = size
-        return w < 1300 and h < 850
+        return w < 1300 or h < 850
     return False
