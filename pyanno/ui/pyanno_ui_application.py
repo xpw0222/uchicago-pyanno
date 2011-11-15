@@ -57,21 +57,26 @@ class PyannoApplication(HasTraits):
 
     def close(self):
         self.database.close()
-        logging.info('Closing pyAnno -- Goodbye!')
+        logger.info('Closing pyAnno -- Goodbye!')
 
 
     def _start_logging(self):
-        logging.basicConfig(level=logging.DEBUG)
-        logging.info('Starting pyAnno')
+        logging.basicConfig(level=self.logging_level)
+        logger.info('Starting pyAnno')
 
 
     def _create_pyanno_directory(self):
         """Create a pyanno directort in the user's home if it is missing."""
-        home_dir = os.getenv('HOME')
+        home_dir = os.getenv('HOME') or os.getenv('HOMEPATH')
+        logger.debug('Found home directory at ' + str(home_dir))
+
         self.pyanno_pathname = os.path.join(home_dir, PYANNO_PATH_NAME)
+
         try:
+            logger.debug('Creating pyAnno directory at ' + self.pyanno_pathname)
             os.makedirs(self.pyanno_pathname)
         except OSError as e:
+            logger.debug('pyAnno directory already existing')
             if e.errno != errno.EEXIST:
                 raise
 
