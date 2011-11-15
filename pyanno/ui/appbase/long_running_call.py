@@ -8,8 +8,10 @@
 
 from pyface.api import GUI
 from traits.api import Any, Callable, Dict, HasTraits, Tuple, Unicode
+import sys
 
 from pyanno.ui.appbase.pulse_progress_dialog import PulseProgressDialog
+from pyanno.ui.appbase.mac_pulse_progress_dialog import MacOSXPulseProgressDialog
 
 
 class LongRunningCall(HasTraits):
@@ -73,8 +75,12 @@ class LongRunningCall(HasTraits):
             # In wx the progress dialog isn't really modal, so we just disable
             # its parent!
             self.parent.Enable(False)
-        
-        self.progress_dialog = PulseProgressDialog(
+
+        if sys.platform == 'darwin':
+            progress_dialog_class = MacOSXPulseProgressDialog
+        else:
+            progress_dialog_class = PulseProgressDialog
+        self.progress_dialog = progress_dialog_class(
             parent=self.parent, title=self.title, message=self.message
         )
         self.progress_dialog.open()

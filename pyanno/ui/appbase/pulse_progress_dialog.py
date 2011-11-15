@@ -17,38 +17,43 @@ class PulseProgressDialog(ProgressDialog):
     know the percentage completion etc, but you still want to let them know
     that something is happening!
 
-    By default, the dialog pulses every 40 milliseconds (25Hz).
+    By default, the dialog is refreshed every 40 milliseconds (25Hz).
     """
 
     #### 'PulseProgressDialog' protocol #######################################
 
     # The delay between pulses (in milliseconds).
-    delay = Int(40)
+    delay = Int(70)
 
     def pulse(self):
         """ Pulse the progress bar. """
 
         # The actual value passed to 'update' here isn't used by pyface because
         # 'max' is set to 0 (zero) which makes the progress bar 'pulse'!
-        self.update(1)
+        if self.ascend:
+            self.counter += 1
+            self.ascend = self.counter < self.max
+        else:
+            self.counter -= 1
+            self.ascend = self.counter <= 0
+
+        self.update(self.counter)
 
         return
 
     #### 'IProgressDialog' protocol ###########################################
 
+    ascend       = True
+    counter      = 1
     can_cancel   = False
-    max          = 0
+    max          = 30
     show_percent = False
     show_time    = False
 
     def open(self):
         """ Open the dialog. """
-
         self._schedule_pulse()
-
         super(PulseProgressDialog, self).open()
-
-        return
 
     def close(self):
         """ Close the dialog. """
@@ -61,7 +66,11 @@ class PulseProgressDialog(ProgressDialog):
         # update.
         GUI.invoke_after(self.delay, super(PulseProgressDialog, self).close)
 
-        return
+    def update(self, value):
+        # overwrite because the superclass closes the dialog when the
+        # progressbar reaches the end
+        if self.progress_bar is not None:
+            self.progress_bar.update(value)
 
     #### Private protocol #####################################################
 
@@ -70,23 +79,17 @@ class PulseProgressDialog(ProgressDialog):
 
     def _schedule_pulse(self):
         """ Schedule a pulse for 'self.delay' milliseconds from now. """
-
         GUI.invoke_after(self.delay, self._pulse_and_reschedule)
-
-        return
 
     def _pulse_and_reschedule(self):
         """ Pulse the progress bar and reschedule the next one!
 
         If the progress dialog is closing then we don't do anything.
-
         """
 
         if not self._closing:
             self.pulse()
             self._schedule_pulse()
-
-        return
 
 
 def main():
