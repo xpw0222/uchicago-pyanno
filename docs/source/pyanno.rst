@@ -41,18 +41,18 @@ pyanno Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`annotations` Module
--------------------------
+:mod:`modelBt_loopdesign` Module
+---------------------
 
-.. automodule:: pyanno.annotations
+.. automodule:: pyanno.modelBt_loopdesign
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`sampling` Module
-----------------------
+:mod:`annotations` Module
+-------------------------
 
-.. automodule:: pyanno.sampling
+.. automodule:: pyanno.annotations
     :members:
     :undoc-members:
     :show-inheritance:
@@ -69,6 +69,14 @@ pyanno Package
 ------------------
 
 .. automodule:: pyanno.util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`sampling` Module
+----------------------
+
+.. automodule:: pyanno.sampling
     :members:
     :undoc-members:
     :show-inheritance:
