@@ -4,12 +4,14 @@ User guide
 This user guide contains information about getting started
 with pyAnno, running simulations and running model estimation.
 
-
-General organization of pyAnno
-------------------------------
-
 pyAnno can be used as a Python library from within your Python code, or as
 a standalone application by executing the pyAnno GUI.
+
+Using the library from a Python shell
+-------------------------------------
+
+General organization of pyAnno
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The pyAnno library is composed of several modules:
 
@@ -34,11 +36,10 @@ The pyAnno library is composed of several modules:
   typically not used directly from Python
 
 
-Using the library from a Python shell
--------------------------------------
-
 Creating a new model
 ^^^^^^^^^^^^^^^^^^^^
+
+
 
 Generating data
 ^^^^^^^^^^^^^^^
