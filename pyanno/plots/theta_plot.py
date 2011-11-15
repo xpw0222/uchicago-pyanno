@@ -12,7 +12,6 @@ from chaco.plot import Plot
 from chaco.plot_containers import VPlotContainer
 from chaco.scales.scales import FixedScale
 from chaco.scales_tick_generator import ScalesTickGenerator
-from chaco.default_colors import palette11 as COLOR_PALETTE
 from chaco.tools.legend_tool import LegendTool
 from enable.component_editor import ComponentEditor
 
@@ -25,6 +24,7 @@ from traitsui.item import Item
 import numpy as np
 from pyanno.plots.plot_tools import get_annotator_color
 from pyanno.plots.plots_superclass import PyannoPlotContainer
+from pyanno.ui.appbase.wx_utils import is_display_small
 
 
 def _w_idx(str_, idx):
@@ -238,15 +238,16 @@ class ThetaScatterPlot(ModelView, PyannoPlotContainer):
         height=400
         )
 
-    traits_plot_item = Item(
-        'theta_plot',
-        editor=ComponentEditor(),
-        resizable=False,
-        show_label=False,
-        height=-220
-        #width=-320,
-        #height=-300
-        )
+    traits_plot_item = Instance(Item)
+
+    def _traits_plot_item_default(self):
+        height = -220 if is_display_small() else -280
+        return Item('theta_plot',
+                    editor=ComponentEditor(),
+                    resizable=False,
+                    show_label=False,
+                    height=height
+                    )
 
 
 class ThetaDistrPlot(PyannoPlotContainer):
@@ -327,7 +328,7 @@ class ThetaDistrPlot(PyannoPlotContainer):
 
         # --- adjust plot appearance
 
-        plot.aspect_ratio = 1.6
+        plot.aspect_ratio = 1.6 if is_display_small() else 1.7
         plot.padding = [20,0,10,40]
 
         # adjust axis bounds
@@ -372,13 +373,17 @@ class ThetaDistrPlot(PyannoPlotContainer):
         width = 600
         )
 
-    traits_plot_item = Item(
-        'theta_plot',
-        editor=ComponentEditor(),
-        resizable=False,
-        show_label=False,
-        height=-220,
-        )
+    traits_plot_item = Instance(Item)
+
+    def _traits_plot_item_default(self):
+        height = -220 if is_display_small() else -280
+        return Item(
+                    'theta_plot',
+                    editor=ComponentEditor(),
+                    resizable=False,
+                    show_label=False,
+                    height=height,
+                    )
 
 
 def plot_theta_parameters(modelBt, theta_samples=None,

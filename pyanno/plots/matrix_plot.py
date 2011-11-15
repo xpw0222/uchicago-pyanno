@@ -116,15 +116,16 @@ class MatrixPlot(PyannoPlotContainer):
         height = 400
         )
 
-
-    traits_plot_item = Item(
-        'matrix_plot_container',
-        editor=ComponentEditor(),
-        resizable=False,
-        show_label=False,
-        height=-200,
-        width=-200
-        )
+    traits_plot_item = Instance(Item)
+    def _traits_plot_item_default(self):
+        return Item(
+                    'matrix_plot_container',
+                    editor=ComponentEditor(),
+                    resizable=False,
+                    show_label=False,
+                    height=-200,
+                    width=-200
+                    )
 
 
 def plot_square_matrix(matrix, **kwargs):

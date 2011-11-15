@@ -18,6 +18,7 @@ from pyanno.modelB import ModelB
 from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.plots.matrix_plot import MatrixPlot
 from pyanno.plots.theta_tensor_plot import ThetaTensorPlot
+from pyanno.ui.appbase.wx_utils import is_display_small
 from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.ui.model_view import PyannoModelView, NewModelDialog
 from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
@@ -315,63 +316,70 @@ class ModelBView(PyannoModelView):
 
     #### Traits UI view #########
 
-    parameters_group = VGroup(
-        Item('_'),
+    def traits_view(self):
+        if is_display_small():
+            w_view = 400
+        else:
+            w_view = 510
 
-        HGroup(
-            Item('handler.edit_prior',
-                 show_label=False,
-                 width=100),
-            Spring(),
-        ),
+        parameters_group = VGroup(
+            Item('_'),
 
-        Item('_'),
-
-        HGroup(
-            VGroup(
-                Spring(),
-                Item('handler.pi_hinton_diagram',
-                     style='custom',
-                     resizable=False,
+            HGroup(
+                Item('handler.edit_prior',
                      show_label=False,
-                     width=400),
+                     width=100),
                 Spring(),
             ),
-            Spring(),
-            VGroup(
+
+            Item('_'),
+
+            HGroup(
+                VGroup(
+                    Spring(),
+                    Item('handler.pi_hinton_diagram',
+                         style='custom',
+                         resizable=False,
+                         show_label=False,
+                         width=w_view),
+                    Spring(),
+                ),
                 Spring(),
-                Item('handler.view_pi', show_label=False),
-                Spring()
+                VGroup(
+                    Spring(),
+                    Item('handler.view_pi', show_label=False),
+                    Spring()
+                ),
             ),
-        ),
 
-        Item('_'),
+            Item('_'),
 
-        HGroup(
-            VGroup(
-                Item('handler.theta_views',
-                     show_label=False),
-                Item('handler.theta_view',
-                     style='custom',
-                     resizable=False,
-                     show_label=False,
-                     width = 400),
-                Spring()
+            HGroup(
+                VGroup(
+                    Item('handler.theta_views',
+                         show_label=False),
+                    Item('handler.theta_view',
+                         style='custom',
+                         resizable=False,
+                         show_label=False,
+                         width = w_view),
+                    Spring()
+                ),
+                VGroup(
+                    Spring(),
+                    Item('handler.view_theta', show_label=False),
+                    Spring()
+                )
             ),
-            VGroup(
-                Spring(),
-                Item('handler.view_theta', show_label=False),
-                Spring()
-            )
-        ),
-    )
+        )
 
-    body = VGroup(
-        Include('info_group'),
-        parameters_group
-    )
+        body = VGroup(
+            Include('info_group'),
+            parameters_group
+        )
 
-    traits_view = View(body, buttons=[OKButton], resizable=True)
+        traits_view = View(body, buttons=[OKButton], resizable=True)
+        return traits_view
 
 
 #### Testing and debugging ####################################################

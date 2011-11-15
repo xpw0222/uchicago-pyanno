@@ -15,6 +15,7 @@ from traitsui.group import HGroup, VGrid, Group
 from traitsui.item import Item, Spring, Label
 from traitsui.menu import OKCancelButtons
 from pyanno.annotations import AnnotationsContainer
+from pyanno.ui.appbase.wx_utils import is_display_small
 from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.util import labels_frequency, is_valid, MISSING_VALUE, PyannoValueError
@@ -146,63 +147,73 @@ class AnnotationsView(HasTraits):
     def _get__nannotators(self):
         return str(self.annotations_container.nannotators)
 
-    info_group = VGroup(
-        Item('_name',
-             label='Annotations name:',
-             style='readonly',
-             padding=0),
-        VGrid(
-            Item('_nclasses',
-                 label='Number of classes:',
+    def traits_view(self):
+        if is_display_small():
+            w_view = 350
+        else:
+            w_view = 450
+
+        info_group = VGroup(
+            Item('_name',
+                 label='Annotations name:',
                  style='readonly',
-                 width=10),
-            Item('_labels',
-                 label='Labels:',
-                 style='readonly'),
-            Item('_nannotators',
-                 label='Number of annotators:',
-                 style='readonly', width=10),
-            Item('_nitems',
-                 label='Number of items:',
-                 style='readonly'),
-            padding=0
-        ),
-        padding=0
-    )
-
-
-    body = VGroup(
-        info_group,
-
-        Item('_'),
-
-        HGroup(
-            VGroup(
-                Spring(),
-                Item('frequency_plot',
-                     style='custom',
-                     resizable=False,
-                     show_label=False,
-                     width=350
-                ),
-                Spring()
+                 padding=0),
+            VGrid(
+                Item('_nclasses',
+                     label='Number of classes:',
+                     style='readonly',
+                     width=10),
+                Item('_labels',
+                     label='Labels:',
+                     style='readonly'),
+                Item('_nannotators',
+                     label='Number of annotators:',
+                     style='readonly', width=10),
+                Item('_nitems',
+                     label='Number of items:',
+                     style='readonly'),
+                padding=0
             ),
-            Spring(),
-            VGroup(
+            padding=0
+        )
+
+
+        body = VGroup(
+            info_group,
+
+            Item('_'),
+
+            HGroup(
+                VGroup(
+                    Spring(),
+                    Item('frequency_plot',
+                         style='custom',
+                         resizable=False,
+                         show_label=False,
+                         width=w_view
+                    ),
+                    Spring()
+                ),
                 Spring(),
-                Item('edit_data',
-                     enabled_when='annotations_are_defined',
-                     show_label=False),
-                Item('save_data',
-                     enabled_when='annotations_are_defined',
-                     show_label=False),
-                Spring()
-            )
-        ),
+                VGroup(
+                    Spring(),
+                    Item('edit_data',
+                         enabled_when='annotations_are_defined',
+                         show_label=False),
+                    Item('save_data',
+                         enabled_when='annotations_are_defined',
+                         show_label=False),
+                    Spring()
+                )
+            ),
 
-    )
+            Spring(),
+            Item('_'),
 
-    traits_view = View(body)
+        )
+
+        traits_view = View(body)
+        return traits_view
 
 
 class SaveAnnotationsDialog(HasTraits):

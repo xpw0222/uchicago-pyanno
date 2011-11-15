@@ -24,6 +24,7 @@ from pyanno.plots.plots_superclass import PyannoPlotContainer
 
 
 import numpy as np
+from pyanno.ui.appbase.wx_utils import is_display_small
 
 
 def sigmoid(x):
@@ -153,7 +154,7 @@ class ThetaTensorPlot(PyannoPlotContainer):
 
         # --- adjust plot appearance
 
-        plot.aspect_ratio = 1.6
+        plot.aspect_ratio = 1.6 if is_display_small() else 1.7
 
         # adjust axis bounds
         y_high = theta.max()
@@ -203,13 +204,17 @@ class ThetaTensorPlot(PyannoPlotContainer):
         height=-300
         )
 
-    traits_plot_item = Item(
-        'theta_plot',
-        editor=ComponentEditor(),
-        resizable=False,
-        show_label=False,
-        height=-200,
-        )
+    traits_plot_item = Instance(Item)
+
+    def _traits_plot_item_default(self):
+        height = -200 if is_display_small() else -250
+        return Item(
+                    'theta_plot',
+                    editor=ComponentEditor(),
+                    resizable=False,
+                    show_label=False,
+                    height=height,
+                    )
 
 
 def plot_theta_tensor(modelB, annotator_idx, theta_samples=None, **kwargs):

@@ -118,8 +118,7 @@ class AnnotationsStatisticsView(HasTraits):
                          width=300,
                          resizable=False),
                     Spring()
-                )
-                #Spring()
+                ),
             ),
             width=400,
             resizable = True
