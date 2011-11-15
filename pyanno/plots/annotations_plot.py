@@ -22,6 +22,7 @@ from traitsui.view import View
 
 from pyanno.plots.plots_superclass import PyannoPlotContainer
 import numpy as np
+from pyanno.ui.appbase.wx_utils import is_display_small
 
 
 class PosteriorPlot(PyannoPlotContainer):
@@ -29,8 +30,13 @@ class PosteriorPlot(PyannoPlotContainer):
     posterior = Array
 
     ### plot-related traits
-    plot_width = Float(450)
-    plot_height = Float(600)
+    plot_width = Float
+    def _plot_width_default(self):
+        return 450 if is_display_small() else 500
+
+    plot_height = Float
+    def _plot_height_default(self):
+        return 600 if is_display_small() else 750
 
     colormap_low = Float(0.0)
     colormap_high = Float(1.0)
@@ -154,6 +160,11 @@ class PosteriorPlot(PyannoPlotContainer):
         # "touch" posterior_plot to have it initialize
         self.plot_container
 
+        if is_display_small():
+            height = 760
+        else:
+            height = 800
+
         resizable_plot_item = (
             Item(
                 'plot_container',
@@ -171,8 +182,7 @@ class PosteriorPlot(PyannoPlotContainer):
                 resizable_plot_item,
             ),
             width = 450,
-            height = 760,
-            #scrollable = True,
+            height = height,
             resizable = True
         )
 

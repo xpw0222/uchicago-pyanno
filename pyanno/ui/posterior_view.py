@@ -10,6 +10,7 @@ from traitsui.group import VGroup, HGroup
 from traitsui.item import Item
 from traitsui.view import View
 from pyanno.plots.annotations_plot import PosteriorPlot
+from pyanno.ui.appbase.wx_utils import is_display_small
 from pyanno.util import majority_vote
 
 
@@ -21,6 +22,7 @@ class PosteriorView(HasTraits):
     annotations = Array
 
     def traits_view(self):
+        height = 760 if is_display_small() else 900
         traits_view = View(
             VGroup(
                 VGroup(
@@ -37,7 +39,7 @@ class PosteriorView(HasTraits):
                 ),
                 padding=0
             ),
-            height = 760,
+            height = height,
             scrollable=True,
             resizable=True
         )
