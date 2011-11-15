@@ -5,7 +5,7 @@
 """This module defines model B-with-theta.
 
 pyAnno includes another implementation of B-with-theta,
-:module:`pyanno.modelBt_loopdesign`, which is optimized for a loop design
+:py:mod:`pyanno.modelBt_loopdesign`, which is optimized for a loop design
 where each item is annotated by 3 out of 8 annotators.
 """
 
@@ -49,10 +49,10 @@ class ModelBt(AbstractModel):
     For a version of this model optimized for the loop design described
     in (Rzhetsky et al., 2009), see :class:`~ModelBtLoopDesign`.
 
-    Reference
-    ---------
-    Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most from
-    your curation effort", PLoS Computational Biology, 5(5).
+    **Reference**
+
+    * Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most
+      from your curation effort", PLoS Computational Biology, 5(5).
     """
 
 
@@ -486,7 +486,6 @@ class ModelBt(AbstractModel):
 
     ##### Sampling posterior over parameters ##################################
 
-    # TODO arguments for burn-in, thinning
     def sample_posterior_over_accuracy(self, annotations, nsamples,
                                        burn_in_samples = 100,
                                        thin_samples = 5,

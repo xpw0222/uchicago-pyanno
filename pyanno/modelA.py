@@ -29,10 +29,10 @@ E.g., for 16 items the loop design looks like this (`A` indicates a label,
     A A * * * * * A
     A A * * * * * A
 
-Reference
----------
-Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most from
-your curation effort", PLoS Computational Biology, 5(5).
+**Reference**
+
+* Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most from
+  your curation effort", PLoS Computational Biology, 5(5).
 """
 
 from collections import defaultdict
@@ -137,10 +137,10 @@ class ModelA(AbstractModel):
 
     See the documentation for a more detailed description of the model.
 
-    Reference
-    ---------
-    Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most from
-    your curation effort", PLoS Computational Biology, 5(5).
+    **Reference**
+
+    * Rzhetsky A., Shatkay, H., and Wilbur, W.J. (2009). "How to get the most
+      from your curation effort", PLoS Computational Biology, 5(5).
     """
 
 

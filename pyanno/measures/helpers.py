@@ -75,9 +75,9 @@ def confusion_matrix(annotations1, annotations2, nclasses):
         confusion matrix; conf_mat[i,j] = number of observations that was
         annotated as category `i` by annotator 1 and as `j` by annotator 2
 
-    References
-    ----------
-    http://en.wikipedia.org/wiki/Confusion_matrix
+    **References**
+
+      http://en.wikipedia.org/wiki/Confusion_matrix
     """
 
     conf_mat = np.empty((nclasses, nclasses), dtype=float)
