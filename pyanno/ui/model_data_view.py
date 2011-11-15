@@ -423,7 +423,7 @@ class ModelDataView(HasTraits):
             w_view, h_view = 1300, 850
             w_data_create_group = 400
             w_data_info_group = 700
-            h_annotations_stats = 300
+            h_annotations_stats = 330
 
 
         model_create_group = (
