@@ -6,7 +6,7 @@ from tables.array import Array
 from traits.has_traits import HasTraits
 from traits.trait_types import Bool, Instance
 from traitsui.editors.instance_editor import InstanceEditor
-from traitsui.group import VGroup
+from traitsui.group import VGroup, HGroup
 from traitsui.item import Item
 from traitsui.view import View
 from pyanno.plots.annotations_plot import PosteriorPlot
@@ -23,20 +23,22 @@ class PosteriorView(HasTraits):
     def traits_view(self):
         traits_view = View(
             VGroup(
-                Item('show_maximum',
-                     label='Show MAP estimate (circle)'),
-                Item('show_majority_vote',
-                     label='Show majority vote (triangle)'),
+                VGroup(
+                    Item('show_maximum',
+                         label='Show MAP estimate (circle)'),
+                    Item('show_majority_vote',
+                         label='Show majority vote (triangle)'),
+                ),
                 VGroup(
                     Item('posterior_plot',
                          editor=InstanceEditor(),
                          style='custom',
                          show_label=False),
-                    scrollable=True
                 ),
-                padding=0,
+                padding=0
             ),
-            height=900,
+            height = 760,
+            scrollable=True,
             resizable=True
         )
 
