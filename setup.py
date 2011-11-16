@@ -41,14 +41,12 @@ setup(name = "pyanno",
       url = 'https://github.com/enthought/uchicago-pyanno',
       download_url = 'https://github.com/enthought/uchicago-pyanno',
 
-      license='LICENSE.txt',
+      license='BSD',
       platforms = ["Any"],
 
 
       package_data = {
-          '': ['*.txt', '*.rst', 'data/*'],
-          'pyanno.ui': ['images/*'],
-          'pyanno.plots': ['images/*']
+          '': ['*.txt', 'README', 'data/*'],
       },
       include_package_data = True,
 

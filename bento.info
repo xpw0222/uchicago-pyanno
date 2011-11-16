@@ -14,20 +14,15 @@ Description:
     and to draw samples from the full posterior distribution over annotator
     accuracy.
 
-Author: ['Pietro Berkes', 'Bob Carpenter', 'Andrey Rzhetsky', 'James Evans']
-AuthorEmail: ['pberkes@enthought.com', 'carp@lingpipe.com']
 License: BSD
-Platforms: UNKNOWN
-
-Path: gendatadir
-    Description: Directory for datafiles obtained from distutils conversion
-    Default: $sitedir
+Platforms: Any
 
 DataFiles: gendata_
     SourceDir: .
-    TargetDir: $gendatadir/
+    TargetDir: $sitedir
     Files:
         *.txt,
+        README,
         data/*
 
 Library:
