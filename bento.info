@@ -1,0 +1,44 @@
+Name: pyanno
+Version: 2.0
+Summary: Package for curating data annotation efforts.
+Url: http://github.enthought.com/uchicago-pyanno/
+DownloadUrl: https://github.com/enthought/uchicago-pyanno
+Description:
+    pyAnno 2.0 is a Python library for the analysis and diagnostic testing of
+    annotation and curation efforts. pyAnno implements statistical models for
+    categorical data annotated by multiple annotators. The models include a
+    generalization of Dawid and Skene's (1979) multinomial
+    model with Dirichlet priors on prevalence and estimator accuracy,
+    and the two models introduces in Rzhetsky et al.'s (2009). The implementation
+    allows Maximum Likelihood and Maximum A Posteriori estimation of parameters,
+    and to draw samples from the full posterior distribution over annotator
+    accuracy.
+
+Author: ['Pietro Berkes', 'Bob Carpenter', 'Andrey Rzhetsky', 'James Evans']
+AuthorEmail: ['pberkes@enthought.com', 'carp@lingpipe.com']
+License: BSD
+Platforms: UNKNOWN
+
+Path: gendatadir
+    Description: Directory for datafiles obtained from distutils conversion
+    Default: $sitedir
+
+DataFiles: gendata_
+    SourceDir: .
+    TargetDir: $gendatadir/
+    Files:
+        *.txt,
+        data/*
+
+Library:
+    Packages:
+        pyanno,
+        pyanno.measures,
+        pyanno.plots,
+        pyanno.test,
+        pyanno.ui,
+        pyanno.ui.appbase
+
+Executable: pyanno-ui
+    Module: pyanno.ui.main
+    Function: main
