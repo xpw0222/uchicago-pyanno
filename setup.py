@@ -32,10 +32,8 @@ with open('README') as f:
     LONG_DESCRIPTION = f.read()
 
 setup(name = "pyanno",
-      version = "2.0dev-10",
+      version = "2.0dev-11",
       packages = find_packages(),
-
-      author = 'pyAnno developers',
 
       description = 'Package for curating data annotation efforts.',
       long_description = LONG_DESCRIPTION,
