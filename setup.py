@@ -8,37 +8,17 @@ from setuptools import setup, find_packages
 import types
 import py2app.recipes
 
-py2app.recipes.pyface = types.ModuleType('py2app.recipes.pyface')
-py2app.recipes.traitsui = types.ModuleType('py2app.recipes.traitsui')
-py2app.recipes.chaco = types.ModuleType('py2app.recipes.chaco')
-
-def pyface_check(cmd, mf):
+def ets_check(cmd, mf):
     m = mf.findNode('pyface')
     if m is None or m.filename is None:
         return None
     return dict(
-        packages = ['pyface','enable','kiva','traits','wx']
+        packages = ['pyface','enable','kiva','traits','wx','traitsui','chaco']
     )
 
-def traitsui_check(cmd, mf):
-    m = mf.findNode('traitsui')
-    if m is None or m.filename is None:
-        return None
-    return dict(
-        packages = ['traitsui']
-    )
+py2app.recipes.ets = types.ModuleType('py2app.recipes.ets')
+py2app.recipes.ets.check = ets_check
 
-def chaco_check(cmd, mf):
-    m = mf.findNode('chaco')
-    if m is None or m.filename is None:
-        return None
-    return dict(
-        packages = ['chaco']
-    )
-
-py2app.recipes.pyface.check = pyface_check
-py2app.recipes.traitsui.check = traitsui_check
-py2app.recipes.chaco.check = chaco_check
 
 # ---- /add ETS recipes for py2app
 
