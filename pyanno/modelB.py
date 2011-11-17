@@ -90,7 +90,7 @@ class ModelB(AbstractModel):
                  alpha=None, beta=None, **traits):
         """Create an instance of ModelB.
 
-        Parameters
+        Arguments
         ----------
         nclasses : int
             Number of possible annotation classes
@@ -221,7 +221,7 @@ class ModelB(AbstractModel):
 
     @staticmethod
     def default_alpha(nclasses):
-        return create_band_matrix((nclasses, nclasses), [16., 4., 2., 1.])
+        return create_band_matrix(nclasses, [16., 4., 2., 1.])
 
 
     def generate_labels(self, nitems):
@@ -238,7 +238,7 @@ class ModelB(AbstractModel):
 
         :math:`x_i^j \sim \mathrm{Categorical}(\mathbf{\\theta_j^{y_i}})`
 
-        Parameters
+        Arguments
         ----------
         labels : ndarray, shape = (n_items,), dtype = int
             Set of "true" labels
@@ -292,7 +292,7 @@ class ModelB(AbstractModel):
         Estimate the parameters :attr:`theta` and :attr:`pi` from a set of
         observed annotations using maximum a posteriori estimation.
 
-        Parameters
+        Arguments
         ----------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
@@ -323,7 +323,7 @@ class ModelB(AbstractModel):
         Estimate the parameters :attr:`theta` and :attr:`pi` from a set of
         observed annotations using maximum likelihood estimation.
 
-        Parameters
+        Arguments
         ----------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
@@ -523,7 +523,7 @@ class ModelB(AbstractModel):
         """Compute P(category[i] = k | model, annotations).
 
         Arguments
-        ---------
+        ----------
         annotations : ndarray
             Array of annotations
 
@@ -582,7 +582,7 @@ class ModelB(AbstractModel):
 
         Returns log P(annotations | current model parameters).
 
-        Parameters
+        Arguments
         ----------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
@@ -643,7 +643,7 @@ class ModelB(AbstractModel):
         controlling burn-in and thinning can be set to a small number
         of samples.
 
-        Parameters
+        Arguments
         ----------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
@@ -732,7 +732,7 @@ class ModelB(AbstractModel):
         Compute the posterior distribution over label classes given observed
         annotations, :math:`P( \mathbf{y} | \mathbf{x}, \\theta, \omega)`.
 
-        Parameters
+        Arguments
         ----------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i

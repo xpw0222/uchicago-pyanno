@@ -13,7 +13,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# TODO add parameters for burn-in, thinning
 def sample_distribution(likelihood, x0, arguments, step,
                         nsamples, x_lower, x_upper):
     """General-purpose sampling routine for MCMC sampling.
@@ -23,10 +22,10 @@ def sample_distribution(likelihood, x0, arguments, step,
 
     It is recommended to optimize the step size, `step`, using the function
     :func:`optimize_step_size` in order to reduce the autocorrelation between
-     successive samples.
+    successive samples.
 
-    Parameters
-    ----------
+    Arguments
+    ---------
     likelihood : function(params, arguments)
         Function returning the *unnormalized* log likelihood of data given
         the parameters. The function accepts two arguments:
@@ -103,8 +102,8 @@ def optimize_step_size(likelihood, x0, arguments,
     Adjust jump size in Metropolis-Hasting MC to achieve target rejection rate.
     Jump size is estimated for each parameter separately.
 
-    Parameters
-    ----------
+    Arguments
+    ---------
     likelihood : function(params, arguments)
         Function returning the *unnormalized* log likelihood of data given
         the parameters. The function accepts two arguments:
@@ -213,9 +212,12 @@ def optimize_step_size(likelihood, x0, arguments,
 def _adjust_jump(step, rejection_rate, target_reject_rate, tolerance):
     """Adapt step size to get closer to target rejection rate.
 
-    Output:
-    step -- new step sizes
-    terminate -- True if all rejection rates are within the required limits
+    Returns
+    -------
+    step : list
+        new step sizes
+    terminate : bool
+        True if all rejection rates are within the required limits
     """
 
     terminate = True
@@ -238,8 +240,8 @@ def _adjust_jump(step, rejection_rate, target_reject_rate, tolerance):
 def sample_from_proposal_distribution(theta, step, lower, upper):
     """Returns one sample from the proposal distribution.
 
-    Parameters
-    ----------
+    Arguments
+    ---------
     theta : float
         current parameter value
 

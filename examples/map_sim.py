@@ -46,7 +46,7 @@ for j in xrange(nannotators):
             sample_theta[j,k,:] = np.ones((nclasses,)) / nclasses
 
 
-alpha = create_band_matrix((nclasses, nclasses), [4., 2., 1.])
+alpha = create_band_matrix(nclasses, [4., 2., 1.])
 beta = np.ones(nclasses)
 
 model = ModelB(nclasses, nannotators, nitems, sample_pi, sample_theta,

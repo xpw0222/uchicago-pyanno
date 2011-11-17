@@ -59,8 +59,8 @@ class AbstractModel(HasTraits):
         Estimate the model parameters from a set of observed annotations
         using maximum likelihood estimation.
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
         """
@@ -73,8 +73,8 @@ class AbstractModel(HasTraits):
         Estimate the model parameters from a set of observed annotations
         using maximum a posteriori estimation.
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
         """
@@ -86,8 +86,8 @@ class AbstractModel(HasTraits):
 
         Returns log P(annotations | current model parameters).
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
 
@@ -128,8 +128,8 @@ class AbstractModel(HasTraits):
         reporting the correct label (the exact nature of these parameters
         varies from model to model).
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
 

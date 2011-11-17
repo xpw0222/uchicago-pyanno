@@ -167,8 +167,8 @@ class ModelA(AbstractModel):
     def __init__(self, nclasses, theta, omega, **traits):
         """Create an instance of ModelA.
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         nclasses : int
             Number of possible annotation classes
 
@@ -205,8 +205,8 @@ class ModelA(AbstractModel):
         :math:`\omega_k \sim \mathrm{Dirichlet}(2.0)`
 
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         nclasses : int
             number of possible annotation classes
 
@@ -259,8 +259,8 @@ class ModelA(AbstractModel):
         per item return an annotation. Non-observed annotations have the
         standard value of :attr:`~pyanno.util.MISSING_VALUE`.
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         nitems : int
             number of annotations to draw from the model
 
@@ -375,8 +375,8 @@ class ModelA(AbstractModel):
         Estimate the parameters :attr:`theta` and :attr:`omega` from a set of
         observed annotations using maximum likelihood estimation.
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
 
@@ -401,8 +401,8 @@ class ModelA(AbstractModel):
         Estimate the parameters :attr:`theta` and :attr:`omega` from a set of
         observed annotations using maximum a posteriori estimation.
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
 
@@ -465,8 +465,8 @@ class ModelA(AbstractModel):
         Returns :math:`\log P(\mathbf{x} | \omega, \\theta)`,
         where :math:`\mathbf{x}` is the array of annotations.
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
 
@@ -621,8 +621,8 @@ class ModelA(AbstractModel):
             2) *sampling phase*: second, samples are collected using the
                step size from phase 1.
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
 
@@ -738,8 +738,8 @@ class ModelA(AbstractModel):
         Compute the posterior distribution over label classes given observed
         annotations, :math:`P( \mathbf{y} | \mathbf{x}, \\theta, \omega)`.
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
 

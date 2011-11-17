@@ -176,7 +176,7 @@ class ModelBt(AbstractModel):
         distribution of annotations, :math:`x_i^j`
         given labels, :math:`y_i`.
 
-        Parameters
+        Arguments
         ----------
         labels : ndarray, shape = (n_items,), dtype = int
             Set of "true" labels
@@ -240,7 +240,7 @@ class ModelBt(AbstractModel):
         Estimate the parameters :attr:`theta` and :attr:`gamma` from a set of
         observed annotations using maximum likelihood estimation.
 
-        Parameters
+        Arguments
         ----------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
@@ -271,7 +271,7 @@ class ModelBt(AbstractModel):
         Estimate the parameters :attr:`theta` and :attr:`gamma` from a set of
         observed annotations using maximum a posteriori estimation.
 
-        Parameters
+        Arguments
         ----------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
@@ -357,7 +357,7 @@ class ModelBt(AbstractModel):
         Returns :math:`\log P(\mathbf{x} | \gamma, \\theta)`,
         where :math:`\mathbf{x}` is the array of annotations.
 
-        Parameters
+        Arguments
         ----------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
@@ -504,7 +504,7 @@ class ModelBt(AbstractModel):
             2) *sampling phase*: second, samples are collected using the
                step size from phase 1.
 
-        Parameters
+        Arguments
         ----------
         annotations : ndarray, shape = (n_items, n_annotators)
             annotations[i,j] is the annotation of annotator j for item i
@@ -597,7 +597,7 @@ class ModelBt(AbstractModel):
          Compute the posterior distribution over label classes given observed
          annotations, :math:`P( \mathbf{y} | \mathbf{x}, \\theta, \omega)`.
 
-         Parameters
+         Arguments
          ----------
          annotations : ndarray, shape = (n_items, n_annotators)
              annotations[i,j] is the annotation of annotator j for item i

@@ -36,10 +36,21 @@ The pyAnno library is composed of several modules:
   typically not used directly from Python
 
 
+Annotations
+^^^^^^^^^^^
+
+In pyAnno, annotations are two-dimensional arrays of integers. Rows
+correspond to data items, and columns to annotators. Each entry :math:`x_i^j`
+in an annotation array is the label class assigned by annotator :math:`j` to
+item :math:`i`, or :attr:`pyanno.util.MISSING_VALUE` for missing values.
+
+[how to build annotation arrays from raw data]
+
 Creating a new model
 ^^^^^^^^^^^^^^^^^^^^
 
-
+Annotations: missing values have to be indicated as
+:attr:`pyanno.util.MISSING_VALUE` (which evaluates to -1).
 
 Generating data
 ^^^^^^^^^^^^^^^

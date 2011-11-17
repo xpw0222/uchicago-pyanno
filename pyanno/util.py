@@ -3,6 +3,8 @@
 #          Bob Carpenter
 # License: Modified BSD license (2-clause)
 
+"""Utility functions."""
+
 import numpy as np
 from numpy import log
 from numpy.core import getlimits
@@ -18,13 +20,27 @@ SMALLEST_FLOAT = getlimits.finfo(np.float).min
 
 
 class PyannoValueError(ValueError):
-    """ValueError subclass raised by pyanno functions and methods.
+    """ValueError subclass raised by pyAnno functions and methods.
     """
     pass
 
 
 def random_categorical(distr, nsamples):
-    """Return an array of samples from a categorical distribution."""
+    """Return an array of samples from a categorical distribution.
+
+    Arguments
+    ---------
+    distr : ndarray
+        distr[i] is the probability of item i
+
+    nsamples : int
+        Number of samples to draw from the distribution
+
+    Returns
+    -------
+    samples : ndarray, shape = (n_samples, )
+        Samples from the distribution
+    """
     assert np.allclose(distr.sum(), 1., atol=1e-8)
     cumulative = distr.cumsum()
     return cumulative.searchsorted(np.random.random(nsamples))
@@ -39,7 +55,24 @@ def ninf_to_num(x):
 
 
 def dirichlet_llhood(theta, alpha):
-    """Compute the log likelihood of theta under Dirichlet(alpha)."""
+    """Compute the log likelihood of theta under Dirichlet(alpha).
+
+    Arguments
+    ---------
+    theta : ndarray
+        Categorical probability distribution. theta[i] is the probability
+        of item i. Elements of the array have to sum to 1.0 (not forced for
+        efficiency reasons)
+
+    alpha : ndarray
+        Parameters of the Dirichlet distribution
+
+    Returns
+    -------
+    log_likelihood : float
+        Log lihelihood of theta given alpha
+    """
+
     # substitute -inf with SMALLEST_FLOAT, so that 0*log(0) is 0 when necessary
     log_theta = ninf_to_num(log(theta))
 
@@ -51,7 +84,11 @@ def dirichlet_llhood(theta, alpha):
 
 # TODO remove default condition when x[i] == 0.
 def normalize(x, dtype=float):
-    """Returns a normalized distribution (sums to 1.0)."""
+    """Returns a normalized distribution (sums to 1.0).
+
+    If x consists only of zero element, the returned array has elements
+    1/n , where n is the length of x.
+    """
     x = np.asarray(x, dtype=dtype)
     z = x.sum()
     if z <= 0:
@@ -61,12 +98,24 @@ def normalize(x, dtype=float):
 
 
 def create_band_matrix(shape, diagonal_elements):
+    """Create a symmetrical band matrix from a list of elements.
+
+    Arguments
+    ---------
+    shape : int
+        Width of the matrix
+
+    diagonal_elements : list or array
+        List of elements in the first row. If the list is smaller than `shape`,
+        the last element is used to fill the the remaining items.
+    """
+
     diagonal_elements = np.asarray(diagonal_elements)
     def diag(i,j):
         x = np.absolute(i-j)
         x = np.minimum(diagonal_elements.shape[0]-1, x).astype(int)
         return diagonal_elements[x]
-    return np.fromfunction(diag, shape)
+    return np.fromfunction(diag, (shape, shape))
 
 
 # TODO clean up and simplify and rename
@@ -76,14 +125,19 @@ def compute_counts(annotations, nclasses):
     At the moment, it is hard coded for 8 annotators, 3 annotators active at
     any time.
 
-    Input:
-    annotations -- Input data (integer array, nitems x 8)
-    nclasses -- number of annotation values (# classes)
+    Arguments
+    ---------
+    annotations : ndarray, shape = (n_items, 8)
+        Annotations array
 
-    Ouput:
-    data -- data[i,j] is the number of times the combination of annotators
-             number `j` voted according to pattern `i`
-             (integer array, nclasses^3 x 8)
+    nclasses : int
+        Numer of label classes
+
+    Returns
+    -------
+    data : ndarray, shape = (n_classes^3, 9)
+        data[i,m] is the number of times the combination of annotators
+        number m voted according to pattern i
     """
     index = np.array([[0, 1, 2],
         [1, 2, 3],
@@ -97,7 +151,8 @@ def compute_counts(annotations, nclasses):
     n = annotations.shape[1]
     annotations = np.asarray(annotations, dtype=int)
 
-    assert n==8, 'Strange: ' + str(n) + 'annotator number !!!'
+    if n != 8:
+        raise ValueError('Number of annotators must be 8')
 
     # compute counts of 3-annotator patterns for 8 triplets of annotators
     data = np.zeros((nclasses ** 3, 8), dtype=int)
@@ -129,7 +184,25 @@ def compute_counts(annotations, nclasses):
 
 
 def labels_count(annotations, nclasses, missing_val=MISSING_VALUE):
-    """Compute the total count of labels in observed annotations."""
+    """Compute the total count of labels in observed annotations.
+
+    Arguments
+    ---------
+    annotations : ndarray, shape = (n_items, n_annotators)
+        annotations[i,j] is the annotation made by annotator j on item i
+
+    nclasses : int
+        Number of label classes in `annotations`
+
+    missing_val : int
+        Value used to indicate missing values in the annotations.
+        Default is :attr:`MISSING_VALUE`
+
+    Returns
+    -------
+    count : ndarray, shape = (n_classes, )
+        count[k] is the number of elements of class k in `annotations`
+    """
     valid = annotations!=missing_val
     nobservations = valid.sum()
 
@@ -141,7 +214,27 @@ def labels_count(annotations, nclasses, missing_val=MISSING_VALUE):
 
 
 def labels_frequency(annotations, nclasses, missing_val=MISSING_VALUE):
-    """Compute the total frequency of labels in observed annotations."""
+    """Compute the total frequency of labels in observed annotations.
+
+
+    Arguments
+    ---------
+    annotations : ndarray, shape = (n_items, n_annotators)
+        annotations[i,j] is the annotation made by annotator j on item i
+
+    nclasses : int
+        Number of label classes in `annotations`
+
+    missing_val : int
+        Value used to indicate missing values in the annotations.
+        Default is :attr:`MISSING_VALUE`
+
+    Returns
+    -------
+    freq : ndarray, shape = (n_classes, )
+        freq[k] is the frequency of elements of class k in `annotations`, i.e.
+        their count over the number of total of observed (non-missing) elements
+    """
     valid = annotations!=missing_val
     nobservations = valid.sum()
 
@@ -167,8 +260,8 @@ def majority_vote(annotations):
 
     In case of ties, return the class with smallest number.
 
-    Parameters
-    ----------
+    Arguments
+    ---------
     annotations : ndarray, shape = (n_items, n_annotators)
         annotations[i,j] is the annotation made by annotator j on item i
 
@@ -211,6 +304,14 @@ def string_wrap(st, mode):
 
 
 class benchmark(object):
+    """Simple context manager to simplify benchmarking.
+
+    Usage: ::
+
+        with benchmark('fast computation'):
+            do_something()
+    """
+
     def __init__(self,name):
         self.name = name
     def __enter__(self):
@@ -221,15 +322,3 @@ class benchmark(object):
         print '---- stop ----'
         print("%s : %0.3f seconds" % (self.name, end-self.start))
         return False
-
-
-def check_unchanged(func_new, func_old, *args, **kwargs):
-    with benchmark('new'):
-        res_new = func_new(*args, **kwargs)
-        print 'New function returns:', res_new
-
-    with benchmark('old'):
-        res_old = func_old(*args, **kwargs)
-        print 'Old function returns:', res_old
-
-    return res_old
