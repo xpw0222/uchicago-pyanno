@@ -31,40 +31,60 @@ def _is_nan_in_list(lst):
 
 
 class AnnotationsContainer(HasStrictTraits):
+    """Translate from general annotations files and arrays to pyAnno's format.
+
+    This class exposes a few methods to import data from files and arrays, and
+    converts them to pyAnno's format:
+
+    * annotations are 2D integer arrays; rows index items, and columns
+      annotators
+
+    * label classes are numbered 0 to :attr:`nclasses`-1 . The attribute
+      :attr:`labels` defines a mapping from label tokens to label classes
+
+    * missing values are defined as :attr:`pyanno.util.MISSING_VALUE`. The
+      attribute :attr:`missing_values` contains the missing values tokens
+      found in the original, raw data
+
+    The converted data can be accessed through the :attr:`annotations` property.
+
+    The `AnnotationsContainer` is also used as the format to store annotations
+    in :class:`~pyanno.database.PyannoDatabase` objects.
+    """
 
     DEFAULT_MISSING_VALUES_STR = ['-1', 'NA', 'None', '*']
     DEFAULT_MISSING_VALUES_NUM = [-1, np.nan, None]
     DEFAULT_MISSING_VALUES_ALL = (DEFAULT_MISSING_VALUES_STR +
                                   DEFAULT_MISSING_VALUES_NUM)
 
-    # raw annotations, as they are imported from file or array
+    #: raw annotations, as they are imported from file or array
     raw_annotations = List(List)
 
-    # name of file or array from which the annotations were imported
+    #: name of file or array from which the annotations were imported
     name = Str
 
-    # list of all labels found in file/array
+    #: list of all labels found in file/array
     labels = List
 
-    # labels corresponding to a missing value
+    #: labels corresponding to a missing value
     missing_values = List
 
-    # number of classes found in the annotations
+    #: number of classes found in the annotations
     nclasses = Property(Int, depends_on='labels')
     def _get_nclasses(self):
         return len(self.labels)
 
-    # number of annotators
+    #: number of annotators
     nannotators = Property(Int, depends_on='raw_annotations')
     def _get_nannotators(self):
         return len(self.raw_annotations[0])
 
-    # number of annotations
+    #: number of annotations
     nitems = Property(Int, depends_on='raw_annotations')
     def _get_nitems(self):
         return len(self.raw_annotations)
 
-    # annotations
+    #: annotations in pyAnno format
     annotations = Property(Array, depends_on='raw_annotations')
 
     @cached_property
@@ -163,11 +183,14 @@ class AnnotationsContainer(HasStrictTraits):
         The file is a text file with a columns separated by spaces and/or
         commas, and rows on different lines.
 
-        Input:
-        filename -- file name
-        missing_values -- list of labels that are considered missing values.
-           Default is ['-1', 'NA', 'None', '*']
+        Arguments
+        ---------
+        filename : string
+            File name
 
+        missing_values : list
+            List of labels that are considered missing values.
+            Default is :attr:`DEFAULT_MISSING_VALUES_STR`
         """
 
         if missing_values is None:
@@ -185,12 +208,18 @@ class AnnotationsContainer(HasStrictTraits):
     def from_array(x, missing_values=None, name=''):
         """Create an annotations object from an array or list-of-lists.
 
-        Input:
-        x -- array or list-of-lists containing numerical or string annotations
-        missing_values -- list of values that are considered missing values.
-           Default is ['-1', 'NA', 'None', '*', -1, np.nan, None]
-        name -- name of the annotations (for user interaction)
+        Arguments
+        ---------
+        x : ndarray or list-of-lists
+            Array or list-of-lists containing numerical or string annotations
 
+        missing_values : list
+            List of values that are considered missing values.
+            Default is :attr:`DEFAULT_MISSING_VALUES_ALL`
+
+        name : string
+            Name of the annotations (for user interaction and used as key in
+            databases).
         """
 
         if missing_values is None:
@@ -204,8 +233,18 @@ class AnnotationsContainer(HasStrictTraits):
         return AnnotationsContainer._from_generator(array_rows_generator(),
                                            missing_values, name=name)
 
+
     def save_to(self, filename, set_name=False):
-        """Save raw annotations to file."""
+        """Save raw annotations to file.
+
+        Arguments
+        ---------
+        filename : string
+            File name
+
+        set_name : bool
+            Set the :attr:`name` of the annotation container to the file name
+        """
         if set_name:
             self.name = filename
         with open(filename, 'w') as f:
@@ -221,10 +260,15 @@ def load_annotations(filename, missing_values=None):
     The file is a text file with a columns separated by spaces and/or
     commas, and rows on different lines.
 
-    Input:
-    filename -- file name
-    missing_values -- list of labels that are considered missing values.
-       Default is ['-1', 'NA', 'None', '*']
+    Arguments
+    ---------
+    filename : string
+        File name
+
+    missing_values : list
+       List of labels that are considered missing values.
+       Default is
+       :attr:`~pyanno.AnnotationsContainer.DEFAULT_MISSING_VALUES_STR`
 
     """
     anno = AnnotationsContainer.from_file(filename,

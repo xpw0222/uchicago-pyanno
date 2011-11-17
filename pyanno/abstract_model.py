@@ -2,7 +2,9 @@
 # Authors: Pietro Berkes <pberkes@enthought.com>, Andrey Rzhetsky
 # License: Modified BSD license (2-clause)
 
-"""Defines an abstract class that specifies the interface of pyAnno models."""
+"""Defines :class:`AbstractModel`, an abstract class that specifies the
+interface of pyAnno models.
+"""
 
 from traits.has_traits import HasTraits
 from traits.trait_types import Int
@@ -100,6 +102,9 @@ class AbstractModel(HasTraits):
     def _compute_total_nsamples(self, nsamples, burn_in_samples, thin_samples):
         """Compute the total number of samples to generate in order to return
         `nsamples` samples after burn-in and thinning.
+
+        This helper function is typically called from the implementation
+        of `samples_posterior_over_accuracy`.
         """
         return nsamples*thin_samples + burn_in_samples
 
@@ -107,6 +112,9 @@ class AbstractModel(HasTraits):
     def _post_process_samples(self, samples, burn_in_samples, thin_samples):
         """Eliminate samples, discarding the first `burn_in_samples`,
         and thinning the rest.
+
+        This helper function is typically called from the implementation
+        of `samples_posterior_over_accuracy`.
         """
         return samples[burn_in_samples::thin_samples,:]
 
@@ -115,7 +123,7 @@ class AbstractModel(HasTraits):
                                        burn_in_samples=0, thin_samples=1):
         """Return samples from posterior over the accuracy parameters.
 
-        Draw samples from P(accuracy parameters | data, model parameters).
+        Draw samples from `P(accuracy parameters | data, model parameters)`.
         The accuracy parameters control the probability of an annotator
         reporting the correct label (the exact nature of these parameters
         varies from model to model).
@@ -148,11 +156,11 @@ class AbstractModel(HasTraits):
 
     def are_annotations_compatible(self, annotations):
         """Returns True if the annotations are compatible with the model.
-        """
 
-        # The standard implementation is: valid if the number of annotators
-        # is correct, if the classes are between 0 and nclasses-1,
-        # and if missing values are marked with pyanno.util.MISSING_VALUE
+        The standard implementation is: valid if the number of annotators
+        is correct, if the classes are between 0 and nclasses-1,
+        and if missing values are marked with :attr:`pyanno.util.MISSING_VALUE`
+        """
 
         masked_annotations = np.ma.masked_equal(annotations, MISSING_VALUE)
 

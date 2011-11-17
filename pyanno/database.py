@@ -2,25 +2,47 @@
 # Author: Pietro Berkes <pberkes@enthought.com>
 # License: Modified BSD license (2-clause)
 
+"""Defines a database object to store model results."""
+
 import shelve
 from traits.has_traits import HasStrictTraits
-from traits.trait_types import Any, Float, Instance
+from traits.trait_types import Float, Instance
+from pyanno.abstract_model import AbstractModel
 from pyanno.annotations import AnnotationsContainer
 from pyanno.util import PyannoValueError
 import numpy as np
 
 class PyannoResult(HasStrictTraits):
+    """Class for database entries
+    """
+
+    #: :class:`~pyanno.annotations.AnnotationsContainer` object
     anno_container = Instance(AnnotationsContainer)
-    # TODO change into Instance(AbstractModel)
-    model = Any
+
+    #: pyAnno model (subclass of :class:`~pyanno.abstract_model.AbstractModel`)
+    model = Instance(AbstractModel)
+
+    #: value of the model performance (usually the log likelihood)
     value = Float
 
 
 class PyannoDatabase(object):
+    """Database to store model results.
+
+    The database is based on :mod:`shelve`. Keys are strings that uniquely
+    identify data sets. Values are lists of :class:`PyannoResult` objects,
+    which contain a copy of the annotations, the pyanno model that has
+    been applied on them, and the value of the log likelihood of the
+    annotations given the model.
+    """
 
     def __init__(self, filename):
         self.db_filename = filename
+
+        #: `shelve` database storing the models
         self.database = shelve.open(filename, flag='c', protocol=2)
+
+        #: True if the database is closed
         self.closed = False
 
 
@@ -30,20 +52,22 @@ class PyannoDatabase(object):
         The `data_id` must be a **unique** identifier for an annotations
         set.
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         data_id : string
             Readable **unique** identifier for the annotations set (e.g.,
             the file name where the annotations are stored).
 
         anno_container : AnnotationsContainer
-            An annotations container (see :class:`~AnnotationsContainer).
+            An annotations container
+            (see :class:`~pyanno.annotations.AnnotationsContainer`).
 
         model : object
             pyAnno model object instance
+            (subclass of :class:`~pyanno.abstract_model.AbstractModel`
 
         value : float
-            value of the objective function for the model-annotations pair,
+            Value of the objective function for the model-annotations pair,
             typically the log likelihood of the annotations given the model
         """
 
@@ -64,14 +88,21 @@ class PyannoDatabase(object):
 
 
     def retrieve_id(self, data_id):
+        """Return all entries with given data ID.
+
+        Arguments
+        ---------
+        data_id : string
+            Readable **unique** identifier for the annotations set
+        """
         return self.database[data_id]
 
 
     def remove(self, data_id, idx):
         """Remove entry from database.
 
-        Parameters
-        ----------
+        Arguments
+        ---------
         data_id : string
             Readable **unique** identifier for the annotations set
 
