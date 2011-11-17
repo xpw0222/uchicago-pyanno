@@ -9,61 +9,20 @@ pyanno Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`abstract_model` Module
---------------------
 
-.. automodule:: pyanno.abstract_model
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. toctree::
 
-:mod:`modelA` Module
---------------------
+    pyanno.models
+    pyanno.annotations
+    pyanno.measures
+    pyanno.database
+    pyanno.plots
+..    pyanno.test
+..    pyanno.ui
 
-.. automodule:: pyanno.modelA
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
-:mod:`modelB` Module
---------------------
-
-.. automodule:: pyanno.modelB
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`modelBt` Module
----------------------
-
-.. automodule:: pyanno.modelBt
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`modelBt_loopdesign` Module
----------------------
-
-.. automodule:: pyanno.modelBt_loopdesign
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`annotations` Module
--------------------------
-
-.. automodule:: pyanno.annotations
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`database` Module
-----------------------
-
-.. automodule:: pyanno.database
-    :members:
-    :undoc-members:
-    :show-inheritance:
+Other modules
+=============
 
 :mod:`util` Module
 ------------------
@@ -81,13 +40,11 @@ pyanno Package
     :undoc-members:
     :show-inheritance:
 
-Subpackages
------------
 
-.. toctree::
+:mod:`abstract_model` Module
+--------------------
 
-    pyanno.measures
-    pyanno.plots
-..    pyanno.test
-..    pyanno.ui
-
+.. automodule:: pyanno.abstract_model
+    :members:
+    :undoc-members:
+    :show-inheritance:
