@@ -22,10 +22,18 @@ pyanno Package
 
 
 Other modules
-=============
+-------------
+
+:mod:`abstract_model` Module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyanno.abstract_model
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 :mod:`util` Module
-------------------
+^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyanno.util
     :members:
@@ -33,18 +41,9 @@ Other modules
     :show-inheritance:
 
 :mod:`sampling` Module
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyanno.sampling
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-:mod:`abstract_model` Module
---------------------
-
-.. automodule:: pyanno.abstract_model
     :members:
     :undoc-members:
     :show-inheritance:
