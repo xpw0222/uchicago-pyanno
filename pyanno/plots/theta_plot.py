@@ -359,6 +359,7 @@ class ThetaDistrPlot(PyannoPlotContainer):
         container.bgcolor = 0xFFFFFF
 
         self.decorate_plot(container, theta)
+        self._set_title(plot)
 
         return container
 
