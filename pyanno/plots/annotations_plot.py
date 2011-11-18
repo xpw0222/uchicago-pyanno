@@ -5,7 +5,7 @@
 from chaco.array_plot_data import ArrayPlotData
 from chaco.color_bar import ColorBar
 from chaco.data_range_1d import DataRange1D
-from chaco.default_colormaps import jet, YlOrRd, Reds, BuPu, YlGnBu
+from chaco.default_colormaps import Reds
 from chaco.linear_mapper import LinearMapper
 from chaco.plot import Plot
 from chaco.plot_containers import HPlotContainer
@@ -14,7 +14,6 @@ from enable.component_editor import ComponentEditor
 
 from tables.array import Array
 from traits.trait_types import Str, Instance, Float
-from traitsui.editors.range_editor import RangeEditor
 from traitsui.group import VGroup, HGroup
 from traitsui.include import Include
 from traitsui.item import Item, Spring
@@ -214,10 +213,21 @@ class PosteriorPlot(PyannoPlotContainer):
 def plot_posterior(posterior, show_maximum=False, **kwargs):
     """Display a plot of the posterior distribution over classes.
 
-    The plot allows saving (Ctrl-S), and copying the data (Ctrl-C).
+    This function is used together with the `infer_labels` method offered by
+    all models, e.g.: ::
 
-    Parameters
-    ----------
+    >>> from pyanno.models import ModelB
+    >>> from pyanno.plots import plot_posterior
+    >>> # create a new model with 3 classes and 6 annotators
+    >>> model = ModelB.create_initial_state(3, 6)
+    >>> annotations = model.generate_annotations(100)
+    >>> # compute the posterior distribution over class labels
+    >>> posterior = model.infer_labels(annotations)
+    >>> # plot the distribution in a window
+    >>> plot_posterior(posterior)
+
+    Arguments
+    ---------
     posterior : ndarray, shape=(n_annotations, n_classes)
         posterior[i,:] is the posterior distribution over classes for the
         i-th annotation.
@@ -225,8 +235,9 @@ def plot_posterior(posterior, show_maximum=False, **kwargs):
     show_maximum : bool
         if True, indicate the position of the maxima with white circles
 
-    title : string
-        the title of the plot
+    **kwargs : dictionary
+        Additional keyword arguments passed to the plot. The argument 'title'
+        sets the title of the plot.
     """
     post_view = PosteriorPlot(posterior=posterior, **kwargs)
     resizable_view = post_view._create_resizable_view()

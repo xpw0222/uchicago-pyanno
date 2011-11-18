@@ -58,26 +58,29 @@ def pairwise_matrix(pairwise_statistic, annotations, *args, **kwargs):
 def confusion_matrix(annotations1, annotations2, nclasses):
     """Compute confusion matrix from pairs of annotations.
 
-    Labels are numbers between 0 and `nclasses`. Any other value is
-    considered a missing value.
+    **References**
 
-    Parameters
-    ----------
-    annotations1 : array, shape = [n_samples]
+    * `Wikipedia entry <http://en.wikipedia.org/wiki/Confusion_matrix>`_
 
-    annotations2 : array, shape = [n_samples]
+    Arguments
+    ---------
+    annotations1 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
 
-    nclasses
+    annotations2 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    nclasses : int
+        Number of annotation classes. If None, `nclasses` is inferred from the
+        values in the annotations
 
     Returns
     -------
-    conf_mat : array, shape = [nclasses, nclasses]
-        confusion matrix; conf_mat[i,j] = number of observations that was
+    conf_mat : ndarray, shape = (n_classes, n_classes)
+        Confusion matrix; conf_mat[i,j] = number of observations that was
         annotated as category `i` by annotator 1 and as `j` by annotator 2
-
-    **References**
-
-      http://en.wikipedia.org/wiki/Confusion_matrix
     """
 
     conf_mat = np.empty((nclasses, nclasses), dtype=float)
@@ -90,7 +93,31 @@ def confusion_matrix(annotations1, annotations2, nclasses):
 
 
 def coincidence_matrix(annotations, nclasses):
-    """Build coincidence matrix."""
+    """Build coincidence matrix.
+
+    The element c,k of the coincidence matrix contains the number of c-k pairs
+    in the data (across annotators), over the total number of observed pairs.
+
+    **Reference**
+
+    * `Wikipedia entry
+      <http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha#Coincidence_matrices>`_
+
+    Arguments
+    ---------
+    annotations : ndarray, shape = (n_items, n_annotators)
+        Array of annotations for multiple annotators. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    nclasses : int
+        Number of annotation classes. If None, `nclasses` is inferred from the
+        values in the annotations
+
+    Returns
+    -------
+    coinc_mat : ndarray, shape = (n_classes, n_classes)
+        Coincidence matrix
+    """
 
     # total number of annotations in row
     nannotations = is_valid(annotations).sum(1).astype(float)
@@ -122,9 +149,18 @@ def chance_adjusted_agreement(observed_agreement, chance_agreement):
 
     Defined by (observed_agreement - chance_agreement)/(1.0 - chance_agreement)
 
-    Input:
-    observed_agreement -- agreement
-    chance_agreement -- expected agreement
+    Arguments
+    ---------
+    observed_agreement : float
+        Agreement computed from the data
+
+    chance_agreement : float
+        Agreement expected by chance give the assumptions of the statistics
+
+    Return
+    ------
+    result : float
+        Chance adjusted agreement value
     """
 
     return (observed_agreement - chance_agreement) / (1. - chance_agreement)
@@ -138,6 +174,26 @@ def observed_agreement_frequency(annotations1, annotations2, nclasses):
 
     Only count entries where both annotators responded toward observed
     frequency.
+
+    Arguments
+    ---------
+    annotations1 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    annotations2 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    weights_func : function(m_i, m_j)
+        Weights function that receives two matrices of indices
+        i, j and returns the matrix of weights between them.
+        Default is :func:`~pyanno.measures.distances.diagonal_distance`
+
+    Return
+    ------
+    result : float
+        Observed agreement frequency value
     """
 
     conf_mat = confusion_matrix(annotations1, annotations2, nclasses)
@@ -155,6 +211,26 @@ def chance_agreement_same_frequency(annotations1, annotations2, nclasses):
 
     Assumes that the annotators draw random annotations with the same
     frequency as the combined observed annotations.
+
+    Arguments
+    ---------
+    annotations1 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    annotations2 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    weights_func : function(m_i, m_j)
+        Weights function that receives two matrices of indices
+        i, j and returns the matrix of weights between them.
+        Default is :func:`~pyanno.measures.distances.diagonal_distance`
+
+    Return
+    ------
+    result : float
+        Chance agreement value
     """
 
     count1 = labels_count(annotations1, nclasses)
@@ -172,6 +248,26 @@ def chance_agreement_different_frequency(annotations1, annotations2, nclasses):
 
     Assumes that the annotators draw annotations at random with different but
     constant frequencies.
+
+    Arguments
+    ---------
+    annotations1 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    annotations2 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    weights_func : function(m_i, m_j)
+        Weights function that receives two matrices of indices
+        i, j and returns the matrix of weights between them.
+        Default is :func:`~pyanno.measures.distances.diagonal_distance`
+
+    Return
+    ------
+    result : float
+        Chance agreement value
     """
 
     freq1 = labels_frequency(annotations1, nclasses)
@@ -182,6 +278,7 @@ def chance_agreement_different_frequency(annotations1, annotations2, nclasses):
 
 
 def compute_nclasses(*annotations):
+    """Infer the number of label classes from the data."""
     max_ = np.amax(map(np.amax, annotations))
     return max_ + 1
 

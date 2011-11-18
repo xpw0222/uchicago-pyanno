@@ -218,17 +218,14 @@ class ThetaTensorPlot(PyannoPlotContainer):
 
 
 def plot_theta_tensor(modelB, annotator_idx, theta_samples=None, **kwargs):
-    """Display a Chaco plot of model B's accuracy tensor, theta.
+    """Display a plot of model B's accuracy tensor, theta.
 
     The tensor theta[annotator_idx,:,:] is shown for one annotator as a
     set of line plots, each depicting the distribution
     theta[annotator_idx,k,:] = P(annotator_idx outputs : | real class is k).
 
-    The component allows saving the plot (with Ctrl-S), and copying the matrix
-    data to the clipboard (with Ctrl-C).
-
-    Parameters
-    ----------
+    Arguments
+    ---------
     modelB : ModelB instance
         An instance of ModelB.
 

@@ -387,29 +387,41 @@ class ThetaDistrPlot(PyannoPlotContainer):
                     )
 
 
-def plot_theta_parameters(modelBt, theta_samples=None,
+def plot_theta_parameters(model, theta_samples=None,
                           type='distr', **kwargs):
-    """Display a Chaco plot of the annotator accuracy parameters, theta.
+    """Display a plot of the annotator accuracy parameters, theta.
 
-    The component allows saving the plot (with Ctrl-S), and copying the matrix
-    data to the clipboard (with Ctrl-C).
+    This class gives a graphical representation of the `theta` accuracy
+    parameters for :class:`~pyanno.modelA.ModelA`,
+    :class:`~pyanno.modelBt.ModelBt`, and
+    :class:`~pyanno.modelBt_loopdesign.ModelBtLoopDesign`.
 
-    Input:
-    modelBt -- an instance of ModelBt or ModelBtLoopDesign
-    theta_samples -- if given, samples from the posterior over theta,
-        as returned by modelBt.sample_posterior_over_accuracy
+    Arguments
+    ---------
+    model : instance
+        an instance of :class:`~pyanno.modelA.ModelA`,
+        :class:`~pyanno.modelBt.ModelBt`, or
+        :class:`~pyanno.modelBt_loopdesign.ModelBtLoopDesignModelBt`
+
+    theta_samples : ndarray, shape = (n_items, n_annotators)
+        Samples from the posterior over theta,
+        as returned by the method `model.sample_posterior_over_accuracy`.
+        If given, they are displayed as a probability distribution superimposed
+        to the values or `model.theta`.
+
     type : string
-        Either 'scatter' or 'distr'.
+        Either 'scatter' or 'distr'. Parametrizes two different kind of plots.
 
-    Keyword arguments:
-    title -- title for the resulting plot
+    **kwargs : dictionary
+        Additional keyword arguments passed to the plot. The argument 'title'
+        sets the title of the plot.
     """
 
     if type == 'distr':
-        theta_view = ThetaDistrPlot(theta = modelBt.theta,
+        theta_view = ThetaDistrPlot(theta = model.theta,
                                     theta_samples = theta_samples)
     else:
-        theta_view = ThetaScatterPlot(model=modelBt, **kwargs)
+        theta_view = ThetaScatterPlot(model=model, **kwargs)
         if theta_samples is not None:
             theta_view.theta_samples = theta_samples
             theta_view.theta_samples_valid = True

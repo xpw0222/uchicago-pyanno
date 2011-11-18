@@ -147,13 +147,22 @@ class HintonDiagramPlot(PyannoPlotContainer):
 
 
 def plot_hinton_diagram(data, **kwargs):
-    """Create and display a Chaco plot of a Hinton diagram.
+    """Display a plot of a Hinton diagram.
 
-    The component allows saving the plot (with Ctrl-S), and copying the matrix
-    data to the clipboard (with Ctrl-C).
+    This version of the Hinton diagram displays a probability distribution,
+    or any list of numbers between 0 and 1, as a sequence of circles with
+    area proportional to the value of each element.
 
-    Keyword arguments:
-    title -- title for the resulting plot
+    It can be used to display all 1D parameters of pyAnno models.
+
+    Arguments
+    ---------
+    data : list of floats
+        List of numbers between zero and one
+
+    **kwargs : dictionary
+        Additional keyword arguments passed to the plot. The argument 'title'
+        sets the title of the plot.
     """
     hinton_diagram = HintonDiagramPlot(data=data, **kwargs)
     hinton_diagram.edit_traits(view='resizable_view')

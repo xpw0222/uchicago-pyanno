@@ -12,8 +12,31 @@ def plot_pairwise_statistics(stat_func, annotations, nclasses=None, **kwargs):
     The function `stat_func` is applied to the annotations of all pairs of
     annotators, and the resulting matrix is displayed in a window.
 
-    Example:
-    plot_pairwise_statistics(pyanno.measures.cohens_kappa, annotations)
+    Example: :::
+
+       >>> plot_pairwise_statistics(pyanno.measures.cohens_kappa, annotations)
+
+    See also :func:`pyanno.measures.helpers.pairwise_matrix`,
+    :func:`~pyanno.plots.matrix_plot.plot_square_matrix`.
+
+    Arguments
+    ---------
+    stat_func : function
+        Function accepting as first two arguments two 1D array of
+        annotations, and returning a single scalar measuring some annotations
+        statistics.
+
+    annotations : ndarray, shape = (n_items, n_annotators)
+        Array of annotations for multiple annotators. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    nclasses : int
+        Number of annotation classes. If None, `nclasses` is inferred from the
+        values in the annotations
+
+    **kwargs : dictionary
+        Additional keyword arguments passed to the plot. The argument 'title'
+        sets the title of the plot.
     """
 
     if nclasses is None:

@@ -13,7 +13,7 @@ from pyanno.measures.helpers import (compute_nclasses,
                                      chance_adjusted_agreement,
                                      chance_agreement_different_frequency,
                                      confusion_matrix, coincidence_matrix, all_invalid)
-from pyanno.util import labels_frequency, is_valid, PyannoValueError
+from pyanno.util import labels_frequency, PyannoValueError
 
 import logging
 logger = logging.getLogger(__name__)
@@ -25,10 +25,33 @@ def scotts_pi(annotations1, annotations2, nclasses=None):
     Assumes that the annotators draw random annotations with the same
     frequency as the combined observed annotations.
 
-    Allows for missing values.
+    See also :func:`~pyanno.measures.helpers.pairwise_matrix`.
 
-    Scott 1955
-    http://en.wikipedia.org/wiki/Scott%27s_Pi
+    **References:**
+
+    * Scott, W. (1955). "Reliability of content analysis: The case of nominal
+      scale coding." Public Opinion Quarterly, 19(3), 321-325.
+
+    * `Wikipedia entry <http://en.wikipedia.org/wiki/Scott%27s_Pi>`_
+
+    Arguments
+    ---------
+    annotations1 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    annotations2 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    nclasses : int
+        Number of annotation classes. If None, `nclasses` is inferred from the
+        values in the annotations
+
+    Returns
+    -------
+    stat : float
+        The value of the statistics
     """
 
     if all_invalid(annotations1, annotations2):
@@ -56,11 +79,34 @@ def cohens_kappa(annotations1, annotations2, nclasses=None):
     Assumes that the annotators draw annotations at random with different but
     constant frequencies.
 
-    Cohen, Jacob (1960). A coefficient of agreement for nominal scales.
-    Educational and Psychological Measurement, 20, 37--46.
+    See also :func:`~pyanno.measures.helpers.pairwise_matrix`.
 
-    http://en.wikipedia.org/wiki/Cohen%27s_kappa
-    """
+    **References:**
+
+    * Cohen, Jacob (1960). A coefficient of agreement for nominal scales.
+      Educational and Psychological Measurement, 20, 37--46.
+
+    * `Wikipedia entry <http://en.wikipedia.org/wiki/Cohen%27s_kappa>`_
+
+    Arguments
+    ---------
+    annotations1 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    annotations2 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    nclasses : int
+        Number of annotation classes. If None, `nclasses` is inferred from the
+        values in the annotations
+
+    Returns
+    -------
+    stat : float
+        The value of the statistics
+     """
 
     if all_invalid(annotations1, annotations2):
         logger.debug('No valid annotations')
@@ -89,35 +135,48 @@ def cohens_weighted_kappa(annotations1, annotations2,
     Assumes that the annotators draw annotations at random with different but
     constant frequencies. Disagreements are weighted by a weights
     w_ij representing the "seriousness" of disagreement. For ordered codes,
-    it is often set to the distance from the diagonal, i.e. w_ij = |i-j| .
+    it is often set to the distance from the diagonal, i.e. `w_ij = |i-j|`.
 
     When w_ij is 0.0 on the diagonal and 1.0 elsewhere,
     Cohen's weighted kappa is equivalent to Cohen's kappa.
 
-
-    Input:
-
-    annotations1, annotations2 -- array of annotations; classes are
-        indicated by non-negative integers, -1 indicates missing values
-
-    weights_func -- weights function that receives two matrices of classes
-        i, j and returns the matrix of weights between them.
-        Default is `diagonal_distance`
-
-    nclasses -- number of classes in the annotations. If None, `nclasses` is
-        inferred from the values in the annotations
-
-
-    Output:
-
-    kappa -- Cohens' weighted kappa
-
-
     See also:
-    `diagonal_distance`, `binary_distance`, `cohens_kappa`
+    :func:`~pyanno.measures.distances.diagonal_distance`,
+    :func:`~pyanno.measures.distances.binary_distance`,
+    :func:`~pyanno.measures.agreement.cohens_kappa`,
+    :func:`~pyanno.measures.helpers.pairwise_matrix`
 
-    Cohen 1968
-    http://en.wikipedia.org/wiki/Cohen%27s_kappa
+    **References:**
+
+    * Cohen, J. (1968). "Weighed kappa: Nominal scale agreement with provision
+      for scaled disagreement or partial credit". Psychological Bulletin
+      70 (4): 213-220.
+
+    * `Wikipedia entry <http://en.wikipedia.org/wiki/Cohen%27s_kappa>`_
+
+    Arguments
+    ---------
+    annotations1 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    annotations2 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    weights_func : function(m_i, m_j)
+        Weights function that receives two matrices of indices
+        i, j and returns the matrix of weights between them.
+        Default is :func:`~pyanno.measures.distances.diagonal_distance`
+
+    nclasses : int
+        Number of annotation classes. If None, `nclasses` is inferred from the
+        values in the annotations
+
+    Returns
+    -------
+    stat : float
+        The value of the statistics
     """
 
     if all_invalid(annotations1, annotations2):
@@ -151,9 +210,29 @@ def cohens_weighted_kappa(annotations1, annotations2,
 
 
 def fleiss_kappa(annotations, nclasses=None):
-    """Compute Fleiss' kappa.
+    """Compute Fleiss' kappa for multiple annotators.
 
-    http://en.wikipedia.org/wiki/Fleiss%27_kappa
+    **References:**
+
+    * Fleiss, J. L. (1971). "Measuring nominal scale agreement among many
+      raters.". Psychological Bulletin, Vol 76(5), 378-382
+
+    * `Wikipedia entry <http://en.wikipedia.org/wiki/Fleiss%27_kappa>`_
+
+    Arguments
+    ---------
+    annotations : ndarray, shape = (n_items, n_annotators)
+        Array of annotations for multiple annotators. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    nclasses : int
+        Number of annotation classes. If None, `nclasses` is inferred from the
+        values in the annotations
+
+    Returns
+    -------
+    stat : float
+        The value of the statistics
     """
 
     if all_invalid(annotations):
@@ -203,35 +282,39 @@ def _fleiss_kappa_nannotations(nannotations):
 
 def krippendorffs_alpha(annotations, metric_func=diagonal_distance,
                         nclasses=None):
-    """Compute Krippendorff's alpha.
+    """Compute Krippendorff's alpha for multiple annotators.
 
-    Input:
+    **References:**
 
-    annotations -- array of annotations; classes are
-        indicated by non-negative integers, -1 indicates missing values
+    * Klaus Krippendorff (2004). "Content Analysis, an Introduction to Its
+      Methodology", 2nd Edition. Thousand Oaks, CA: Sage Publications.
+      In particular, Chapter 11, pages 219--250.
 
-    weights_func -- weights function that receives two matrices of classes
-        i, j and returns the matrix of weights between them.
-        Default is `diagonal_distance`
-
-    nclasses -- number of classes in the annotations. If None, `nclasses` is
-        inferred from the values in the annotations
-
-
-    Output:
-
-    alpha -- Krippendorff's alpha
-
+    * `Wikipedia entry <http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha>`_
 
     See also:
-    `diagonal_distance`, `binary_distance`
+    :func:`~pyanno.measures.distances.diagonal_distance`,
+    :func:`~pyanno.measures.distances.binary_distance`,
 
+    Arguments
+    ---------
+    annotations : ndarray, shape = (n_items, n_annotators)
+        Array of annotations for multiple annotators. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
 
-    Klaus Krippendorff (2004). Content Analysis, an Introduction to Its
-    Methodology, 2nd Edition. Thousand Oaks, CA: Sage Publications.
-    In particular, Chapter 11, pages 219--250.
+    weights_func : function(m_i, m_j)
+        Weights function that receives two matrices of indices
+        i, j and returns the matrix of weights between them.
+        Default is :func:`~pyanno.measures.distances.diagonal_distance`
 
-    http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha
+    nclasses : int
+        Number of annotation classes. If None, `nclasses` is inferred from the
+        values in the annotations
+
+    Returns
+    -------
+    stat : float
+        The value of the statistics
     """
 
     if all_invalid(annotations):

@@ -4,48 +4,18 @@ plots Package
 :mod:`plots` Package
 --------------------
 
-.. automodule:: pyanno.plots
-    :members:
-    :undoc-members:
-    :show-inheritance:
+These functions can be imported from the :mod:`pyanno.plots` namespace. If you
+use them in an IPython shell, remember to use the magic command
+`%gui` to enable the GUI toolkits.
 
-:mod:`hinton_plot` Module
--------------------------
+.. autofunction:: pyanno.plots.pyanno_plots.plot_pairwise_statistics
 
-.. automodule:: pyanno.plots.hinton_plot
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autofunction:: pyanno.plots.hinton_plot.plot_hinton_diagram
 
-:mod:`matrix_plot` Module
--------------------------
+.. autofunction:: pyanno.plots.annotations_plot.plot_posterior
 
-.. automodule:: pyanno.plots.matrix_plot
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autofunction:: pyanno.plots.theta_plot.plot_theta_parameters
 
-:mod:`plot_tools` Module
-------------------------
+.. autofunction:: pyanno.plots.theta_tensor_plot.plot_theta_tensor
 
-.. automodule:: pyanno.plots.plot_tools
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`pyanno_plots` Module
---------------------------
-
-.. automodule:: pyanno.plots.pyanno_plots
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`theta_plot` Module
-------------------------
-
-.. automodule:: pyanno.plots.theta_plot
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+.. autofunction:: pyanno.plots.matrix_plot.plot_square_matrix

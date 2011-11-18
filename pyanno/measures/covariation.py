@@ -16,7 +16,34 @@ import logging
 logger = logging.getLogger(__name__)
 
 def pearsons_rho(annotations1, annotations2, nclasses=None):
-    """Compute Pearson's product-moment correlation coefficient."""
+    """Compute Pearson's product-moment correlation coefficient.
+
+    See also :func:`~pyanno.measures.helpers.pairwise_matrix`.
+
+    **References:**
+
+    * `Wikipedia entry
+      <http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient>`_
+
+    Arguments
+    ---------
+    annotations1 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    annotations2 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    nclasses : int
+        Number of annotation classes. If None, `nclasses` is inferred from the
+        values in the annotations
+
+    Returns
+    -------
+    stat : float
+        The value of the statistics
+    """
 
     valid = is_valid(annotations1) & is_valid(annotations2)
     if all(~valid):
@@ -28,7 +55,34 @@ def pearsons_rho(annotations1, annotations2, nclasses=None):
 
 
 def spearmans_rho(annotations1, annotations2, nclasses=None):
-    """Compute Spearman's rank correlation coefficient."""
+    """Compute Spearman's rank correlation coefficient.
+
+    See also :func:`~pyanno.measures.helpers.pairwise_matrix`.
+
+    **References:**
+
+    * `Wikipedia entry
+      <http://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient>`_
+
+    Arguments
+    ---------
+    annotations1 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    annotations2 : ndarray, shape = (n_items, )
+        Array of annotations for a single annotator. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    nclasses : int
+        Number of annotation classes. If None, `nclasses` is inferred from the
+        values in the annotations
+
+    Returns
+    -------
+    stat : float
+        The value of the statistics
+    """
 
     valid = is_valid(annotations1) & is_valid(annotations2)
     if all(~valid):
@@ -40,7 +94,31 @@ def spearmans_rho(annotations1, annotations2, nclasses=None):
 
 
 def cronbachs_alpha(annotations, nclasses=None):
-    """Compute Cronbach's alpha."""
+    """Compute Cronbach's alpha.
+
+    **References:**
+
+    * Cronbach, L. J. (1951). "Coefficient alpha and the internal structure
+      of tests." Psychometrika, 16(3), 297-334.
+
+    * `Wikipedia entry
+      <http://en.wikipedia.org/wiki/Cronbach%27s_alpha>`_
+
+    Arguments
+    ---------
+    annotations : ndarray, shape = (n_items, n_annotators)
+        Array of annotations for multiple annotators. Missing values should be
+        indicated by :attr:`pyanno.util.MISSING_VALUE`
+
+    nclasses : int
+        Number of annotation classes. If None, `nclasses` is inferred from the
+        values in the annotations
+
+    Returns
+    -------
+    stat : float
+        The value of the statistics
+    """
 
     if all_invalid(annotations):
         logger.debug('No valid annotations')

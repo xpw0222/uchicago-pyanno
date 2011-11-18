@@ -71,6 +71,21 @@ Starting the GUI
 Navigating the main window
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Plot tools
+''''''''''
+
+* To save a plot as displayed in the window, click on the plot and press Ctrl-S
+  (Cmd-S on Mac). A dialog will open, asking for a destination file
+  and the resolution of the saved image (in dpi).
+
+* It is possible to copy the *data* underlying the plots by pressing Ctrl-C
+  (Cmd-C on Mac). The data is copied on the clipboard as a Python string,
+  which can be copied in a text file, or in a Python shell to further analyze
+  it. For most plots, the copied data will be a numpy array. Make sure to
+  type `from numpy import array` in your Python shell so that Python can create
+  an array object when you paste the string.
+
+
 The database window
 ^^^^^^^^^^^^^^^^^^^
 
