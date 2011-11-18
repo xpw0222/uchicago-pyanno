@@ -12,8 +12,8 @@
     
     <title>Index &mdash; pyanno 2.0dev documentation</title>
     
-    <link rel="stylesheet" href="static/default.css" type="text/css" />
-    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -24,9 +24,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="static/jquery.js"></script>
-    <script type="text/javascript" src="static/underscore.js"></script>
-    <script type="text/javascript" src="static/doctools.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pyanno 2.0dev documentation" href="index.html" /> 
   </head>
   <body>
@@ -58,7 +58,6 @@
  | <a href="#D"><strong>D</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
- | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
@@ -69,6 +68,7 @@
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  
 </div>
 <h2 id="A">A</h2>
@@ -83,7 +83,15 @@
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.annotations.AnnotationsContainer">AnnotationsContainer (class in pyanno.annotations)</a>
+  <dt><a href="pyanno.database.html#pyanno.database.PyannoResult.anno_container">anno_container (pyanno.database.PyannoResult attribute)</a>
+  </dt>
+
+      
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.annotations">annotations (pyanno.annotations.AnnotationsContainer attribute)</a>
+  </dt>
+
+      
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer">AnnotationsContainer (class in pyanno.annotations)</a>
   </dt>
 
       
@@ -97,16 +105,24 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.annotator_accuracy">annotator_accuracy() (pyanno.modelB.ModelB method)</a>
+  </dt>
+
+      
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.annotator_accuracy_samples">annotator_accuracy_samples() (pyanno.modelB.ModelB method)</a>
+  </dt>
+
+      
   <dt><a href="pyanno.html#pyanno.abstract_model.AbstractModel.are_annotations_compatible">are_annotations_compatible() (pyanno.abstract_model.AbstractModel method)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="pyanno.html#pyanno.modelA.ModelA.are_annotations_compatible">(pyanno.modelA.ModelA method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelA.ModelA.are_annotations_compatible">(pyanno.modelA.ModelA method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.are_annotations_compatible">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.are_annotations_compatible">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
   </dt>
 
       </dl></dd>
@@ -161,11 +177,11 @@
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.util.check_unchanged">check_unchanged() (in module pyanno.util)</a>
+  <dt><a href="pyanno.database.html#pyanno.database.PyannoDatabase.close">close() (pyanno.database.PyannoDatabase method)</a>
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.database.PyannoDatabase.close">close() (pyanno.database.PyannoDatabase method)</a>
+  <dt><a href="pyanno.database.html#pyanno.database.PyannoDatabase.closed">closed (pyanno.database.PyannoDatabase attribute)</a>
   </dt>
 
       
@@ -180,22 +196,18 @@
   <dt><a href="pyanno.measures.html#pyanno.measures.helpers.coincidence_matrix">coincidence_matrix() (in module pyanno.measures.helpers)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="pyanno.html#pyanno.util.compute_counts">compute_counts() (in module pyanno.util)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="pyanno.measures.html#pyanno.measures.helpers.compute_nclasses">compute_nclasses() (in module pyanno.measures.helpers)</a>
   </dt>
 
       
   <dt><a href="pyanno.measures.html#pyanno.measures.helpers.confusion_matrix">confusion_matrix() (in module pyanno.measures.helpers)</a>
-  </dt>
-
-      
-  <dt><a href="pyanno.plots.html#pyanno.plots.plot_tools.CopyDataToClipboardTool">CopyDataToClipboardTool (class in pyanno.plots.plot_tools)</a>
   </dt>
 
       
@@ -212,19 +224,19 @@
 
       <dd><dl>
         
-  <dt><a href="pyanno.html#pyanno.modelA.ModelA.create_initial_state">(pyanno.modelA.ModelA static method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelA.ModelA.create_initial_state">(pyanno.modelA.ModelA static method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelB.ModelB.create_initial_state">(pyanno.modelB.ModelB static method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.create_initial_state">(pyanno.modelB.ModelB static method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt.ModelBt.create_initial_state">(pyanno.modelBt.ModelBt static method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt.ModelBt.create_initial_state">(pyanno.modelBt.ModelBt static method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.create_initial_state">(pyanno.modelBt_loopdesign.ModelBtLoopDesign static method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.create_initial_state">(pyanno.modelBt_loopdesign.ModelBtLoopDesign static method)</a>
   </dt>
 
       </dl></dd>
@@ -243,6 +255,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="pyanno.database.html#pyanno.database.PyannoDatabase.database">database (pyanno.database.PyannoDatabase attribute)</a>
+  </dt>
+
+      
   <dt><a href="pyanno.ui.html#pyanno.ui.annotations_view.DataView">DataView (class in pyanno.ui.annotations_view)</a>
   </dt>
 
@@ -251,25 +267,25 @@
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.modelB.ModelB.default_alpha">default_alpha() (pyanno.modelB.ModelB static method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.default_alpha">default_alpha() (pyanno.modelB.ModelB static method)</a>
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.modelB.ModelB.default_beta">default_beta() (pyanno.modelB.ModelB static method)</a>
-  </dt>
-
-      
-  <dt><a href="pyanno.html#pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_ALL">DEFAULT_MISSING_VALUES_ALL (pyanno.annotations.AnnotationsContainer attribute)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.default_beta">default_beta() (pyanno.modelB.ModelB static method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="pyanno.html#pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_NUM">DEFAULT_MISSING_VALUES_NUM (pyanno.annotations.AnnotationsContainer attribute)</a>
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_ALL">DEFAULT_MISSING_VALUES_ALL (pyanno.annotations.AnnotationsContainer attribute)</a>
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_STR">DEFAULT_MISSING_VALUES_STR (pyanno.annotations.AnnotationsContainer attribute)</a>
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_NUM">DEFAULT_MISSING_VALUES_NUM (pyanno.annotations.AnnotationsContainer attribute)</a>
+  </dt>
+
+      
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_STR">DEFAULT_MISSING_VALUES_STR (pyanno.annotations.AnnotationsContainer attribute)</a>
   </dt>
 
       
@@ -291,13 +307,13 @@
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.annotations.AnnotationsContainer.from_array">from_array() (pyanno.annotations.AnnotationsContainer static method)</a>
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.from_array">from_array() (pyanno.annotations.AnnotationsContainer static method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="pyanno.html#pyanno.annotations.AnnotationsContainer.from_file">from_file() (pyanno.annotations.AnnotationsContainer static method)</a>
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.from_file">from_file() (pyanno.annotations.AnnotationsContainer static method)</a>
   </dt>
 
   </dl></td>
@@ -312,72 +328,54 @@
 
       <dd><dl>
         
-  <dt><a href="pyanno.html#pyanno.modelA.ModelA.generate_annotations">(pyanno.modelA.ModelA method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelA.ModelA.generate_annotations">(pyanno.modelA.ModelA method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelB.ModelB.generate_annotations">(pyanno.modelB.ModelB method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.generate_annotations">(pyanno.modelB.ModelB method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt.ModelBt.generate_annotations">(pyanno.modelBt.ModelBt method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt.ModelBt.generate_annotations">(pyanno.modelBt.ModelBt method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_annotations">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_annotations">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
   </dt>
 
       </dl></dd>
       
-  <dt><a href="pyanno.html#pyanno.modelB.ModelB.generate_annotations_from_labels">generate_annotations_from_labels() (pyanno.modelB.ModelB method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.generate_annotations_from_labels">generate_annotations_from_labels() (pyanno.modelB.ModelB method)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="pyanno.html#pyanno.modelBt.ModelBt.generate_annotations_from_labels">(pyanno.modelBt.ModelBt method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt.ModelBt.generate_annotations_from_labels">(pyanno.modelBt.ModelBt method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_annotations_from_labels">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
-  </dt>
-
-      </dl></dd>
-      
-  <dt><a href="pyanno.html#pyanno.modelB.ModelB.generate_labels">generate_labels() (pyanno.modelB.ModelB method)</a>
-  </dt>
-
-      <dd><dl>
-        
-  <dt><a href="pyanno.html#pyanno.modelBt.ModelBt.generate_labels">(pyanno.modelBt.ModelBt method)</a>
-  </dt>
-
-        
-  <dt><a href="pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_labels">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_annotations_from_labels">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
   </dt>
 
       </dl></dd>
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="pyanno.plots.html#pyanno.plots.plot_tools.get_annotator_color">get_annotator_color() (in module pyanno.plots.plot_tools)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.generate_labels">generate_labels() (pyanno.modelB.ModelB method)</a>
   </dt>
 
-      
-  <dt><a href="pyanno.html#pyanno.database.PyannoDatabase.get_available_id">get_available_id() (pyanno.database.PyannoDatabase method)</a>
+      <dd><dl>
+        
+  <dt><a href="pyanno.models.html#pyanno.modelBt.ModelBt.generate_labels">(pyanno.modelBt.ModelBt method)</a>
   </dt>
 
-      
-  <dt><a href="pyanno.plots.html#pyanno.plots.plot_tools.get_class_color">get_class_color() (in module pyanno.plots.plot_tools)</a>
+        
+  <dt><a href="pyanno.models.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.generate_labels">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
   </dt>
 
-  </dl></td>
-</tr></table>
-
-<h2 id="H">H</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%" valign="top"><dl>
+      </dl></dd>
       
-  <dt><a href="pyanno.plots.html#pyanno.plots.hinton_plot.HintonDiagramPlot">HintonDiagramPlot (class in pyanno.plots.hinton_plot)</a>
+  <dt><a href="pyanno.database.html#pyanno.database.PyannoDatabase.get_available_id">get_available_id() (pyanno.database.PyannoDatabase method)</a>
   </dt>
 
   </dl></td>
@@ -387,20 +385,20 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="pyanno.html#pyanno.modelA.ModelA.infer_labels">infer_labels() (pyanno.modelA.ModelA method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelA.ModelA.infer_labels">infer_labels() (pyanno.modelA.ModelA method)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="pyanno.html#pyanno.modelB.ModelB.infer_labels">(pyanno.modelB.ModelB method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.infer_labels">(pyanno.modelB.ModelB method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt.ModelBt.infer_labels">(pyanno.modelBt.ModelBt method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt.ModelBt.infer_labels">(pyanno.modelBt.ModelBt method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.infer_labels">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.infer_labels">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
   </dt>
 
       </dl></dd>
@@ -427,6 +425,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.labels">labels (pyanno.annotations.AnnotationsContainer attribute)</a>
+  </dt>
+
+      
   <dt><a href="pyanno.html#pyanno.util.labels_count">labels_count() (in module pyanno.util)</a>
   </dt>
 
@@ -437,7 +439,7 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="pyanno.html#pyanno.annotations.load_annotations">load_annotations() (in module pyanno.annotations)</a>
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.load_annotations">load_annotations() (in module pyanno.annotations)</a>
   </dt>
 
       
@@ -446,19 +448,19 @@
 
       <dd><dl>
         
-  <dt><a href="pyanno.html#pyanno.modelA.ModelA.log_likelihood">(pyanno.modelA.ModelA method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelA.ModelA.log_likelihood">(pyanno.modelA.ModelA method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelB.ModelB.log_likelihood">(pyanno.modelB.ModelB method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.log_likelihood">(pyanno.modelB.ModelB method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt.ModelBt.log_likelihood">(pyanno.modelBt.ModelBt method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt.ModelBt.log_likelihood">(pyanno.modelBt.ModelBt method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.log_likelihood">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.log_likelihood">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
   </dt>
 
       </dl></dd>
@@ -469,26 +471,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="pyanno.plots.html#pyanno.plots.hinton_plot.main">main() (in module pyanno.plots.hinton_plot)</a>
+  <dt><a href="pyanno.ui.html#pyanno.ui.annotation_stat_view.main">main() (in module pyanno.ui.annotation_stat_view)</a>
   </dt>
 
       <dd><dl>
-        
-  <dt><a href="pyanno.plots.html#pyanno.plots.matrix_plot.main">(in module pyanno.plots.matrix_plot)</a>
-  </dt>
-
-        
-  <dt><a href="pyanno.plots.html#pyanno.plots.pyanno_plots.main">(in module pyanno.plots.pyanno_plots)</a>
-  </dt>
-
-        
-  <dt><a href="pyanno.plots.html#pyanno.plots.theta_plot.main">(in module pyanno.plots.theta_plot)</a>
-  </dt>
-
-        
-  <dt><a href="pyanno.ui.html#pyanno.ui.annotation_stat_view.main">(in module pyanno.ui.annotation_stat_view)</a>
-  </dt>
-
         
   <dt><a href="pyanno.ui.html#pyanno.ui.annotations_view.main">(in module pyanno.ui.annotations_view)</a>
   </dt>
@@ -516,24 +502,24 @@
 
       <dd><dl>
         
-  <dt><a href="pyanno.html#pyanno.modelA.ModelA.map">(pyanno.modelA.ModelA method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelA.ModelA.map">(pyanno.modelA.ModelA method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelB.ModelB.map">(pyanno.modelB.ModelB method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.map">(pyanno.modelB.ModelB method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt.ModelBt.map">(pyanno.modelBt.ModelBt method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt.ModelBt.map">(pyanno.modelBt.ModelBt method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.map">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.map">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
   </dt>
 
       </dl></dd>
       
-  <dt><a href="pyanno.plots.html#pyanno.plots.matrix_plot.MatrixPlot">MatrixPlot (class in pyanno.plots.matrix_plot)</a>
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.missing_values">missing_values (pyanno.annotations.AnnotationsContainer attribute)</a>
   </dt>
 
       
@@ -542,38 +528,42 @@
 
       <dd><dl>
         
-  <dt><a href="pyanno.html#pyanno.modelA.ModelA.mle">(pyanno.modelA.ModelA method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelA.ModelA.mle">(pyanno.modelA.ModelA method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelB.ModelB.mle">(pyanno.modelB.ModelB method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.mle">(pyanno.modelB.ModelB method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt.ModelBt.mle">(pyanno.modelBt.ModelBt method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt.ModelBt.mle">(pyanno.modelBt.ModelBt method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.mle">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.mle">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
   </dt>
 
       </dl></dd>
       
-  <dt><a href="pyanno.html#pyanno.modelA.ModelA">ModelA (class in pyanno.modelA)</a>
+  <dt><a href="pyanno.database.html#pyanno.database.PyannoResult.model">model (pyanno.database.PyannoResult attribute)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="pyanno.html#pyanno.modelB.ModelB">ModelB (class in pyanno.modelB)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelA.ModelA">ModelA (class in pyanno.modelA)</a>
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.modelBt.ModelBt">ModelBt (class in pyanno.modelBt)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB">ModelB (class in pyanno.modelB)</a>
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign">ModelBtLoopDesign (class in pyanno.modelBt_loopdesign)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt.ModelBt">ModelBt (class in pyanno.modelBt)</a>
+  </dt>
+
+      
+  <dt><a href="pyanno.models.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign">ModelBtLoopDesign (class in pyanno.modelBt_loopdesign)</a>
   </dt>
 
       
@@ -591,9 +581,23 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.name">name (pyanno.annotations.AnnotationsContainer attribute)</a>
+  </dt>
+
+      
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.nannotators">nannotators (pyanno.annotations.AnnotationsContainer attribute)</a>
+  </dt>
+
+      
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.nclasses">nclasses (pyanno.annotations.AnnotationsContainer attribute)</a>
+  </dt>
+
+      
   <dt><a href="pyanno.ui.html#pyanno.ui.model_bt_view.ModelBtView.new_model_dialog_class">new_model_dialog_class (pyanno.ui.model_bt_view.ModelBtView attribute)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="pyanno.ui.html#pyanno.ui.model_bt_view.NewModelBtDialog">NewModelBtDialog (class in pyanno.ui.model_bt_view)</a>
   </dt>
@@ -602,18 +606,10 @@
   <dt><a href="pyanno.html#pyanno.util.ninf_to_num">ninf_to_num() (in module pyanno.util)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="pyanno.plots.html#pyanno.plots.plot_tools.CopyDataToClipboardTool.normal_key_pressed">normal_key_pressed() (pyanno.plots.plot_tools.CopyDataToClipboardTool method)</a>
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.nitems">nitems (pyanno.annotations.AnnotationsContainer attribute)</a>
   </dt>
 
-      <dd><dl>
-        
-  <dt><a href="pyanno.plots.html#pyanno.plots.plot_tools.SaveToolPlus.normal_key_pressed">(pyanno.plots.plot_tools.SaveToolPlus method)</a>
-  </dt>
-
-      </dl></dd>
       
   <dt><a href="pyanno.html#pyanno.util.normalize">normalize() (in module pyanno.util)</a>
   </dt>
@@ -661,11 +657,19 @@
   </dt>
 
       
+  <dt><a href="pyanno.plots.html#pyanno.plots.annotations_plot.plot_posterior">plot_posterior() (in module pyanno.plots.annotations_plot)</a>
+  </dt>
+
+      
   <dt><a href="pyanno.plots.html#pyanno.plots.matrix_plot.plot_square_matrix">plot_square_matrix() (in module pyanno.plots.matrix_plot)</a>
   </dt>
 
       
   <dt><a href="pyanno.plots.html#pyanno.plots.theta_plot.plot_theta_parameters">plot_theta_parameters() (in module pyanno.plots.theta_plot)</a>
+  </dt>
+
+      
+  <dt><a href="pyanno.plots.html#pyanno.plots.theta_tensor_plot.plot_theta_tensor">plot_theta_tensor() (in module pyanno.plots.theta_tensor_plot)</a>
   </dt>
 
       
@@ -677,11 +681,11 @@
   </dt>
 
       
-  <dt><a href="pyanno.html#module-pyanno.annotations">pyanno.annotations (module)</a>
+  <dt><a href="pyanno.annotations.html#module-pyanno.annotations">pyanno.annotations (module)</a>
   </dt>
 
       
-  <dt><a href="pyanno.html#module-pyanno.database">pyanno.database (module)</a>
+  <dt><a href="pyanno.database.html#module-pyanno.database">pyanno.database (module)</a>
   </dt>
 
       
@@ -705,45 +709,21 @@
   </dt>
 
       
-  <dt><a href="pyanno.html#module-pyanno.modelA">pyanno.modelA (module)</a>
+  <dt><a href="pyanno.models.html#module-pyanno.modelA">pyanno.modelA (module)</a>
   </dt>
 
       
-  <dt><a href="pyanno.html#module-pyanno.modelB">pyanno.modelB (module)</a>
+  <dt><a href="pyanno.models.html#module-pyanno.modelB">pyanno.modelB (module)</a>
   </dt>
 
       
-  <dt><a href="pyanno.html#module-pyanno.modelBt">pyanno.modelBt (module)</a>
-  </dt>
-
-      
-  <dt><a href="pyanno.html#module-pyanno.modelBt_loopdesign">pyanno.modelBt_loopdesign (module)</a>
-  </dt>
-
-      
-  <dt><a href="pyanno.plots.html#module-pyanno.plots">pyanno.plots (module)</a>
-  </dt>
-
-      
-  <dt><a href="pyanno.plots.html#module-pyanno.plots.hinton_plot">pyanno.plots.hinton_plot (module)</a>
-  </dt>
-
-      
-  <dt><a href="pyanno.plots.html#module-pyanno.plots.matrix_plot">pyanno.plots.matrix_plot (module)</a>
+  <dt><a href="pyanno.models.html#module-pyanno.modelBt">pyanno.modelBt (module)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="pyanno.plots.html#module-pyanno.plots.plot_tools">pyanno.plots.plot_tools (module)</a>
-  </dt>
-
-      
-  <dt><a href="pyanno.plots.html#module-pyanno.plots.pyanno_plots">pyanno.plots.pyanno_plots (module)</a>
-  </dt>
-
-      
-  <dt><a href="pyanno.plots.html#module-pyanno.plots.theta_plot">pyanno.plots.theta_plot (module)</a>
+  <dt><a href="pyanno.models.html#module-pyanno.modelBt_loopdesign">pyanno.modelBt_loopdesign (module)</a>
   </dt>
 
       
@@ -807,11 +787,11 @@
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.database.PyannoDatabase">PyannoDatabase (class in pyanno.database)</a>
+  <dt><a href="pyanno.database.html#pyanno.database.PyannoDatabase">PyannoDatabase (class in pyanno.database)</a>
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.database.PyannoResult">PyannoResult (class in pyanno.database)</a>
+  <dt><a href="pyanno.database.html#pyanno.database.PyannoResult">PyannoResult (class in pyanno.database)</a>
   </dt>
 
       
@@ -829,13 +809,17 @@
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.database.PyannoDatabase.remove">remove() (pyanno.database.PyannoDatabase method)</a>
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.raw_annotations">raw_annotations (pyanno.annotations.AnnotationsContainer attribute)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="pyanno.html#pyanno.database.PyannoDatabase.retrieve_id">retrieve_id() (pyanno.database.PyannoDatabase method)</a>
+  <dt><a href="pyanno.database.html#pyanno.database.PyannoDatabase.remove">remove() (pyanno.database.PyannoDatabase method)</a>
+  </dt>
+
+      
+  <dt><a href="pyanno.database.html#pyanno.database.PyannoDatabase.retrieve_id">retrieve_id() (pyanno.database.PyannoDatabase method)</a>
   </dt>
 
   </dl></td>
@@ -858,24 +842,24 @@
 
       <dd><dl>
         
-  <dt><a href="pyanno.html#pyanno.modelA.ModelA.sample_posterior_over_accuracy">(pyanno.modelA.ModelA method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelA.ModelA.sample_posterior_over_accuracy">(pyanno.modelA.ModelA method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelB.ModelB.sample_posterior_over_accuracy">(pyanno.modelB.ModelB method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelB.ModelB.sample_posterior_over_accuracy">(pyanno.modelB.ModelB method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt.ModelBt.sample_posterior_over_accuracy">(pyanno.modelBt.ModelBt method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt.ModelBt.sample_posterior_over_accuracy">(pyanno.modelBt.ModelBt method)</a>
   </dt>
 
         
-  <dt><a href="pyanno.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.sample_posterior_over_accuracy">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
+  <dt><a href="pyanno.models.html#pyanno.modelBt_loopdesign.ModelBtLoopDesign.sample_posterior_over_accuracy">(pyanno.modelBt_loopdesign.ModelBtLoopDesign method)</a>
   </dt>
 
       </dl></dd>
       
-  <dt><a href="pyanno.html#pyanno.annotations.AnnotationsContainer.save_to">save_to() (pyanno.annotations.AnnotationsContainer method)</a>
+  <dt><a href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer.save_to">save_to() (pyanno.annotations.AnnotationsContainer method)</a>
   </dt>
 
       
@@ -883,23 +867,15 @@
   </dt>
 
       
-  <dt><a href="pyanno.plots.html#pyanno.plots.plot_tools.SaveFileDialog">SaveFileDialog (class in pyanno.plots.plot_tools)</a>
-  </dt>
-
-      
-  <dt><a href="pyanno.plots.html#pyanno.plots.plot_tools.SaveToolPlus">SaveToolPlus (class in pyanno.plots.plot_tools)</a>
-  </dt>
-
-      
   <dt><a href="pyanno.measures.html#pyanno.measures.agreement.scotts_pi">scotts_pi() (in module pyanno.measures.agreement)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="pyanno.ui.html#pyanno.ui.model_data_view.ModelDataView.set_annotations">set_annotations() (pyanno.ui.model_data_view.ModelDataView method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="pyanno.ui.html#pyanno.ui.model_data_view.ModelDataView.set_from_database_record">set_from_database_record() (pyanno.ui.model_data_view.ModelDataView method)</a>
   </dt>
@@ -917,7 +893,7 @@
   </dt>
 
       
-  <dt><a href="pyanno.html#pyanno.database.PyannoDatabase.store_result">store_result() (pyanno.database.PyannoDatabase method)</a>
+  <dt><a href="pyanno.database.html#pyanno.database.PyannoDatabase.store_result">store_result() (pyanno.database.PyannoDatabase method)</a>
   </dt>
 
       
@@ -1082,12 +1058,12 @@
   <dt><a href="pyanno.test.html#pyanno.test.test_measures.TestMeasures.test_krippendorffs_alpha">test_krippendorffs_alpha() (pyanno.test.test_measures.TestMeasures method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="pyanno.test.html#pyanno.test.test_measures.TestMeasures.test_krippendorffs_alpha2">test_krippendorffs_alpha2() (pyanno.test.test_measures.TestMeasures method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="pyanno.test.html#pyanno.test.test_util.TestUtil.test_labels_count">test_labels_count() (pyanno.test.test_util.TestUtil method)</a>
   </dt>
@@ -1249,18 +1225,14 @@
   </dt>
 
       
-  <dt><a href="pyanno.plots.html#pyanno.plots.theta_plot.ThetaDistrPlot">ThetaDistrPlot (class in pyanno.plots.theta_plot)</a>
-  </dt>
-
-      
-  <dt><a href="pyanno.plots.html#pyanno.plots.theta_plot.ThetaScatterPlot">ThetaScatterPlot (class in pyanno.plots.theta_plot)</a>
-  </dt>
-
-      
   <dt><a href="pyanno.ui.html#pyanno.ui.annotation_stat_view.AnnotationsStatisticsView.traits_view">traits_view() (pyanno.ui.annotation_stat_view.AnnotationsStatisticsView method)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="pyanno.ui.html#pyanno.ui.annotations_view.AnnotationsView.traits_view">(pyanno.ui.annotations_view.AnnotationsView method)</a>
+  </dt>
+
         
   <dt><a href="pyanno.ui.html#pyanno.ui.annotations_view.CreateNewAnnotationsDialog.traits_view">(pyanno.ui.annotations_view.CreateNewAnnotationsDialog method)</a>
   </dt>
@@ -1274,6 +1246,16 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="pyanno.database.html#pyanno.database.PyannoResult.value">value (pyanno.database.PyannoResult attribute)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 

@@ -1,0 +1,418 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyanno.util &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyanno.util</h1><div class="highlight"><pre>
+<span class="c"># Copyright (c) 2011, Enthought, Ltd.</span>
+<span class="c"># Authors: Pietro Berkes &lt;pberkes@enthought.com&gt;, Andrey Rzhetsky,</span>
+<span class="c">#          Bob Carpenter</span>
+<span class="c"># License: Modified BSD license (2-clause)</span>
+
+<span class="sd">&quot;&quot;&quot;Utility functions.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">numpy.core</span> <span class="kn">import</span> <span class="n">getlimits</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">gammaln</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="n">MISSING_VALUE</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="n">SMALLEST_FLOAT</span> <span class="o">=</span> <span class="n">getlimits</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span><span class="o">.</span><span class="n">min</span>
+
+
+<div class="viewcode-block" id="PyannoValueError"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.PyannoValueError">[docs]</a><span class="k">class</span> <span class="nc">PyannoValueError</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ValueError subclass raised by pyAnno functions and methods.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="random_categorical"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.random_categorical">[docs]</a><span class="k">def</span> <span class="nf">random_categorical</span><span class="p">(</span><span class="n">distr</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return an array of samples from a categorical distribution.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    distr : ndarray</span>
+<span class="sd">        distr[i] is the probability of item i</span>
+
+<span class="sd">    nsamples : int</span>
+<span class="sd">        Number of samples to draw from the distribution</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    samples : ndarray, shape = (n_samples, )</span>
+<span class="sd">        Samples from the distribution</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">distr</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span>
+    <span class="n">cumulative</span> <span class="o">=</span> <span class="n">distr</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">cumulative</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">nsamples</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="ninf_to_num"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.ninf_to_num">[docs]</a><span class="k">def</span> <span class="nf">ninf_to_num</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Substitute -inf with smallest floating point number.&quot;&quot;&quot;</span>
+    <span class="n">is_neg_inf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isneginf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">[</span><span class="n">is_neg_inf</span><span class="p">]</span> <span class="o">=</span> <span class="n">SMALLEST_FLOAT</span>
+
+    <span class="k">return</span> <span class="n">x</span>
+
+</div>
+<div class="viewcode-block" id="dirichlet_llhood"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.dirichlet_llhood">[docs]</a><span class="k">def</span> <span class="nf">dirichlet_llhood</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the log likelihood of theta under Dirichlet(alpha).</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    theta : ndarray</span>
+<span class="sd">        Categorical probability distribution. theta[i] is the probability</span>
+<span class="sd">        of item i. Elements of the array have to sum to 1.0 (not forced for</span>
+<span class="sd">        efficiency reasons)</span>
+
+<span class="sd">    alpha : ndarray</span>
+<span class="sd">        Parameters of the Dirichlet distribution</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    log_likelihood : float</span>
+<span class="sd">        Log lihelihood of theta given alpha</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># substitute -inf with SMALLEST_FLOAT, so that 0*log(0) is 0 when necessary</span>
+    <span class="n">log_theta</span> <span class="o">=</span> <span class="n">ninf_to_num</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
+
+    <span class="c">#log_theta = np.nan_to_num(log_theta)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">gammaln</span><span class="p">(</span><span class="n">alpha</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="o">-</span> <span class="p">(</span><span class="n">gammaln</span><span class="p">(</span><span class="n">alpha</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="o">+</span> <span class="p">((</span><span class="n">alpha</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">*</span> <span class="n">log_theta</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+
+
+<span class="c"># TODO remove default condition when x[i] == 0.</span></div>
+<div class="viewcode-block" id="normalize"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.normalize">[docs]</a><span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a normalized distribution (sums to 1.0).</span>
+
+<span class="sd">    If x consists only of zero element, the returned array has elements</span>
+<span class="sd">    1/n , where n is the length of x.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">z</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">/</span> <span class="n">z</span>
+
+</div>
+<div class="viewcode-block" id="create_band_matrix"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.create_band_matrix">[docs]</a><span class="k">def</span> <span class="nf">create_band_matrix</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">diagonal_elements</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a symmetrical band matrix from a list of elements.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    shape : int</span>
+<span class="sd">        Width of the matrix</span>
+
+<span class="sd">    diagonal_elements : list or array</span>
+<span class="sd">        List of elements in the first row. If the list is smaller than `shape`,</span>
+<span class="sd">        the last element is used to fill the the remaining items.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">diagonal_elements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">diagonal_elements</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">diag</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">j</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">diagonal_elements</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">diagonal_elements</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fromfunction</span><span class="p">(</span><span class="n">diag</span><span class="p">,</span> <span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">shape</span><span class="p">))</span>
+
+
+<span class="c"># TODO clean up and simplify and rename</span></div>
+<div class="viewcode-block" id="compute_counts"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.compute_counts">[docs]</a><span class="k">def</span> <span class="nf">compute_counts</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Transform annotation data in counts format.</span>
+
+<span class="sd">    At the moment, it is hard coded for 8 annotators, 3 annotators active at</span>
+<span class="sd">    any time.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    annotations : ndarray, shape = (n_items, 8)</span>
+<span class="sd">        Annotations array</span>
+
+<span class="sd">    nclasses : int</span>
+<span class="sd">        Numer of label classes</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    data : ndarray, shape = (n_classes^3, 9)</span>
+<span class="sd">        data[i,m] is the number of times the combination of annotators</span>
+<span class="sd">        number m voted according to pattern i</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">]],</span> <span class="nb">int</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">annotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">annotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">annotations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">!=</span> <span class="mi">8</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Number of annotators must be 8&#39;</span><span class="p">)</span>
+
+    <span class="c"># compute counts of 3-annotator patterns for 8 triplets of annotators</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nclasses</span> <span class="o">**</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="c"># transform each triple of annotations into a code in base `nclasses`</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">annotations</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">code</span> <span class="o">=</span> <span class="n">annotations</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="p">(</span><span class="n">nclasses</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span>\
+               <span class="n">annotations</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span> <span class="o">*</span> <span class="n">nclasses</span> <span class="o">+</span>\
+               <span class="n">annotations</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]]</span>
+
+        <span class="c"># o = index of possible combination of annotators in the loop design</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">index</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">l</span><span class="p">]</span> <span class="o">==</span> <span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">l</span><span class="p">]:</span>
+                    <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">o</span> <span class="o">=</span> <span class="n">j</span>
+
+        <span class="k">if</span> <span class="n">o</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">code</span><span class="p">,</span> <span class="n">o</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">code</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; = homeless code&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data</span>
+
+</div>
+<div class="viewcode-block" id="labels_count"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.labels_count">[docs]</a><span class="k">def</span> <span class="nf">labels_count</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">,</span> <span class="n">missing_val</span><span class="o">=</span><span class="n">MISSING_VALUE</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the total count of labels in observed annotations.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    annotations : ndarray, shape = (n_items, n_annotators)</span>
+<span class="sd">        annotations[i,j] is the annotation made by annotator j on item i</span>
+
+<span class="sd">    nclasses : int</span>
+<span class="sd">        Number of label classes in `annotations`</span>
+
+<span class="sd">    missing_val : int</span>
+<span class="sd">        Value used to indicate missing values in the annotations.</span>
+<span class="sd">        Default is :attr:`MISSING_VALUE`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    count : ndarray, shape = (n_classes, )</span>
+<span class="sd">        count[k] is the number of elements of class k in `annotations`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">annotations</span><span class="o">!=</span><span class="n">missing_val</span>
+    <span class="n">nobservations</span> <span class="o">=</span> <span class="n">valid</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">nobservations</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c"># no valid observations</span>
+        <span class="k">raise</span> <span class="n">PyannoValueError</span><span class="p">(</span><span class="s">&#39;No valid annotations&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">annotations</span><span class="p">[</span><span class="n">valid</span><span class="p">],</span> <span class="n">minlength</span><span class="o">=</span><span class="n">nclasses</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="labels_frequency"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.labels_frequency">[docs]</a><span class="k">def</span> <span class="nf">labels_frequency</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">,</span> <span class="n">missing_val</span><span class="o">=</span><span class="n">MISSING_VALUE</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the total frequency of labels in observed annotations.</span>
+
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    annotations : ndarray, shape = (n_items, n_annotators)</span>
+<span class="sd">        annotations[i,j] is the annotation made by annotator j on item i</span>
+
+<span class="sd">    nclasses : int</span>
+<span class="sd">        Number of label classes in `annotations`</span>
+
+<span class="sd">    missing_val : int</span>
+<span class="sd">        Value used to indicate missing values in the annotations.</span>
+<span class="sd">        Default is :attr:`MISSING_VALUE`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    freq : ndarray, shape = (n_classes, )</span>
+<span class="sd">        freq[k] is the frequency of elements of class k in `annotations`, i.e.</span>
+<span class="sd">        their count over the number of total of observed (non-missing) elements</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">annotations</span><span class="o">!=</span><span class="n">missing_val</span>
+    <span class="n">nobservations</span> <span class="o">=</span> <span class="n">valid</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">nobservations</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c"># no valid observations</span>
+        <span class="k">raise</span> <span class="n">PyannoValueError</span><span class="p">(</span><span class="s">&#39;No valid annotations&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">annotations</span><span class="p">[</span><span class="n">valid</span><span class="p">],</span> <span class="n">minlength</span><span class="o">=</span><span class="n">nclasses</span><span class="p">)</span>
+            <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">nobservations</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="is_valid"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.is_valid">[docs]</a><span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="n">annotations</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return True if annotation is valid.</span>
+
+<span class="sd">    An annotation is valid if it is not equal to the missing value,</span>
+<span class="sd">    MISSING_VALUE.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">annotations</span> <span class="o">!=</span> <span class="n">MISSING_VALUE</span>
+
+</div>
+<div class="viewcode-block" id="majority_vote"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.majority_vote">[docs]</a><span class="k">def</span> <span class="nf">majority_vote</span><span class="p">(</span><span class="n">annotations</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute an estimate of the real class by majority vote.</span>
+
+<span class="sd">    In case of ties, return the class with smallest number.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    annotations : ndarray, shape = (n_items, n_annotators)</span>
+<span class="sd">        annotations[i,j] is the annotation made by annotator j on item i</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    vote : ndarray, shape = (n_items, )</span>
+<span class="sd">        vote[i] is the majority vote estimate for item i</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">nitems</span> <span class="o">=</span> <span class="n">annotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">is_valid</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span>
+
+    <span class="n">vote</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nitems</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nitems</span><span class="p">):</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">annotations</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">valid</span><span class="p">[</span><span class="n">i</span><span class="p">,:]])</span>
+        <span class="n">vote</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">vote</span>
+
+</div>
+<div class="viewcode-block" id="string_wrap"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.string_wrap">[docs]</a><span class="k">def</span> <span class="nf">string_wrap</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+    <span class="n">st</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[1;29m&quot;</span> <span class="o">+</span> <span class="n">st</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[0m&quot;</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[1;34m&quot;</span> <span class="o">+</span> <span class="n">st</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[0m&quot;</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[1;44m&quot;</span> <span class="o">+</span> <span class="n">st</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[0m&quot;</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[1;35m&quot;</span> <span class="o">+</span> <span class="n">st</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[0m&quot;</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[1;33;44m&quot;</span> <span class="o">+</span> <span class="n">st</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[0m&quot;</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[1;47;34m&quot;</span> <span class="o">+</span> <span class="n">st</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\033</span><span class="s">[0m&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">st</span> <span class="o">+</span> <span class="s">&#39; &#39;</span>
+    <span class="k">return</span> <span class="n">st</span>
+
+</div>
+<div class="viewcode-block" id="benchmark"><a class="viewcode-back" href="../../pyanno.html#pyanno.util.benchmark">[docs]</a><span class="k">class</span> <span class="nc">benchmark</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple context manager to simplify benchmarking.</span>
+
+<span class="sd">    Usage: ::</span>
+
+<span class="sd">        with benchmark(&#39;fast computation&#39;):</span>
+<span class="sd">            do_something()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&#39;---- start ----&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ty</span><span class="p">,</span><span class="n">val</span><span class="p">,</span><span class="n">tb</span><span class="p">):</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">print</span> <span class="s">&#39;---- stop ----&#39;</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> : </span><span class="si">%0.3f</span><span class="s"> seconds&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">end</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">False</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

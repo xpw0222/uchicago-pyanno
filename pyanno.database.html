@@ -1,0 +1,256 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>database Module &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="index.html" />
+    <link rel="up" title="pyanno Package" href="pyanno.html" />
+    <link rel="next" title="plots Package" href="pyanno.plots.html" />
+    <link rel="prev" title="measures Package" href="pyanno.measures.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyanno.plots.html" title="plots Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyanno.measures.html" title="measures Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="modules.html" >Project Modules</a> &raquo;</li>
+          <li><a href="pyanno.html" accesskey="U">pyanno Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="database-module">
+<h1>database Module<a class="headerlink" href="#database-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">database</span></tt> Module<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-pyanno.database"></span><p>Defines a database object to store model results.</p>
+<dl class="class">
+<dt id="pyanno.database.PyannoDatabase">
+<em class="property">class </em><tt class="descclassname">pyanno.database.</tt><tt class="descname">PyannoDatabase</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/pyanno/database.html#PyannoDatabase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.database.PyannoDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Database to store model results.</p>
+<p>The database is based on <tt class="xref py py-mod docutils literal"><span class="pre">shelve</span></tt>. Keys are strings that uniquely
+identify data sets. Values are lists of <a class="reference internal" href="#pyanno.database.PyannoResult" title="pyanno.database.PyannoResult"><tt class="xref py py-class docutils literal"><span class="pre">PyannoResult</span></tt></a> objects,
+which contain a copy of the annotations, the pyanno model that has
+been applied on them, and the value of the log likelihood of the
+annotations given the model.</p>
+<dl class="method">
+<dt id="pyanno.database.PyannoDatabase.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyanno/database.html#PyannoDatabase.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.database.PyannoDatabase.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.database.PyannoDatabase.get_available_id">
+<tt class="descname">get_available_id</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyanno/database.html#PyannoDatabase.get_available_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.database.PyannoDatabase.get_available_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an data ID that has is not present in the database.</p>
+<p>The returned IDs have the form &#8220;&lt;new_data_N&gt;&#8221;, where N is an integer
+number.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.database.PyannoDatabase.remove">
+<tt class="descname">remove</tt><big>(</big><em>data_id</em>, <em>idx</em><big>)</big><a class="reference internal" href="_modules/pyanno/database.html#PyannoDatabase.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.database.PyannoDatabase.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove entry from database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data_id</strong> (<em>string</em>) &#8211; Readable <strong>unique</strong> identifier for the annotations set</li>
+<li><strong>idx</strong> (<em>int</em>) &#8211; Index in the list of entries with id <cite>data_id</cite></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.database.PyannoDatabase.retrieve_id">
+<tt class="descname">retrieve_id</tt><big>(</big><em>data_id</em><big>)</big><a class="reference internal" href="_modules/pyanno/database.html#PyannoDatabase.retrieve_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.database.PyannoDatabase.retrieve_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all entries with given data ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_id</strong> (<em>string</em>) &#8211; Readable <strong>unique</strong> identifier for the annotations set</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.database.PyannoDatabase.store_result">
+<tt class="descname">store_result</tt><big>(</big><em>data_id</em>, <em>anno_container</em>, <em>model</em>, <em>value</em><big>)</big><a class="reference internal" href="_modules/pyanno/database.html#PyannoDatabase.store_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.database.PyannoDatabase.store_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a pyAnno result in the database.</p>
+<p>The <cite>data_id</cite> must be a <strong>unique</strong> identifier for an annotations
+set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data_id</strong> (<em>string</em>) &#8211; Readable <strong>unique</strong> identifier for the annotations set (e.g.,
+the file name where the annotations are stored).</li>
+<li><strong>anno_container</strong> (<em>AnnotationsContainer</em>) &#8211; An annotations container
+(see <a class="reference internal" href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer" title="pyanno.annotations.AnnotationsContainer"><tt class="xref py py-class docutils literal"><span class="pre">AnnotationsContainer</span></tt></a>).</li>
+<li><strong>model</strong> (<em>object</em>) &#8211; pyAnno model object instance
+(subclass of <a class="reference internal" href="pyanno.html#pyanno.abstract_model.AbstractModel" title="pyanno.abstract_model.AbstractModel"><tt class="xref py py-class docutils literal"><span class="pre">AbstractModel</span></tt></a></li>
+<li><strong>value</strong> (<em>float</em>) &#8211; Value of the objective function for the model-annotations pair,
+typically the log likelihood of the annotations given the model</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.database.PyannoDatabase.closed">
+<tt class="descname">closed</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.database.PyannoDatabase.closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the database is closed</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.database.PyannoDatabase.database">
+<tt class="descname">database</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.database.PyannoDatabase.database" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>shelve</cite> database storing the models</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyanno.database.PyannoResult">
+<em class="property">class </em><tt class="descclassname">pyanno.database.</tt><tt class="descname">PyannoResult</tt><a class="reference internal" href="_modules/pyanno/database.html#PyannoResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.database.PyannoResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">traits.has_traits.HasStrictTraits</span></tt></p>
+<p>Class for database entries</p>
+<dl class="attribute">
+<dt id="pyanno.database.PyannoResult.anno_container">
+<tt class="descname">anno_container</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.database.PyannoResult.anno_container" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="pyanno.annotations.html#pyanno.annotations.AnnotationsContainer" title="pyanno.annotations.AnnotationsContainer"><tt class="xref py py-class docutils literal"><span class="pre">AnnotationsContainer</span></tt></a> object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.database.PyannoResult.model">
+<tt class="descname">model</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.database.PyannoResult.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>pyAnno model (subclass of <a class="reference internal" href="pyanno.html#pyanno.abstract_model.AbstractModel" title="pyanno.abstract_model.AbstractModel"><tt class="xref py py-class docutils literal"><span class="pre">AbstractModel</span></tt></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.database.PyannoResult.value">
+<tt class="descname">value</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.database.PyannoResult.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>value of the model performance (usually the log likelihood)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">database Module</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">database</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyanno.measures.html"
+                        title="previous chapter">measures Package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyanno.plots.html"
+                        title="next chapter">plots Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pyanno.database.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyanno.plots.html" title="plots Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyanno.measures.html" title="measures Package"
+             >previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="modules.html" >Project Modules</a> &raquo;</li>
+          <li><a href="pyanno.html" >pyanno Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

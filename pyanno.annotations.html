@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>annotations Module &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="index.html" />
+    <link rel="up" title="pyanno Package" href="pyanno.html" />
+    <link rel="next" title="measures Package" href="pyanno.measures.html" />
+    <link rel="prev" title="models Module" href="pyanno.models.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyanno.measures.html" title="measures Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyanno.models.html" title="models Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="modules.html" >Project Modules</a> &raquo;</li>
+          <li><a href="pyanno.html" accesskey="U">pyanno Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="annotations-module">
+<h1>annotations Module<a class="headerlink" href="#annotations-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">annotations</span></tt> Module<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-pyanno.annotations"></span><p>Defines objects to create and manipulate raw annotations.</p>
+<dl class="class">
+<dt id="pyanno.annotations.AnnotationsContainer">
+<em class="property">class </em><tt class="descclassname">pyanno.annotations.</tt><tt class="descname">AnnotationsContainer</tt><a class="reference internal" href="_modules/pyanno/annotations.html#AnnotationsContainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">traits.has_traits.HasStrictTraits</span></tt></p>
+<p>Translate from general annotations files and arrays to pyAnno&#8217;s format.</p>
+<p>This class exposes a few methods to import data from files and arrays, and
+converts them to pyAnno&#8217;s format:</p>
+<ul class="simple">
+<li>annotations are 2D integer arrays; rows index items, and columns
+annotators</li>
+<li>label classes are numbered 0 to <a class="reference internal" href="#pyanno.annotations.AnnotationsContainer.nclasses" title="pyanno.annotations.AnnotationsContainer.nclasses"><tt class="xref py py-attr docutils literal"><span class="pre">nclasses</span></tt></a>-1 . The attribute
+<a class="reference internal" href="#pyanno.annotations.AnnotationsContainer.labels" title="pyanno.annotations.AnnotationsContainer.labels"><tt class="xref py py-attr docutils literal"><span class="pre">labels</span></tt></a> defines a mapping from label tokens to label classes</li>
+<li>missing values are defined as <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt>. The
+attribute <a class="reference internal" href="#pyanno.annotations.AnnotationsContainer.missing_values" title="pyanno.annotations.AnnotationsContainer.missing_values"><tt class="xref py py-attr docutils literal"><span class="pre">missing_values</span></tt></a> contains the missing values tokens
+found in the original, raw data</li>
+</ul>
+<p>The converted data can be accessed through the <a class="reference internal" href="#pyanno.annotations.AnnotationsContainer.annotations" title="pyanno.annotations.AnnotationsContainer.annotations"><tt class="xref py py-attr docutils literal"><span class="pre">annotations</span></tt></a> property.</p>
+<p>The <cite>AnnotationsContainer</cite> is also used as the format to store annotations
+in <a class="reference internal" href="pyanno.database.html#pyanno.database.PyannoDatabase" title="pyanno.database.PyannoDatabase"><tt class="xref py py-class docutils literal"><span class="pre">PyannoDatabase</span></tt></a> objects.</p>
+<dl class="staticmethod">
+<dt id="pyanno.annotations.AnnotationsContainer.from_array">
+<em class="property">static </em><tt class="descname">from_array</tt><big>(</big><em>x</em>, <em>missing_values=None</em>, <em>name=''</em><big>)</big><a class="reference internal" href="_modules/pyanno/annotations.html#AnnotationsContainer.from_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.from_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an annotations object from an array or list-of-lists.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<em>ndarray or list-of-lists</em>) &#8211; Array or list-of-lists containing numerical or string annotations</li>
+<li><strong>missing_values</strong> (<em>list</em>) &#8211; List of values that are considered missing values.
+Default is <a class="reference internal" href="#pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_ALL" title="pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_ALL"><tt class="xref py py-attr docutils literal"><span class="pre">DEFAULT_MISSING_VALUES_ALL</span></tt></a></li>
+<li><strong>name</strong> (<em>string</em>) &#8211; Name of the annotations (for user interaction and used as key in
+databases).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="pyanno.annotations.AnnotationsContainer.from_file">
+<em class="property">static </em><tt class="descname">from_file</tt><big>(</big><em>filename</em>, <em>missing_values=None</em><big>)</big><a class="reference internal" href="_modules/pyanno/annotations.html#AnnotationsContainer.from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load annotations from a file.</p>
+<p>The file is a text file with a columns separated by spaces and/or
+commas, and rows on different lines.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<em>string</em>) &#8211; File name</li>
+<li><strong>missing_values</strong> (<em>list</em>) &#8211; List of labels that are considered missing values.
+Default is <a class="reference internal" href="#pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_STR" title="pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_STR"><tt class="xref py py-attr docutils literal"><span class="pre">DEFAULT_MISSING_VALUES_STR</span></tt></a></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.annotations.AnnotationsContainer.save_to">
+<tt class="descname">save_to</tt><big>(</big><em>filename</em>, <em>set_name=False</em><big>)</big><a class="reference internal" href="_modules/pyanno/annotations.html#AnnotationsContainer.save_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.save_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save raw annotations to file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<em>string</em>) &#8211; File name</li>
+<li><strong>set_name</strong> (<em>bool</em>) &#8211; Set the <a class="reference internal" href="#pyanno.annotations.AnnotationsContainer.name" title="pyanno.annotations.AnnotationsContainer.name"><tt class="xref py py-attr docutils literal"><span class="pre">name</span></tt></a> of the annotation container to the file name</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_ALL">
+<tt class="descname">DEFAULT_MISSING_VALUES_ALL</tt><em class="property"> = ['-1', 'NA', 'None', '*', -1, nan, None]</em><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_ALL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_NUM">
+<tt class="descname">DEFAULT_MISSING_VALUES_NUM</tt><em class="property"> = [-1, nan, None]</em><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_NUM" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_STR">
+<tt class="descname">DEFAULT_MISSING_VALUES_STR</tt><em class="property"> = ['-1', 'NA', 'None', '*']</em><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.DEFAULT_MISSING_VALUES_STR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.annotations.AnnotationsContainer.annotations">
+<tt class="descname">annotations</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.annotations" title="Permalink to this definition">¶</a></dt>
+<dd><p>annotations in pyAnno format</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.annotations.AnnotationsContainer.labels">
+<tt class="descname">labels</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of all labels found in file/array</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.annotations.AnnotationsContainer.missing_values">
+<tt class="descname">missing_values</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.missing_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>labels corresponding to a missing value</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.annotations.AnnotationsContainer.name">
+<tt class="descname">name</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of file or array from which the annotations were imported</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.annotations.AnnotationsContainer.nannotators">
+<tt class="descname">nannotators</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.nannotators" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of annotators</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.annotations.AnnotationsContainer.nclasses">
+<tt class="descname">nclasses</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.nclasses" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of classes found in the annotations</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.annotations.AnnotationsContainer.nitems">
+<tt class="descname">nitems</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.nitems" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of annotations</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyanno.annotations.AnnotationsContainer.raw_annotations">
+<tt class="descname">raw_annotations</tt><em class="property"> = None</em><a class="headerlink" href="#pyanno.annotations.AnnotationsContainer.raw_annotations" title="Permalink to this definition">¶</a></dt>
+<dd><p>raw annotations, as they are imported from file or array</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pyanno.annotations.load_annotations">
+<tt class="descclassname">pyanno.annotations.</tt><tt class="descname">load_annotations</tt><big>(</big><em>filename</em>, <em>missing_values=None</em><big>)</big><a class="reference internal" href="_modules/pyanno/annotations.html#load_annotations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.annotations.load_annotations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load annotations from file.</p>
+<p>The file is a text file with a columns separated by spaces and/or
+commas, and rows on different lines.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<em>string</em>) &#8211; File name</li>
+<li><strong>missing_values</strong> (<em>list</em>) &#8211; List of labels that are considered missing values.
+Default is
+<tt class="xref py py-attr docutils literal"><span class="pre">DEFAULT_MISSING_VALUES_STR</span></tt></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">annotations Module</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">annotations</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyanno.models.html"
+                        title="previous chapter">models Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyanno.measures.html"
+                        title="next chapter">measures Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pyanno.annotations.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyanno.measures.html" title="measures Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyanno.models.html" title="models Module"
+             >previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="modules.html" >Project Modules</a> &raquo;</li>
+          <li><a href="pyanno.html" >pyanno Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

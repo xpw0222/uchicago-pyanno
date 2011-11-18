@@ -10,8 +10,8 @@
     
     <title>Developer guide &mdash; pyanno 2.0dev documentation</title>
     
-    <link rel="stylesheet" href="static/default.css" type="text/css" />
-    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -22,9 +22,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="static/jquery.js"></script>
-    <script type="text/javascript" src="static/underscore.js"></script>
-    <script type="text/javascript" src="static/doctools.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pyanno 2.0dev documentation" href="index.html" />
     <link rel="next" title="Project Modules" href="modules.html" />
     <link rel="prev" title="Model definitions" href="models.html" /> 
@@ -61,6 +61,49 @@
 <h2>git repository<a class="headerlink" href="#git-repository" title="Permalink to this headline">¶</a></h2>
 <p>pyAnno is hosted on github at <a class="reference external" href="https://github.com/enthought/uchicago-pyanno">https://github.com/enthought/uchicago-pyanno</a> .</p>
 <p><em>describe workflow: fork, pull request</em></p>
+</div>
+<div class="section" id="running-tests">
+<h2>Running tests<a class="headerlink" href="#running-tests" title="Permalink to this headline">¶</a></h2>
+<p>We recommend the use of <cite>nosetests</cite>. From the root directory of the
+pyanno project, type</p>
+<div class="highlight-python"><pre>$ nosetests -v pyanno/test</pre>
+</div>
+</div>
+<div class="section" id="compiling-the-documentation">
+<h2>Compiling the documentation<a class="headerlink" href="#compiling-the-documentation" title="Permalink to this headline">¶</a></h2>
+<p>The documentation is based on <a class="reference external" href="http://sphinx.pocoo.org/index.html">Sphinx</a>.
+It can be found in <cite>pyannodocs</cite>.</p>
+<p>After editing the documentation, you whould compile it, revise the result,
+and publish it online:</p>
+<ol class="arabic">
+<li><p class="first">In <cite>pyannodocs</cite> type</p>
+<div class="highlight-python"><pre>$ make html</pre>
+</div>
+</li>
+</ol>
+<p>[under construction]</p>
+</div>
+<div class="section" id="adding-a-new-model">
+<h2>Adding a new model<a class="headerlink" href="#adding-a-new-model" title="Permalink to this headline">¶</a></h2>
+<p>This is a checklist when implementing a new model in pyAnno:</p>
+<ol class="arabic simple">
+<li>Write a new model implementation as a subclass of
+<a class="reference internal" href="pyanno.html#pyanno.abstract_model.AbstractModel" title="pyanno.abstract_model.AbstractModel"><tt class="xref py py-class docutils literal"><span class="pre">pyanno.abstract_model.AbstractModel</span></tt></a>, implementing the full
+interface.</li>
+<li>Add an import statement in <tt class="xref py py-mod docutils literal"><span class="pre">pyanno.models</span></tt></li>
+</ol>
+<p>To add the model to the UI:</p>
+<ol class="arabic simple">
+<li>Write a new subclass of <tt class="xref py py-class docutils literal"><span class="pre">pyanno.ui.model_view.PyannoModelView</span></tt>,
+the <cite>traitsui</cite> graphical view of your model parameters, and of
+<tt class="xref py py-class docutils literal"><span class="pre">pyanno.ui.model_view.NewModelDialog</span></tt>, which creates a dialog
+requesting the parameters to create a new instance of the model.
+See the classes defined in <tt class="xref py py-mod docutils literal"><span class="pre">pyanno.ui.model_a_view</span></tt> for
+reference.</li>
+<li>Add the name of the model, and a reference to the class and model view
+in <cite>model_name</cite>, <cite>_model_name_to_class</cite>, and <cite>_model_class_to_view</cite>,
+at the beginning of the <a class="reference internal" href="pyanno.ui.html#pyanno.ui.model_data_view.ModelDataView" title="pyanno.ui.model_data_view.ModelDataView"><tt class="xref py py-class docutils literal"><span class="pre">pyanno.ui.model_data_view.ModelDataView</span></tt></a>.</li>
+</ol>
 </div>
 <div class="section" id="build-and-install">
 <h2>BUILD AND INSTALL<a class="headerlink" href="#build-and-install" title="Permalink to this headline">¶</a></h2>
@@ -106,31 +149,6 @@ to build and install.</p>
 <div>% cd $PYANNO_HOME
 % sh build.sh</div></blockquote>
 </div>
-<div class="section" id="unit-tests">
-<h2>UNIT TESTS<a class="headerlink" href="#unit-tests" title="Permalink to this headline">¶</a></h2>
-<p>The unit tests may be run from the included script,
-which contais all the unit tests:</p>
-<blockquote>
-<div><p>% cd $PYANNO_HOME</p>
-<p>% python unit_test.py</p>
-</div></blockquote>
-</div>
-<div class="section" id="coding-conventions">
-<h2>CODING CONVENTIONS<a class="headerlink" href="#coding-conventions" title="Permalink to this headline">¶</a></h2>
-<p>We&#8217;re trying to follow the standard Python guidelines.</p>
-<p>For code itself:</p>
-<blockquote>
-<div>Guido von Rossum and Barry Warsaw.
-Style Guide for Python Code.
-Python Enhancment Proposal (PEP) 8.
-<a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">http://www.python.org/dev/peps/pep-0008/</a></div></blockquote>
-<p>For docstring comments in the code:</p>
-<blockquote>
-<div>David Goodger and Guido von Rossum.
-Docstring Coventions.
-Python Enhancment Proposal (PEP) 257.
-<a class="reference external" href="http://www.python.org/dev/peps/pep-0257/">http://www.python.org/dev/peps/pep-0257/</a></div></blockquote>
-</div>
 </div>
 
 
@@ -143,12 +161,13 @@ Python Enhancment Proposal (PEP) 257.
   <ul>
 <li><a class="reference internal" href="#">Developer guide</a><ul>
 <li><a class="reference internal" href="#git-repository">git repository</a></li>
+<li><a class="reference internal" href="#running-tests">Running tests</a></li>
+<li><a class="reference internal" href="#compiling-the-documentation">Compiling the documentation</a></li>
+<li><a class="reference internal" href="#adding-a-new-model">Adding a new model</a></li>
 <li><a class="reference internal" href="#build-and-install">BUILD AND INSTALL</a></li>
 <li><a class="reference internal" href="#building-pyanno">Building pyanno</a></li>
 <li><a class="reference internal" href="#developer-installation-of-pyanno">Developer Installation of pyanno</a></li>
 <li><a class="reference internal" href="#scripted-operation">Scripted Operation</a></li>
-<li><a class="reference internal" href="#unit-tests">UNIT TESTS</a></li>
-<li><a class="reference internal" href="#coding-conventions">CODING CONVENTIONS</a></li>
 </ul>
 </li>
 </ul>
@@ -161,7 +180,7 @@ Python Enhancment Proposal (PEP) 257.
                         title="next chapter">Project Modules</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="sources/developer_guide.txt"
+    <li><a href="_sources/developer_guide.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">

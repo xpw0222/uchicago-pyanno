@@ -1,0 +1,385 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyanno.measures.helpers &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyanno.measures.helpers</h1><div class="highlight"><pre>
+<span class="c"># Copyright (c) 2011, Enthought, Ltd.</span>
+<span class="c"># Author: Pietro Berkes &lt;pberkes@enthought.com&gt;</span>
+<span class="c"># License: Modified BSD license (2-clause)</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyanno.util</span> <span class="kn">import</span> <span class="n">labels_count</span><span class="p">,</span> <span class="n">labels_frequency</span><span class="p">,</span> <span class="n">is_valid</span>
+
+
+<div class="viewcode-block" id="pairwise_matrix"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.helpers.pairwise_matrix">[docs]</a><span class="k">def</span> <span class="nf">pairwise_matrix</span><span class="p">(</span><span class="n">pairwise_statistic</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the matrix of all combinations of a pairwise statistics.</span>
+
+<span class="sd">    This function applies an agreement or covariation statistic that is only</span>
+<span class="sd">    defined for pairs of annotators to all combinations of annotators pairs,</span>
+<span class="sd">    and returns a matrix of the result.</span>
+
+<span class="sd">    Example ::</span>
+
+<span class="sd">        &gt;&gt;&gt; from pyanno.measures import pairwise_matrix, cohens_kappa</span>
+<span class="sd">        &gt;&gt;&gt; stat_matrix = pairwise_matrix(cohens_kappa, annotations, nclasses=4)</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    pairwise_statistics : function</span>
+<span class="sd">        Function accepting as first two arguments two 1D array of</span>
+<span class="sd">        annotations, and returning a single scalar measuring some annotations</span>
+<span class="sd">        statistics.</span>
+
+<span class="sd">    annotations : ndarray, shape = (n_items, n_annotators)</span>
+<span class="sd">        Annotations in pyanno format.</span>
+
+<span class="sd">    args : any</span>
+<span class="sd">        Additional arguments passed to `pairwise_statistics`.</span>
+
+<span class="sd">    kwargs : any</span>
+<span class="sd">        Additional keyword arguments passed to `pairwise_statistics`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    stat_matrix : ndarray, shape = (n_annotators, n_annotators)</span>
+<span class="sd">        `stat_matrix[i,j]` is the value of `pairwise_statistics` applied to</span>
+<span class="sd">        the annotations of annotators `i` and `j`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">nannotators</span> <span class="o">=</span> <span class="n">annotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">pairwise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nannotators</span><span class="p">,</span> <span class="n">nannotators</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nannotators</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nannotators</span><span class="p">):</span>
+            <span class="n">pairwise</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">pairwise_statistic</span><span class="p">(</span><span class="n">annotations</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span>
+                                               <span class="n">annotations</span><span class="p">[:,</span><span class="n">j</span><span class="p">],</span>
+                                               <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pairwise</span>
+
+</div>
+<div class="viewcode-block" id="confusion_matrix"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.helpers.confusion_matrix">[docs]</a><span class="k">def</span> <span class="nf">confusion_matrix</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute confusion matrix from pairs of annotations.</span>
+
+<span class="sd">    **References**</span>
+
+<span class="sd">    * `Wikipedia entry &lt;http://en.wikipedia.org/wiki/Confusion_matrix&gt;`_</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    annotations1 : ndarray, shape = (n_items, )</span>
+<span class="sd">        Array of annotations for a single annotator. Missing values should be</span>
+<span class="sd">        indicated by :attr:`pyanno.util.MISSING_VALUE`</span>
+
+<span class="sd">    annotations2 : ndarray, shape = (n_items, )</span>
+<span class="sd">        Array of annotations for a single annotator. Missing values should be</span>
+<span class="sd">        indicated by :attr:`pyanno.util.MISSING_VALUE`</span>
+
+<span class="sd">    nclasses : int</span>
+<span class="sd">        Number of annotation classes. If None, `nclasses` is inferred from the</span>
+<span class="sd">        values in the annotations</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    conf_mat : ndarray, shape = (n_classes, n_classes)</span>
+<span class="sd">        Confusion matrix; conf_mat[i,j] = number of observations that was</span>
+<span class="sd">        annotated as category `i` by annotator 1 and as `j` by annotator 2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">conf_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nclasses</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+            <span class="n">conf_mat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">annotations1</span> <span class="o">==</span> <span class="n">i</span><span class="p">,</span>
+                                                   <span class="n">annotations2</span> <span class="o">==</span> <span class="n">j</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">conf_mat</span>
+
+</div>
+<div class="viewcode-block" id="coincidence_matrix"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.helpers.coincidence_matrix">[docs]</a><span class="k">def</span> <span class="nf">coincidence_matrix</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Build coincidence matrix.</span>
+
+<span class="sd">    The element c,k of the coincidence matrix contains the number of c-k pairs</span>
+<span class="sd">    in the data (across annotators), over the total number of observed pairs.</span>
+
+<span class="sd">    **Reference**</span>
+
+<span class="sd">    * `Wikipedia entry</span>
+<span class="sd">      &lt;http://en.wikipedia.org/wiki/Krippendorff%27s_Alpha#Coincidence_matrices&gt;`_</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    annotations : ndarray, shape = (n_items, n_annotators)</span>
+<span class="sd">        Array of annotations for multiple annotators. Missing values should be</span>
+<span class="sd">        indicated by :attr:`pyanno.util.MISSING_VALUE`</span>
+
+<span class="sd">    nclasses : int</span>
+<span class="sd">        Number of annotation classes. If None, `nclasses` is inferred from the</span>
+<span class="sd">        values in the annotations</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    coinc_mat : ndarray, shape = (n_classes, n_classes)</span>
+<span class="sd">        Coincidence matrix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># total number of annotations in row</span>
+    <span class="n">nannotations</span> <span class="o">=</span> <span class="n">is_valid</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">nannotations</span> <span class="o">&gt;</span> <span class="mi">1</span>
+
+    <span class="n">nannotations</span> <span class="o">=</span> <span class="n">nannotations</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+    <span class="n">annotations</span> <span class="o">=</span> <span class="n">annotations</span><span class="p">[</span><span class="n">valid</span><span class="p">,:]</span>
+
+    <span class="c"># number of annotations of class c in row</span>
+    <span class="n">nc_in_row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nannotations</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nclasses</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+        <span class="n">nc_in_row</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">annotations</span> <span class="o">==</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">coincidences</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nclasses</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">c</span><span class="o">==</span><span class="n">k</span><span class="p">:</span>
+                <span class="n">nck_pairs</span> <span class="o">=</span> <span class="n">nc_in_row</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">nc_in_row</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">nck_pairs</span> <span class="o">=</span> <span class="n">nc_in_row</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="n">nc_in_row</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span>
+            <span class="n">coincidences</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">nck_pairs</span> <span class="o">/</span> <span class="p">(</span><span class="n">nannotations</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">coincidences</span>
+
+</div>
+<div class="viewcode-block" id="chance_adjusted_agreement"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.helpers.chance_adjusted_agreement">[docs]</a><span class="k">def</span> <span class="nf">chance_adjusted_agreement</span><span class="p">(</span><span class="n">observed_agreement</span><span class="p">,</span> <span class="n">chance_agreement</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the chance-adjusted agreement given the specified agreement</span>
+<span class="sd">    and expected agreement.</span>
+
+<span class="sd">    Defined by (observed_agreement - chance_agreement)/(1.0 - chance_agreement)</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    observed_agreement : float</span>
+<span class="sd">        Agreement computed from the data</span>
+
+<span class="sd">    chance_agreement : float</span>
+<span class="sd">        Agreement expected by chance give the assumptions of the statistics</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    result : float</span>
+<span class="sd">        Chance adjusted agreement value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">observed_agreement</span> <span class="o">-</span> <span class="n">chance_agreement</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">chance_agreement</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="observed_agreement_frequency"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.helpers.observed_agreement_frequency">[docs]</a><span class="k">def</span> <span class="nf">observed_agreement_frequency</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Observed frequency of agreement by two annotators.</span>
+
+<span class="sd">    If a category is never observed, the frequency for that category is set</span>
+<span class="sd">    to 0.0 .</span>
+
+<span class="sd">    Only count entries where both annotators responded toward observed</span>
+<span class="sd">    frequency.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    annotations1 : ndarray, shape = (n_items, )</span>
+<span class="sd">        Array of annotations for a single annotator. Missing values should be</span>
+<span class="sd">        indicated by :attr:`pyanno.util.MISSING_VALUE`</span>
+
+<span class="sd">    annotations2 : ndarray, shape = (n_items, )</span>
+<span class="sd">        Array of annotations for a single annotator. Missing values should be</span>
+<span class="sd">        indicated by :attr:`pyanno.util.MISSING_VALUE`</span>
+
+<span class="sd">    weights_func : function(m_i, m_j)</span>
+<span class="sd">        Weights function that receives two matrices of indices</span>
+<span class="sd">        i, j and returns the matrix of weights between them.</span>
+<span class="sd">        Default is :func:`~pyanno.measures.distances.diagonal_distance`</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    result : float</span>
+<span class="sd">        Observed agreement frequency value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">conf_mat</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">)</span>
+    <span class="n">conf_mat_sum</span> <span class="o">=</span> <span class="n">conf_mat</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">conf_mat_sum</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">observed_agreement</span> <span class="o">=</span> <span class="n">conf_mat</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span> <span class="o">/</span> <span class="n">conf_mat_sum</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">observed_agreement</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nclasses</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">observed_agreement</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">observed_agreement</span>
+
+</div>
+<div class="viewcode-block" id="chance_agreement_same_frequency"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.helpers.chance_agreement_same_frequency">[docs]</a><span class="k">def</span> <span class="nf">chance_agreement_same_frequency</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Expected frequency of agreement by random annotations.</span>
+
+<span class="sd">    Assumes that the annotators draw random annotations with the same</span>
+<span class="sd">    frequency as the combined observed annotations.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    annotations1 : ndarray, shape = (n_items, )</span>
+<span class="sd">        Array of annotations for a single annotator. Missing values should be</span>
+<span class="sd">        indicated by :attr:`pyanno.util.MISSING_VALUE`</span>
+
+<span class="sd">    annotations2 : ndarray, shape = (n_items, )</span>
+<span class="sd">        Array of annotations for a single annotator. Missing values should be</span>
+<span class="sd">        indicated by :attr:`pyanno.util.MISSING_VALUE`</span>
+
+<span class="sd">    weights_func : function(m_i, m_j)</span>
+<span class="sd">        Weights function that receives two matrices of indices</span>
+<span class="sd">        i, j and returns the matrix of weights between them.</span>
+<span class="sd">        Default is :func:`~pyanno.measures.distances.diagonal_distance`</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    result : float</span>
+<span class="sd">        Chance agreement value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">count1</span> <span class="o">=</span> <span class="n">labels_count</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">)</span>
+    <span class="n">count2</span> <span class="o">=</span> <span class="n">labels_count</span><span class="p">(</span><span class="n">annotations2</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">)</span>
+
+    <span class="n">count_total</span> <span class="o">=</span> <span class="n">count1</span> <span class="o">+</span> <span class="n">count2</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">count_total</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">chance_agreement</span> <span class="o">=</span> <span class="p">(</span><span class="n">count_total</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.</span>
+
+    <span class="k">return</span> <span class="n">chance_agreement</span>
+
+</div>
+<div class="viewcode-block" id="chance_agreement_different_frequency"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.helpers.chance_agreement_different_frequency">[docs]</a><span class="k">def</span> <span class="nf">chance_agreement_different_frequency</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">annotations2</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Expected frequency of agreement by random annotations.</span>
+
+<span class="sd">    Assumes that the annotators draw annotations at random with different but</span>
+<span class="sd">    constant frequencies.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    annotations1 : ndarray, shape = (n_items, )</span>
+<span class="sd">        Array of annotations for a single annotator. Missing values should be</span>
+<span class="sd">        indicated by :attr:`pyanno.util.MISSING_VALUE`</span>
+
+<span class="sd">    annotations2 : ndarray, shape = (n_items, )</span>
+<span class="sd">        Array of annotations for a single annotator. Missing values should be</span>
+<span class="sd">        indicated by :attr:`pyanno.util.MISSING_VALUE`</span>
+
+<span class="sd">    weights_func : function(m_i, m_j)</span>
+<span class="sd">        Weights function that receives two matrices of indices</span>
+<span class="sd">        i, j and returns the matrix of weights between them.</span>
+<span class="sd">        Default is :func:`~pyanno.measures.distances.diagonal_distance`</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    result : float</span>
+<span class="sd">        Chance agreement value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">freq1</span> <span class="o">=</span> <span class="n">labels_frequency</span><span class="p">(</span><span class="n">annotations1</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">)</span>
+    <span class="n">freq2</span> <span class="o">=</span> <span class="n">labels_frequency</span><span class="p">(</span><span class="n">annotations2</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">)</span>
+
+    <span class="n">chance_agreement</span> <span class="o">=</span> <span class="n">freq1</span> <span class="o">*</span> <span class="n">freq2</span>
+    <span class="k">return</span> <span class="n">chance_agreement</span>
+
+</div>
+<div class="viewcode-block" id="compute_nclasses"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.helpers.compute_nclasses">[docs]</a><span class="k">def</span> <span class="nf">compute_nclasses</span><span class="p">(</span><span class="o">*</span><span class="n">annotations</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Infer the number of label classes from the data.&quot;&quot;&quot;</span>
+    <span class="n">max_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">,</span> <span class="n">annotations</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">max_</span> <span class="o">+</span> <span class="mi">1</span>
+
+</div>
+<div class="viewcode-block" id="all_invalid"><a class="viewcode-back" href="../../../pyanno.measures.html#pyanno.measures.helpers.all_invalid">[docs]</a><span class="k">def</span> <span class="nf">all_invalid</span><span class="p">(</span><span class="o">*</span><span class="n">annotations</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return True if all annotations are invalid.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">anno</span> <span class="ow">in</span> <span class="n">annotations</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">is_valid</span><span class="p">(</span><span class="n">anno</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="bp">True</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

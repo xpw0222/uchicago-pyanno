@@ -1,0 +1,366 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyanno.plots.annotations_plot &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyanno.plots.annotations_plot</h1><div class="highlight"><pre>
+<span class="c"># Copyright (c) 2011, Enthought, Ltd.</span>
+<span class="c"># Author: Pietro Berkes &lt;pberkes@enthought.com&gt;</span>
+<span class="c"># License: Modified BSD license (2-clause)</span>
+
+<span class="kn">from</span> <span class="nn">chaco.array_plot_data</span> <span class="kn">import</span> <span class="n">ArrayPlotData</span>
+<span class="kn">from</span> <span class="nn">chaco.color_bar</span> <span class="kn">import</span> <span class="n">ColorBar</span>
+<span class="kn">from</span> <span class="nn">chaco.data_range_1d</span> <span class="kn">import</span> <span class="n">DataRange1D</span>
+<span class="kn">from</span> <span class="nn">chaco.default_colormaps</span> <span class="kn">import</span> <span class="n">Reds</span>
+<span class="kn">from</span> <span class="nn">chaco.linear_mapper</span> <span class="kn">import</span> <span class="n">LinearMapper</span>
+<span class="kn">from</span> <span class="nn">chaco.plot</span> <span class="kn">import</span> <span class="n">Plot</span>
+<span class="kn">from</span> <span class="nn">chaco.plot_containers</span> <span class="kn">import</span> <span class="n">HPlotContainer</span>
+<span class="kn">from</span> <span class="nn">chaco.tools.pan_tool</span> <span class="kn">import</span> <span class="n">PanTool</span>
+<span class="kn">from</span> <span class="nn">enable.component_editor</span> <span class="kn">import</span> <span class="n">ComponentEditor</span>
+
+<span class="kn">from</span> <span class="nn">tables.array</span> <span class="kn">import</span> <span class="n">Array</span>
+<span class="kn">from</span> <span class="nn">traits.trait_types</span> <span class="kn">import</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Instance</span><span class="p">,</span> <span class="n">Float</span>
+<span class="kn">from</span> <span class="nn">traitsui.group</span> <span class="kn">import</span> <span class="n">VGroup</span><span class="p">,</span> <span class="n">HGroup</span>
+<span class="kn">from</span> <span class="nn">traitsui.include</span> <span class="kn">import</span> <span class="n">Include</span>
+<span class="kn">from</span> <span class="nn">traitsui.item</span> <span class="kn">import</span> <span class="n">Item</span><span class="p">,</span> <span class="n">Spring</span>
+<span class="kn">from</span> <span class="nn">traitsui.view</span> <span class="kn">import</span> <span class="n">View</span>
+
+<span class="kn">from</span> <span class="nn">pyanno.plots.plots_superclass</span> <span class="kn">import</span> <span class="n">PyannoPlotContainer</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyanno.ui.appbase.wx_utils</span> <span class="kn">import</span> <span class="n">is_display_small</span>
+
+
+<span class="k">class</span> <span class="nc">PosteriorPlot</span><span class="p">(</span><span class="n">PyannoPlotContainer</span><span class="p">):</span>
+    <span class="c"># data to be displayed</span>
+    <span class="n">posterior</span> <span class="o">=</span> <span class="n">Array</span>
+
+    <span class="c">### plot-related traits</span>
+    <span class="n">plot_width</span> <span class="o">=</span> <span class="n">Float</span>
+    <span class="k">def</span> <span class="nf">_plot_width_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">450</span> <span class="k">if</span> <span class="n">is_display_small</span><span class="p">()</span> <span class="k">else</span> <span class="mi">500</span>
+
+    <span class="n">plot_height</span> <span class="o">=</span> <span class="n">Float</span>
+    <span class="k">def</span> <span class="nf">_plot_height_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">600</span> <span class="k">if</span> <span class="n">is_display_small</span><span class="p">()</span> <span class="k">else</span> <span class="mi">750</span>
+
+    <span class="n">colormap_low</span> <span class="o">=</span> <span class="n">Float</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">colormap_high</span> <span class="o">=</span> <span class="n">Float</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="n">origin</span> <span class="o">=</span> <span class="n">Str</span><span class="p">(</span><span class="s">&#39;top left&#39;</span><span class="p">)</span>
+
+    <span class="n">plot_container</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">HPlotContainer</span><span class="p">)</span>
+    <span class="n">plot_posterior</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">Plot</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_colormap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">colormap_low</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">colormap_low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">colormap_high</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">colormap_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="n">colormap</span> <span class="o">=</span> <span class="n">Reds</span><span class="p">(</span><span class="n">DataRange1D</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colormap_low</span><span class="p">,</span>
+                                   <span class="n">high</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colormap_high</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">colormap</span>
+
+
+    <span class="k">def</span> <span class="nf">_plot_container_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span>
+        <span class="n">nannotations</span><span class="p">,</span> <span class="n">nclasses</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c"># create a plot data object</span>
+        <span class="n">plot_data</span> <span class="o">=</span> <span class="n">ArrayPlotData</span><span class="p">()</span>
+        <span class="n">plot_data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s">&quot;values&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="c"># create the plot</span>
+        <span class="n">plot</span> <span class="o">=</span> <span class="n">Plot</span><span class="p">(</span><span class="n">plot_data</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">)</span>
+
+        <span class="n">img_plot</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">img_plot</span><span class="p">(</span><span class="s">&quot;values&quot;</span><span class="p">,</span>
+                                 <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+                                 <span class="n">xbounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">),</span>
+                                 <span class="n">ybounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nannotations</span><span class="p">),</span>
+                                 <span class="n">colormap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_colormap</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ndisp</span> <span class="o">=</span> <span class="mi">55</span>
+        <span class="n">img_plot</span><span class="o">.</span><span class="n">y_mapper</span><span class="o">.</span><span class="n">range</span><span class="o">.</span><span class="n">high</span> <span class="o">=</span> <span class="n">ndisp</span>
+        <span class="n">img_plot</span><span class="o">.</span><span class="n">y_mapper</span><span class="o">.</span><span class="n">domain_limits</span><span class="o">=</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">nannotations</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_title</span><span class="p">(</span><span class="n">plot</span><span class="p">)</span>
+        <span class="n">plot</span><span class="o">.</span><span class="n">padding_top</span> <span class="o">=</span> <span class="mi">80</span>
+
+        <span class="c"># create x axis for labels</span>
+        <span class="n">label_axis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_increment_one_axis</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">,</span> <span class="s">&#39;top&#39;</span><span class="p">)</span>
+        <span class="n">label_axis</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s">&#39;classes&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_index_axis</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="n">label_axis</span><span class="p">)</span>
+
+        <span class="n">plot</span><span class="o">.</span><span class="n">y_axis</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s">&#39;items&#39;</span>
+
+        <span class="c"># tweak plot aspect</span>
+        <span class="n">goal_aspect_ratio</span> <span class="o">=</span> <span class="mf">2.0</span>
+        <span class="n">plot_width</span> <span class="o">=</span> <span class="p">(</span><span class="n">goal_aspect_ratio</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_height</span>
+                      <span class="o">*</span> <span class="n">nclasses</span> <span class="o">/</span> <span class="n">ndisp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_width</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">plot_width</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="mi">400</span><span class="p">)</span>
+        <span class="n">plot</span><span class="o">.</span><span class="n">aspect_ratio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_height</span>
+
+        <span class="c"># add colorbar</span>
+        <span class="n">colormap</span> <span class="o">=</span> <span class="n">img_plot</span><span class="o">.</span><span class="n">color_mapper</span>
+        <span class="n">colorbar</span> <span class="o">=</span> <span class="n">ColorBar</span><span class="p">(</span><span class="n">index_mapper</span> <span class="o">=</span> <span class="n">LinearMapper</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="n">colormap</span><span class="o">.</span><span class="n">range</span><span class="p">),</span>
+                            <span class="n">color_mapper</span> <span class="o">=</span> <span class="n">colormap</span><span class="p">,</span>
+                            <span class="n">plot</span> <span class="o">=</span> <span class="n">img_plot</span><span class="p">,</span>
+                            <span class="n">orientation</span> <span class="o">=</span> <span class="s">&#39;v&#39;</span><span class="p">,</span>
+                            <span class="n">resizable</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="p">,</span>
+                            <span class="n">width</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
+                            <span class="n">height</span> <span class="o">=</span> <span class="mi">250</span><span class="p">)</span>
+        <span class="n">colorbar</span><span class="o">.</span><span class="n">padding_top</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">padding_top</span>
+        <span class="n">colorbar</span><span class="o">.</span><span class="n">padding_bottom</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_height</span> <span class="o">-</span> <span class="n">colorbar</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span>
+                                      <span class="n">plot</span><span class="o">.</span><span class="n">padding_top</span><span class="p">)</span>
+        <span class="n">colorbar</span><span class="o">.</span><span class="n">padding_left</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">colorbar</span><span class="o">.</span><span class="n">padding_right</span> <span class="o">=</span> <span class="mi">30</span>
+
+
+        <span class="c"># create a container to position the plot and the colorbar side-by-side</span>
+        <span class="n">container</span> <span class="o">=</span> <span class="n">HPlotContainer</span><span class="p">(</span><span class="n">use_backbuffer</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">container</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">plot</span><span class="p">)</span>
+        <span class="n">container</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">colorbar</span><span class="p">)</span>
+        <span class="n">container</span><span class="o">.</span><span class="n">bgcolor</span> <span class="o">=</span> <span class="mh">0xFFFFFF</span> <span class="c"># light gray: 0xEEEEEE</span>
+
+        <span class="c"># add pan tools</span>
+        <span class="n">img_plot</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PanTool</span><span class="p">(</span><span class="n">img_plot</span><span class="p">,</span> <span class="n">constrain</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                      <span class="n">constrain_direction</span><span class="o">=</span><span class="s">&quot;y&quot;</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">7.</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">decorate_plot</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_posterior</span> <span class="o">=</span> <span class="n">plot</span>
+        <span class="k">return</span> <span class="n">container</span>
+
+
+    <span class="k">def</span> <span class="nf">add_markings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mark_classes</span><span class="p">,</span> <span class="n">mark_name</span><span class="p">,</span> <span class="n">marker_shape</span><span class="p">,</span>
+                     <span class="n">delta_x</span><span class="p">,</span> <span class="n">delta_y</span><span class="p">,</span> <span class="n">marker_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
+                     <span class="n">marker_color</span><span class="o">=</span><span class="s">&#39;white&#39;</span><span class="p">):</span>
+        <span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_posterior</span>
+        <span class="n">nannotations</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s">&#39;values&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">y_name</span> <span class="o">=</span> <span class="n">mark_name</span> <span class="o">+</span> <span class="s">&#39;_y&#39;</span>
+        <span class="n">x_name</span> <span class="o">=</span> <span class="n">mark_name</span> <span class="o">+</span> <span class="s">&#39;_x&#39;</span>
+
+        <span class="n">y_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nannotations</span><span class="p">)</span> <span class="o">+</span> <span class="n">delta_y</span> <span class="o">+</span> <span class="mf">0.5</span>
+        <span class="n">x_values</span> <span class="o">=</span> <span class="n">mark_classes</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="o">+</span> <span class="n">delta_x</span> <span class="o">+</span> <span class="mf">0.5</span>
+
+        <span class="n">plot</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">y_name</span><span class="p">,</span> <span class="n">y_values</span><span class="p">)</span>
+        <span class="n">plot</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">x_name</span><span class="p">,</span> <span class="n">x_values</span><span class="p">)</span>
+
+        <span class="n">plot</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">x_name</span><span class="p">,</span> <span class="n">y_name</span><span class="p">),</span> <span class="nb">type</span><span class="o">=</span><span class="s">&#39;scatter&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">mark_name</span><span class="p">,</span>
+                  <span class="n">marker</span><span class="o">=</span><span class="n">marker_shape</span><span class="p">,</span> <span class="n">marker_size</span><span class="o">=</span><span class="n">marker_size</span><span class="p">,</span>
+                  <span class="n">color</span><span class="o">=</span><span class="s">&#39;transparent&#39;</span><span class="p">,</span>
+                  <span class="n">outline_color</span><span class="o">=</span><span class="n">marker_color</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="n">line_width</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">remove_markings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mark_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_posterior</span><span class="o">.</span><span class="n">delplot</span><span class="p">(</span><span class="n">mark_name</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_create_resizable_view</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># resizable_view factory, as I need to compute the height of the plot</span>
+        <span class="c"># from the number of annotations, and I couldn&#39;t find any other way to</span>
+        <span class="c"># do that</span>
+
+        <span class="c"># &quot;touch&quot; posterior_plot to have it initialize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_container</span>
+
+        <span class="k">if</span> <span class="n">is_display_small</span><span class="p">():</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="mi">760</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="mi">800</span>
+
+        <span class="n">resizable_plot_item</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Item</span><span class="p">(</span>
+                <span class="s">&#39;plot_container&#39;</span><span class="p">,</span>
+                <span class="n">editor</span><span class="o">=</span><span class="n">ComponentEditor</span><span class="p">(),</span>
+                <span class="n">resizable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                <span class="n">show_label</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                <span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_width</span><span class="p">,</span>
+                <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_height</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">resizable_view</span> <span class="o">=</span> <span class="n">View</span><span class="p">(</span>
+            <span class="n">VGroup</span><span class="p">(</span>
+                <span class="n">Include</span><span class="p">(</span><span class="s">&#39;instructions_group&#39;</span><span class="p">),</span>
+                <span class="n">resizable_plot_item</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="mi">450</span><span class="p">,</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="n">height</span><span class="p">,</span>
+            <span class="n">resizable</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">resizable_view</span>
+
+
+    <span class="k">def</span> <span class="nf">traits_view</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_resizable_view</span><span class="p">()</span>
+
+
+    <span class="n">pan_instructions</span> <span class="o">=</span> <span class="n">Str</span>
+    <span class="k">def</span> <span class="nf">_pan_instructions_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;Left-click and drag to navigate items&#39;</span>
+
+    <span class="n">instructions_group</span> <span class="o">=</span> <span class="n">VGroup</span><span class="p">(</span>
+        <span class="n">HGroup</span><span class="p">(</span>
+            <span class="n">Spring</span><span class="p">(),</span>
+            <span class="n">Item</span><span class="p">(</span><span class="s">&#39;instructions&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;readonly&#39;</span><span class="p">,</span> <span class="n">show_label</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">Spring</span><span class="p">()</span>
+        <span class="p">),</span>
+        <span class="n">HGroup</span><span class="p">(</span>
+            <span class="n">Spring</span><span class="p">(),</span>
+            <span class="n">Item</span><span class="p">(</span><span class="s">&#39;pan_instructions&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;readonly&#39;</span><span class="p">,</span> <span class="n">show_label</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">Spring</span><span class="p">()</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="plot_posterior"><a class="viewcode-back" href="../../../pyanno.plots.html#pyanno.plots.annotations_plot.plot_posterior">[docs]</a><span class="k">def</span> <span class="nf">plot_posterior</span><span class="p">(</span><span class="n">posterior</span><span class="p">,</span> <span class="n">show_maximum</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Display a plot of the posterior distribution over classes.</span>
+
+<span class="sd">    This function is used together with the `infer_labels` method offered by</span>
+<span class="sd">    all models, e.g.: ::</span>
+
+<span class="sd">    &gt;&gt;&gt; from pyanno.models import ModelB</span>
+<span class="sd">    &gt;&gt;&gt; from pyanno.plots import plot_posterior</span>
+<span class="sd">    &gt;&gt;&gt; # create a new model with 3 classes and 6 annotators</span>
+<span class="sd">    &gt;&gt;&gt; model = ModelB.create_initial_state(3, 6)</span>
+<span class="sd">    &gt;&gt;&gt; annotations = model.generate_annotations(100)</span>
+<span class="sd">    &gt;&gt;&gt; # compute the posterior distribution over class labels</span>
+<span class="sd">    &gt;&gt;&gt; posterior = model.infer_labels(annotations)</span>
+<span class="sd">    &gt;&gt;&gt; # plot the distribution in a window</span>
+<span class="sd">    &gt;&gt;&gt; plot_posterior(posterior)</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    posterior : ndarray, shape=(n_annotations, n_classes)</span>
+<span class="sd">        posterior[i,:] is the posterior distribution over classes for the</span>
+<span class="sd">        i-th annotation.</span>
+
+<span class="sd">    show_maximum : bool</span>
+<span class="sd">        if True, indicate the position of the maxima with white circles</span>
+
+<span class="sd">    **kwargs : dictionary</span>
+<span class="sd">        Additional keyword arguments passed to the plot. The argument &#39;title&#39;</span>
+<span class="sd">        sets the title of the plot.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">post_view</span> <span class="o">=</span> <span class="n">PosteriorPlot</span><span class="p">(</span><span class="n">posterior</span><span class="o">=</span><span class="n">posterior</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">resizable_view</span> <span class="o">=</span> <span class="n">post_view</span><span class="o">.</span><span class="n">_create_resizable_view</span><span class="p">()</span>
+    <span class="n">post_view</span><span class="o">.</span><span class="n">edit_traits</span><span class="p">(</span><span class="n">view</span><span class="o">=</span><span class="n">resizable_view</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">show_maximum</span><span class="p">:</span>
+        <span class="n">maximum</span> <span class="o">=</span> <span class="n">posterior</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">post_view</span><span class="o">.</span><span class="n">add_markings</span><span class="p">(</span><span class="n">maximum</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">,</span>
+                               <span class="s">&#39;circle&#39;</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">marker_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                               <span class="n">marker_color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">post_view</span>
+
+
+<span class="c">#### Testing and debugging ####################################################</span>
+</div>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Entry point for standalone testing/debugging. &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">20000</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">matrix</span> <span class="o">/</span> <span class="n">matrix</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)[:,</span><span class="bp">None</span><span class="p">]</span>
+    <span class="n">matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+
+    <span class="n">matrix_view</span> <span class="o">=</span> <span class="n">plot_posterior</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">show_maximum</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;TEST&#39;</span><span class="p">)</span>
+    <span class="n">matrix_view</span><span class="o">.</span><span class="n">configure_traits</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">matrix_view</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">mv</span> <span class="o">=</span> <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

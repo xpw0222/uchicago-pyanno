@@ -1,0 +1,243 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyanno.database &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyanno.database</h1><div class="highlight"><pre>
+<span class="c"># Copyright (c) 2011, Enthought, Ltd.</span>
+<span class="c"># Author: Pietro Berkes &lt;pberkes@enthought.com&gt;</span>
+<span class="c"># License: Modified BSD license (2-clause)</span>
+
+<span class="sd">&quot;&quot;&quot;Defines a database object to store model results.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">shelve</span>
+<span class="kn">from</span> <span class="nn">traits.has_traits</span> <span class="kn">import</span> <span class="n">HasStrictTraits</span>
+<span class="kn">from</span> <span class="nn">traits.trait_types</span> <span class="kn">import</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Instance</span>
+<span class="kn">from</span> <span class="nn">pyanno.abstract_model</span> <span class="kn">import</span> <span class="n">AbstractModel</span>
+<span class="kn">from</span> <span class="nn">pyanno.annotations</span> <span class="kn">import</span> <span class="n">AnnotationsContainer</span>
+<span class="kn">from</span> <span class="nn">pyanno.util</span> <span class="kn">import</span> <span class="n">PyannoValueError</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<div class="viewcode-block" id="PyannoResult"><a class="viewcode-back" href="../../pyanno.database.html#pyanno.database.PyannoResult">[docs]</a><span class="k">class</span> <span class="nc">PyannoResult</span><span class="p">(</span><span class="n">HasStrictTraits</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class for database entries</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c">#: :class:`~pyanno.annotations.AnnotationsContainer` object</span>
+    <span class="n">anno_container</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">AnnotationsContainer</span><span class="p">)</span>
+
+    <span class="c">#: pyAnno model (subclass of :class:`~pyanno.abstract_model.AbstractModel`)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">AbstractModel</span><span class="p">)</span>
+
+    <span class="c">#: value of the model performance (usually the log likelihood)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">Float</span>
+
+</div>
+<div class="viewcode-block" id="PyannoDatabase"><a class="viewcode-back" href="../../pyanno.database.html#pyanno.database.PyannoDatabase">[docs]</a><span class="k">class</span> <span class="nc">PyannoDatabase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Database to store model results.</span>
+
+<span class="sd">    The database is based on :mod:`shelve`. Keys are strings that uniquely</span>
+<span class="sd">    identify data sets. Values are lists of :class:`PyannoResult` objects,</span>
+<span class="sd">    which contain a copy of the annotations, the pyanno model that has</span>
+<span class="sd">    been applied on them, and the value of the log likelihood of the</span>
+<span class="sd">    annotations given the model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_filename</span> <span class="o">=</span> <span class="n">filename</span>
+
+        <span class="c">#: `shelve` database storing the models</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">shelve</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c">#: True if the database is closed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="bp">False</span>
+
+
+<div class="viewcode-block" id="PyannoDatabase.store_result"><a class="viewcode-back" href="../../pyanno.database.html#pyanno.database.PyannoDatabase.store_result">[docs]</a>    <span class="k">def</span> <span class="nf">store_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_id</span><span class="p">,</span> <span class="n">anno_container</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store a pyAnno result in the database.</span>
+
+<span class="sd">        The `data_id` must be a **unique** identifier for an annotations</span>
+<span class="sd">        set.</span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        data_id : string</span>
+<span class="sd">            Readable **unique** identifier for the annotations set (e.g.,</span>
+<span class="sd">            the file name where the annotations are stored).</span>
+
+<span class="sd">        anno_container : AnnotationsContainer</span>
+<span class="sd">            An annotations container</span>
+<span class="sd">            (see :class:`~pyanno.annotations.AnnotationsContainer`).</span>
+
+<span class="sd">        model : object</span>
+<span class="sd">            pyAnno model object instance</span>
+<span class="sd">            (subclass of :class:`~pyanno.abstract_model.AbstractModel`</span>
+
+<span class="sd">        value : float</span>
+<span class="sd">            Value of the objective function for the model-annotations pair,</span>
+<span class="sd">            typically the log likelihood of the annotations given the model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">PyannoResult</span><span class="p">(</span><span class="n">anno_container</span><span class="o">=</span><span class="n">anno_container</span><span class="p">,</span>
+                             <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_consistency</span><span class="p">(</span><span class="n">data_id</span><span class="p">,</span> <span class="n">anno_container</span><span class="p">)</span>
+
+        <span class="c"># NOTE shelves to not automatically handle changing mutable values,</span>
+        <span class="c"># we need to take care of it manually</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">data_id</span><span class="p">):</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">[</span><span class="n">data_id</span><span class="p">]</span>
+
+        <span class="n">temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">[</span><span class="n">data_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span>
+
+</div>
+<div class="viewcode-block" id="PyannoDatabase.retrieve_id"><a class="viewcode-back" href="../../pyanno.database.html#pyanno.database.PyannoDatabase.retrieve_id">[docs]</a>    <span class="k">def</span> <span class="nf">retrieve_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return all entries with given data ID.</span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        data_id : string</span>
+<span class="sd">            Readable **unique** identifier for the annotations set</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">[</span><span class="n">data_id</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="PyannoDatabase.remove"><a class="viewcode-back" href="../../pyanno.database.html#pyanno.database.PyannoDatabase.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_id</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove entry from database.</span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        data_id : string</span>
+<span class="sd">            Readable **unique** identifier for the annotations set</span>
+
+<span class="sd">        idx : int</span>
+<span class="sd">            Index in the list of entries with id `data_id`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">[</span><span class="n">data_id</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">temp</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">[</span><span class="n">data_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span>
+
+</div>
+<div class="viewcode-block" id="PyannoDatabase.close"><a class="viewcode-back" href="../../pyanno.database.html#pyanno.database.PyannoDatabase.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Close database.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="PyannoDatabase.get_available_id"><a class="viewcode-back" href="../../pyanno.database.html#pyanno.database.PyannoDatabase.get_available_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_available_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return an data ID that has is not present in the database.</span>
+
+<span class="sd">        The returned IDs have the form &quot;&lt;new_data_N&gt;&quot;, where N is an integer</span>
+<span class="sd">        number.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="nb">id</span> <span class="o">=</span> <span class="s">&#39;&lt;name_{}&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
+                <span class="k">break</span>
+            <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nb">id</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_check_consistency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_id</span><span class="p">,</span> <span class="n">anno_container</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make sure that all entries with same ID have the same annotations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">data_id</span><span class="p">):</span>
+            <span class="n">previous</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">[</span><span class="n">data_id</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">previous</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c"># check if the new annotations are the same as the previous</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">previous</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">anno_container</span><span class="o">.</span><span class="n">annotations</span> <span class="o">==</span>
+                              <span class="n">anno_container</span><span class="o">.</span><span class="n">annotations</span><span class="p">):</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;Conflicting annotations with same ID. Please &#39;</span>
+                           <span class="s">&#39;rename the new entry.&#39;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">PyannoValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

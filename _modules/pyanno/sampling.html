@@ -1,0 +1,404 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyanno.sampling &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyanno.sampling</h1><div class="highlight"><pre>
+<span class="c"># Copyright (c) 2011, Enthought, Ltd.</span>
+<span class="c"># Authors: Pietro Berkes &lt;pberkes@enthought.com&gt;, Andrey Rzhetsky</span>
+<span class="c"># License: Modified BSD license (2-clause)</span>
+
+<span class="sd">&quot;&quot;&quot;This module defines functions to sample from a distribution given its</span>
+<span class="sd">log likelihood.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyanno.util</span> <span class="kn">import</span> <span class="n">PyannoValueError</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="sample_distribution"><a class="viewcode-back" href="../../pyanno.html#pyanno.sampling.sample_distribution">[docs]</a><span class="k">def</span> <span class="nf">sample_distribution</span><span class="p">(</span><span class="n">likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span>
+                        <span class="n">nsamples</span><span class="p">,</span> <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;General-purpose sampling routine for MCMC sampling.</span>
+
+<span class="sd">    Draw samples from a distribution given its unnormalized log likelihood</span>
+<span class="sd">    using the Metropolis-Hasting Monte Carlo algorithm.</span>
+
+<span class="sd">    It is recommended to optimize the step size, `step`, using the function</span>
+<span class="sd">    :func:`optimize_step_size` in order to reduce the autocorrelation between</span>
+<span class="sd">    successive samples.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    likelihood : function(params, arguments)</span>
+<span class="sd">        Function returning the *unnormalized* log likelihood of data given</span>
+<span class="sd">        the parameters. The function accepts two arguments:</span>
+<span class="sd">        `params` is the vector of parameters; `arguments` contains any</span>
+<span class="sd">        additional argument that is needed to compute the log likelihood.</span>
+
+<span class="sd">    x0 : ndarray, shape = (n_parameters, )</span>
+<span class="sd">        Initial parameters value.</span>
+
+<span class="sd">    arguments : any</span>
+<span class="sd">        Additional argument passed to the function `likelihood`.</span>
+
+<span class="sd">    step : ndarray, shape = (n_parameters, )</span>
+<span class="sd">        Width of the proposal distribution over the parameters.</span>
+
+<span class="sd">    nsamples : int</span>
+<span class="sd">         Number of samples to draw from the distribution.</span>
+
+<span class="sd">    x_lower : ndarray, shape = (n_parameters, )</span>
+<span class="sd">        Lower bound for the parameters.</span>
+
+<span class="sd">    x_upper : ndarray, shape = (n_parameters, )</span>
+<span class="sd">        Upper bound for the parameters.</span>
+<span class="sd">   &quot;&quot;&quot;</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Start collecting samples...&#39;</span><span class="p">)</span>
+
+    <span class="n">dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+
+    <span class="c"># array of samples</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nsamples</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+
+    <span class="c"># current sample</span>
+    <span class="n">x_curr</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c"># log likelihood of current sample</span>
+    <span class="n">llhood</span> <span class="o">=</span> <span class="n">likelihood</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsamples</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;... collected {} samples&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">sum_log_q_ratio</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="n">x_old</span> <span class="o">=</span> <span class="n">x_curr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dim</span><span class="p">):</span>
+            <span class="n">xj</span><span class="p">,</span> <span class="n">log_q_ratio</span> <span class="o">=</span> <span class="n">sample_from_proposal_distribution</span><span class="p">(</span>
+                <span class="n">x_old</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">x_lower</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">x_upper</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">sum_log_q_ratio</span> <span class="o">+=</span> <span class="n">log_q_ratio</span>
+            <span class="n">x_curr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">xj</span>
+
+        <span class="n">llhood_new</span> <span class="o">=</span> <span class="n">likelihood</span><span class="p">(</span><span class="n">x_curr</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+
+        <span class="c"># rejection step; reject with probability `alpha`</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">llhood_new</span> <span class="o">-</span> <span class="n">llhood</span> <span class="o">+</span> <span class="n">sum_log_q_ratio</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">alpha</span><span class="p">:</span>
+            <span class="c"># accept</span>
+            <span class="n">llhood</span> <span class="o">=</span> <span class="n">llhood_new</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># reject</span>
+            <span class="n">x_curr</span> <span class="o">=</span> <span class="n">x_old</span>
+
+        <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">x_curr</span>
+
+    <span class="k">return</span> <span class="n">samples</span>
+
+</div>
+<div class="viewcode-block" id="optimize_step_size"><a class="viewcode-back" href="../../pyanno.html#pyanno.sampling.optimize_step_size">[docs]</a><span class="k">def</span> <span class="nf">optimize_step_size</span><span class="p">(</span><span class="n">likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span>
+                       <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span>
+                       <span class="n">n_samples</span><span class="p">,</span>
+                       <span class="n">recomputing_cycle</span><span class="p">,</span> <span class="n">target_rejection_rate</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute optimum jump for MCMC estimation of credible intervals.</span>
+
+<span class="sd">    Adjust jump size in Metropolis-Hasting MC to achieve target rejection rate.</span>
+<span class="sd">    Jump size is estimated for each parameter separately.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    likelihood : function(params, arguments)</span>
+<span class="sd">        Function returning the *unnormalized* log likelihood of data given</span>
+<span class="sd">        the parameters. The function accepts two arguments:</span>
+<span class="sd">        `params` is the vector of parameters; `arguments` contains any</span>
+<span class="sd">        additional argument that is needed to compute the log likelihood.</span>
+
+<span class="sd">    x0 : ndarray, shape = (n_parameters, )</span>
+<span class="sd">        Initial parameters value.</span>
+
+<span class="sd">    arguments : any</span>
+<span class="sd">        Additional argument passed to the function `likelihood`.</span>
+
+<span class="sd">    x_lower : ndarray, shape = (n_parameters, )</span>
+<span class="sd">        Lower bound for the parameters.</span>
+
+<span class="sd">    x_upper : ndarray, shape = (n_parameters, )</span>
+<span class="sd">        Upper bound for the parameters.</span>
+
+<span class="sd">    n_samples : int</span>
+<span class="sd">        Total number of samples to draw during the optimization.</span>
+
+<span class="sd">    recomputing_cycle : int</span>
+<span class="sd">        Number of samples over which the rejection rates are computed. After</span>
+<span class="sd">        `recomputing_cycle` samples, the step size is adapted and the</span>
+<span class="sd">        rejection rates are reset to 0.</span>
+
+<span class="sd">    target_rejection_rate : float</span>
+<span class="sd">        Target rejection rate. If the rejection rate over the latest cycle is</span>
+<span class="sd">        closer than `tolerance` to this target, the optimization phase is</span>
+<span class="sd">        concluded.</span>
+
+<span class="sd">    tolerance : float</span>
+<span class="sd">        Tolerated deviation from `target_rejection_rate`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    step : ndarray, shape = (n_parameters, )</span>
+<span class="sd">        The final optimized step size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Estimate optimal step size&#39;</span><span class="p">)</span>
+
+    <span class="n">dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+
+    <span class="c"># rejection rate for each paramter separately</span>
+    <span class="n">rejection_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dim</span><span class="p">,))</span>
+
+    <span class="c"># initial jump sizes</span>
+    <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_upper</span> <span class="o">-</span> <span class="n">x_lower</span><span class="p">)</span> <span class="o">/</span> <span class="mf">100.</span>
+
+    <span class="c"># *x_curr* is the current samples of the parameters</span>
+    <span class="n">x_curr</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c"># log likelihood of current sample</span>
+    <span class="n">llhood</span> <span class="o">=</span> <span class="n">likelihood</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_samples</span><span class="p">):</span>
+
+        <span class="c"># we need to evaluate every dimension separately to have an estimate</span>
+        <span class="c"># of the rejection rate per parameter</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dim</span><span class="p">):</span>
+            <span class="n">xj_old</span> <span class="o">=</span> <span class="n">x_curr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+
+            <span class="c"># draw new sample</span>
+            <span class="n">xj</span><span class="p">,</span> <span class="n">log_q_ratio</span> <span class="o">=</span> <span class="n">sample_from_proposal_distribution</span><span class="p">(</span>
+                <span class="n">xj_old</span><span class="p">,</span> <span class="n">step</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">x_lower</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">x_upper</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="n">x_curr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">xj</span>
+
+            <span class="n">llhood_new</span> <span class="o">=</span> <span class="n">likelihood</span><span class="p">(</span><span class="n">x_curr</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+
+            <span class="c"># rejection step; accept with probability `alpha`</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">llhood_new</span> <span class="o">-</span> <span class="n">llhood</span> <span class="o">+</span> <span class="n">log_q_ratio</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">alpha</span><span class="p">:</span>
+                <span class="n">llhood</span> <span class="o">=</span> <span class="n">llhood_new</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rejection_rate</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">recomputing_cycle</span>
+                <span class="n">x_curr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">xj_old</span>
+
+        <span class="c"># adjust step size every `recomputing cycle` steps</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">recomputing_cycle</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;{} samples, adapt step size&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Rejection rate: &#39;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">rejection_rate</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Step size: &#39;</span> <span class="o">+</span><span class="nb">repr</span><span class="p">(</span><span class="n">step</span><span class="p">))</span>
+
+            <span class="n">step</span><span class="p">,</span> <span class="n">terminate</span> <span class="o">=</span> <span class="n">_adjust_jump</span><span class="p">(</span><span class="n">step</span><span class="p">,</span>
+                                           <span class="n">rejection_rate</span><span class="p">,</span>
+                                           <span class="n">target_rejection_rate</span><span class="p">,</span>
+                                           <span class="n">tolerance</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">terminate</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Step size within accepted range -- &#39;</span>
+                             <span class="s">&#39;exit optimization phase&#39;</span><span class="p">)</span>
+                <span class="k">break</span>
+
+            <span class="c"># reset all rejection rates</span>
+            <span class="n">rejection_rate</span> <span class="o">*=</span> <span class="mf">0.</span>
+
+    <span class="k">return</span> <span class="n">step</span>
+
+
+<span class="c"># TODO: simplify, move stopping condition (&quot;check&quot;) to optimize_step_size</span></div>
+<span class="k">def</span> <span class="nf">_adjust_jump</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">rejection_rate</span><span class="p">,</span> <span class="n">target_reject_rate</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Adapt step size to get closer to target rejection rate.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    step : list</span>
+<span class="sd">        new step sizes</span>
+<span class="sd">    terminate : bool</span>
+<span class="sd">        True if all rejection rates are within the required limits</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">terminate</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">step</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">step</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">rejection_rate</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rejection_rate</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">target_reject_rate</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tolerance</span><span class="p">:</span>
+                <span class="n">step</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*=</span> <span class="p">(</span><span class="n">target_reject_rate</span> <span class="o">/</span> <span class="n">rejection_rate</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                <span class="n">terminate</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">elif</span> <span class="n">rejection_rate</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">step</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*=</span> <span class="mf">5.</span>
+            <span class="n">terminate</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">return</span> <span class="n">step</span><span class="p">,</span> <span class="n">terminate</span>
+
+
+<span class="c"># TODO vectorize this to sample from all dimensions at once</span>
+<div class="viewcode-block" id="sample_from_proposal_distribution"><a class="viewcode-back" href="../../pyanno.html#pyanno.sampling.sample_from_proposal_distribution">[docs]</a><span class="k">def</span> <span class="nf">sample_from_proposal_distribution</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns one sample from the proposal distribution.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    theta : float</span>
+<span class="sd">        current parameter value</span>
+
+<span class="sd">    step : float</span>
+<span class="sd">        width of the proposal distribution over `theta`</span>
+
+<span class="sd">    lower : float</span>
+<span class="sd">        lower bound for `theta`</span>
+
+<span class="sd">    upper : float</span>
+<span class="sd">        upper bound for `theta`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    theta_new : float</span>
+<span class="sd">        new sample from the distribution over theta</span>
+
+<span class="sd">    log_q_ratio : float</span>
+<span class="sd">        log-ratio of probability of new value given old value</span>
+<span class="sd">        to probability of old value given new value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">theta</span> <span class="o">&lt;</span> <span class="n">lower</span> <span class="ow">or</span> <span class="n">theta</span> <span class="o">&gt;</span> <span class="n">upper</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PyannoValueError</span><span class="p">(</span><span class="s">&#39;Parameter values out or range&#39;</span><span class="p">)</span>
+
+    <span class="c"># *a* is a uniform random number</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+
+    <span class="c"># boundary conditions</span>
+    <span class="k">if</span> <span class="n">theta</span> <span class="o">==</span> <span class="n">upper</span><span class="p">:</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">upper</span> <span class="o">-</span> <span class="n">a</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">upper</span> <span class="o">-</span> <span class="n">lower</span><span class="p">)</span>
+        <span class="n">q_new_to_old</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">upper</span> <span class="o">-</span> <span class="n">theta</span><span class="p">))</span>
+        <span class="n">q_old_to_new</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">upper</span> <span class="o">-</span> <span class="n">lower</span><span class="p">))</span>
+        <span class="n">log_q_ratio</span> <span class="o">=</span> <span class="n">q_new_to_old</span> <span class="o">-</span> <span class="n">q_old_to_new</span>
+        <span class="k">return</span> <span class="n">theta</span><span class="p">,</span> <span class="n">log_q_ratio</span>
+
+    <span class="k">if</span> <span class="n">theta</span> <span class="o">==</span> <span class="n">lower</span><span class="p">:</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">lower</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">upper</span> <span class="o">-</span> <span class="n">lower</span><span class="p">)</span>
+        <span class="n">q_new_to_old</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">theta</span> <span class="o">-</span> <span class="n">lower</span><span class="p">))</span>
+        <span class="n">q_old_to_new</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">upper</span> <span class="o">-</span> <span class="n">lower</span><span class="p">))</span>
+        <span class="n">log_q_ratio</span> <span class="o">=</span> <span class="n">q_new_to_old</span> <span class="o">-</span> <span class="n">q_old_to_new</span>
+        <span class="k">return</span> <span class="n">theta</span><span class="p">,</span> <span class="n">log_q_ratio</span>
+
+    <span class="c"># go to the &#39;left&#39;</span>
+    <span class="k">if</span>  <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
+        <span class="n">theta_old</span> <span class="o">=</span> <span class="n">theta</span>
+
+        <span class="c">#jump interval is *theta*, choose uniformly</span>
+        <span class="n">theta</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">theta_old</span> <span class="o">-</span> <span class="n">lower</span><span class="p">)</span>
+
+        <span class="c">#transition probability from old to new</span>
+        <span class="n">q_old_to_new</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">theta_old</span> <span class="o">-</span> <span class="n">lower</span><span class="p">))</span>
+        <span class="n">q_new_to_old</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">upper</span> <span class="o">-</span> <span class="n">theta</span><span class="p">))</span>
+        <span class="n">log_q_ratio</span> <span class="o">=</span> <span class="n">q_new_to_old</span> <span class="o">-</span> <span class="n">q_old_to_new</span>
+        <span class="k">return</span> <span class="n">theta</span><span class="p">,</span> <span class="n">log_q_ratio</span>
+
+    <span class="c"># go to the &#39;right&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># jump interval is *upper_limit*-*theta*, choose uniformly</span>
+        <span class="n">theta_old</span> <span class="o">=</span> <span class="n">theta</span>
+        <span class="n">theta</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">upper</span> <span class="o">-</span> <span class="n">theta_old</span><span class="p">)</span>
+
+        <span class="n">q_old_to_new</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">upper</span> <span class="o">-</span> <span class="n">theta_old</span><span class="p">))</span>
+        <span class="n">q_new_to_old</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">theta</span> <span class="o">-</span> <span class="n">lower</span><span class="p">))</span>
+        <span class="n">log_q_ratio</span> <span class="o">=</span> <span class="n">q_new_to_old</span> <span class="o">-</span> <span class="n">q_old_to_new</span>
+        <span class="k">return</span> <span class="n">theta</span><span class="p">,</span> <span class="n">log_q_ratio</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,372 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyanno.plots.theta_tensor_plot &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyanno.plots.theta_tensor_plot</h1><div class="highlight"><pre>
+<span class="c"># Copyright (c) 2011, Enthought, Ltd.</span>
+<span class="c"># Author: Pietro Berkes &lt;pberkes@enthought.com&gt;</span>
+<span class="c"># License: Modified BSD license (2-clause)</span>
+
+<span class="sd">&quot;&quot;&quot;TraitsUI view of the Theta tensor in Model B, and its samples.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">chaco.array_plot_data</span> <span class="kn">import</span> <span class="n">ArrayPlotData</span>
+<span class="kn">from</span> <span class="nn">chaco.data_range_2d</span> <span class="kn">import</span> <span class="n">DataRange2D</span>
+<span class="kn">from</span> <span class="nn">chaco.legend</span> <span class="kn">import</span> <span class="n">Legend</span>
+<span class="kn">from</span> <span class="nn">chaco.plot</span> <span class="kn">import</span> <span class="n">Plot</span>
+<span class="kn">from</span> <span class="nn">chaco.plot_containers</span> <span class="kn">import</span> <span class="n">HPlotContainer</span><span class="p">,</span> <span class="n">VPlotContainer</span>
+<span class="kn">from</span> <span class="nn">chaco.scales.scales</span> <span class="kn">import</span> <span class="n">FixedScale</span>
+<span class="kn">from</span> <span class="nn">chaco.scales_tick_generator</span> <span class="kn">import</span> <span class="n">ScalesTickGenerator</span>
+<span class="kn">from</span> <span class="nn">chaco.tools.legend_tool</span> <span class="kn">import</span> <span class="n">LegendTool</span>
+
+<span class="kn">from</span> <span class="nn">enable.component_editor</span> <span class="kn">import</span> <span class="n">ComponentEditor</span>
+
+<span class="kn">from</span> <span class="nn">traits.trait_numeric</span> <span class="kn">import</span> <span class="n">Array</span>
+<span class="kn">from</span> <span class="nn">traits.trait_types</span> <span class="kn">import</span> <span class="n">Instance</span><span class="p">,</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Range</span><span class="p">,</span> <span class="n">Button</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">traitsui.item</span> <span class="kn">import</span> <span class="n">Item</span>
+<span class="kn">from</span> <span class="nn">pyanno.plots.plot_tools</span> <span class="kn">import</span> <span class="n">get_class_color</span>
+
+<span class="kn">from</span> <span class="nn">pyanno.plots.plots_superclass</span> <span class="kn">import</span> <span class="n">PyannoPlotContainer</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyanno.ui.appbase.wx_utils</span> <span class="kn">import</span> <span class="n">is_display_small</span>
+
+
+<span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="mf">1.</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">ThetaTensorPlot</span><span class="p">(</span><span class="n">PyannoPlotContainer</span><span class="p">):</span>
+
+    <span class="c"># reference to the theta tensor for one annotator</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">Array</span>
+
+    <span class="c"># reference to an array of samples for theta for one annotator</span>
+    <span class="n">theta_samples</span> <span class="o">=</span> <span class="n">Any</span>
+
+    <span class="c"># index of the annotator</span>
+    <span class="n">annotator_idx</span> <span class="o">=</span> <span class="n">Int</span>
+
+    <span class="c"># chaco plot of the tensor</span>
+    <span class="n">theta_plot</span> <span class="o">=</span> <span class="n">Any</span>
+
+
+    <span class="k">def</span> <span class="nf">_label_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a name for the data with index `k`.&quot;&quot;&quot;</span>
+        <span class="n">nclasses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ndigits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">nclasses</span><span class="p">)))</span>
+        <span class="n">format_str</span> <span class="o">=</span> <span class="s">&#39;theta[{{}},{{:{}d}},:]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ndigits</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">format_str</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">annotator_idx</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_plot_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot</span><span class="p">,</span> <span class="n">plot_data</span><span class="p">):</span>
+        <span class="n">nclasses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">nsamples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta_samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+            <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_samples</span><span class="p">[:,</span><span class="n">k</span><span class="p">,:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">perc5</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">nsamples</span><span class="o">*</span><span class="mf">0.05</span><span class="p">),:]</span>
+            <span class="n">perc95</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">nsamples</span><span class="o">*</span><span class="mf">0.95</span><span class="p">),:]</span>
+            <span class="n">avg</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c"># build polygon</span>
+            <span class="n">index_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_name</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;_confint_index&#39;</span>
+            <span class="n">value_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_name</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;_confint_value&#39;</span>
+            <span class="n">index_coord</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">value_coord</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c"># bottom part</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+                <span class="n">index_coord</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">value_coord</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">perc5</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="c"># top part</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">index_coord</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">value_coord</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">perc95</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+            <span class="n">plot_data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">index_name</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">index_coord</span><span class="p">,</span>
+                                                    <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
+            <span class="n">plot_data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">value_name</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value_coord</span><span class="p">,</span>
+                                                    <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
+
+            <span class="c"># make color lighter and more transparent</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">get_class_color</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+                <span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="mf">5.</span><span class="p">))</span>
+            <span class="n">color</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3</span>
+
+            <span class="n">plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">index_name</span><span class="p">,</span> <span class="n">value_name</span><span class="p">),</span>
+                <span class="nb">type</span> <span class="o">=</span> <span class="s">&#39;polygon&#39;</span><span class="p">,</span>
+                <span class="n">face_color</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span>
+                <span class="n">edge_color</span> <span class="o">=</span> <span class="s">&#39;black&#39;</span><span class="p">,</span>
+                <span class="n">edge_width</span> <span class="o">=</span> <span class="mf">0.5</span>
+            <span class="p">)</span>
+
+            <span class="c"># add average</span>
+            <span class="n">avg_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_name</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;_avg_value&#39;</span>
+            <span class="n">plot_data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">avg_name</span><span class="p">,</span> <span class="n">avg</span><span class="p">)</span>
+            <span class="n">plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="p">(</span><span class="s">&#39;classes&#39;</span><span class="p">,</span> <span class="n">avg_name</span><span class="p">),</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">get_class_color</span><span class="p">(</span><span class="n">k</span><span class="p">),</span>
+                <span class="n">line_style</span> <span class="o">=</span> <span class="s">&#39;dash&#39;</span>
+            <span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_plot_theta_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot</span><span class="p">,</span> <span class="n">plot_data</span><span class="p">):</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span>
+        <span class="n">nclasses</span> <span class="o">=</span> <span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">data_names</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;classes&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_name</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">plot_data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">theta</span><span class="p">[</span><span class="n">k</span><span class="p">,:])</span>
+            <span class="n">data_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="n">plots</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_name</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">line_plot</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="p">[</span><span class="s">&#39;classes&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">],</span>
+                <span class="n">line_width</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">get_class_color</span><span class="p">(</span><span class="n">k</span><span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span>
+            <span class="p">)</span>
+            <span class="n">plots</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">line_plot</span>
+
+        <span class="k">return</span> <span class="n">plots</span>
+
+
+    <span class="k">def</span> <span class="nf">_theta_plot_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span>
+        <span class="n">nclasses</span> <span class="o">=</span> <span class="n">theta</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c"># create a plot data object and give it this data</span>
+        <span class="n">plot_data</span> <span class="o">=</span> <span class="n">ArrayPlotData</span><span class="p">()</span>
+
+        <span class="n">plot_data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s">&#39;classes&#39;</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">nclasses</span><span class="p">))</span>
+
+        <span class="c"># create the plot</span>
+        <span class="n">plot</span> <span class="o">=</span> <span class="n">Plot</span><span class="p">(</span><span class="n">plot_data</span><span class="p">)</span>
+
+        <span class="c"># --- plot theta samples</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta_samples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_plot_samples</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="n">plot_data</span><span class="p">)</span>
+
+        <span class="c"># --- plot values of theta</span>
+        <span class="n">plots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_theta_values</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="n">plot_data</span><span class="p">)</span>
+
+        <span class="c"># --- adjust plot appearance</span>
+
+        <span class="n">plot</span><span class="o">.</span><span class="n">aspect_ratio</span> <span class="o">=</span> <span class="mf">1.6</span> <span class="k">if</span> <span class="n">is_display_small</span><span class="p">()</span> <span class="k">else</span> <span class="mf">1.7</span>
+
+        <span class="c"># adjust axis bounds</span>
+        <span class="n">y_high</span> <span class="o">=</span> <span class="n">theta</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta_samples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">y_high</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">y_high</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta_samples</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+        <span class="n">plot</span><span class="o">.</span><span class="n">range2d</span> <span class="o">=</span> <span class="n">DataRange2D</span><span class="p">(</span>
+            <span class="n">low</span>  <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+            <span class="n">high</span> <span class="o">=</span> <span class="p">(</span><span class="n">nclasses</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">y_high</span><span class="o">*</span><span class="mf">1.1</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c"># create new horizontal axis</span>
+        <span class="n">label_axis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_increment_one_axis</span><span class="p">(</span>
+            <span class="n">plot</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">nclasses</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">)</span>
+        <span class="n">label_axis</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s">&#39;True classes&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_index_axis</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="n">label_axis</span><span class="p">)</span>
+
+        <span class="c"># label vertical axis</span>
+        <span class="n">plot</span><span class="o">.</span><span class="n">value_axis</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Probability&#39;</span>
+
+        <span class="c"># add legend</span>
+        <span class="n">legend</span> <span class="o">=</span> <span class="n">Legend</span><span class="p">(</span><span class="n">component</span><span class="o">=</span><span class="n">plot</span><span class="p">,</span> <span class="n">plots</span><span class="o">=</span><span class="n">plots</span><span class="p">,</span>
+                        <span class="n">align</span><span class="o">=</span><span class="s">&quot;ur&quot;</span><span class="p">,</span> <span class="n">border_padding</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">legend</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">LegendTool</span><span class="p">(</span><span class="n">legend</span><span class="p">,</span> <span class="n">drag_button</span><span class="o">=</span><span class="s">&quot;left&quot;</span><span class="p">))</span>
+        <span class="n">legend</span><span class="o">.</span><span class="n">padding_right</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span>
+        <span class="n">plot</span><span class="o">.</span><span class="n">overlays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">legend</span><span class="p">)</span>
+
+        <span class="n">container</span> <span class="o">=</span> <span class="n">VPlotContainer</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">plot</span><span class="o">.</span><span class="n">width</span> <span class="o">+</span> <span class="mi">100</span><span class="p">,</span> <span class="n">halign</span><span class="o">=</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
+        <span class="n">plot</span><span class="o">.</span><span class="n">padding_bottom</span> <span class="o">=</span> <span class="mi">50</span>
+        <span class="n">plot</span><span class="o">.</span><span class="n">padding_top</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">plot</span><span class="o">.</span><span class="n">padding_left</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">container</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">plot</span><span class="p">)</span>
+        <span class="n">container</span><span class="o">.</span><span class="n">bgcolor</span> <span class="o">=</span> <span class="mh">0xFFFFFF</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">decorate_plot</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">container</span>
+
+
+    <span class="c">#### View definition #####################################################</span>
+
+    <span class="n">resizable_plot_item</span> <span class="o">=</span> <span class="n">Item</span><span class="p">(</span>
+        <span class="s">&#39;theta_plot&#39;</span><span class="p">,</span>
+        <span class="n">editor</span><span class="o">=</span><span class="n">ComponentEditor</span><span class="p">(),</span>
+        <span class="n">resizable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">show_label</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">height</span><span class="o">=-</span><span class="mi">300</span>
+        <span class="p">)</span>
+
+    <span class="n">traits_plot_item</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">(</span><span class="n">Item</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_traits_plot_item_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="o">-</span><span class="mi">200</span> <span class="k">if</span> <span class="n">is_display_small</span><span class="p">()</span> <span class="k">else</span> <span class="o">-</span><span class="mi">250</span>
+        <span class="k">return</span> <span class="n">Item</span><span class="p">(</span>
+                    <span class="s">&#39;theta_plot&#39;</span><span class="p">,</span>
+                    <span class="n">editor</span><span class="o">=</span><span class="n">ComponentEditor</span><span class="p">(),</span>
+                    <span class="n">resizable</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                    <span class="n">show_label</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                    <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="plot_theta_tensor"><a class="viewcode-back" href="../../../pyanno.plots.html#pyanno.plots.theta_tensor_plot.plot_theta_tensor">[docs]</a><span class="k">def</span> <span class="nf">plot_theta_tensor</span><span class="p">(</span><span class="n">modelB</span><span class="p">,</span> <span class="n">annotator_idx</span><span class="p">,</span> <span class="n">theta_samples</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Display a plot of model B&#39;s accuracy tensor, theta.</span>
+
+<span class="sd">    The tensor theta[annotator_idx,:,:] is shown for one annotator as a</span>
+<span class="sd">    set of line plots, each depicting the distribution</span>
+<span class="sd">    theta[annotator_idx,k,:] = P(annotator_idx outputs : | real class is k).</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    modelB : ModelB instance</span>
+<span class="sd">        An instance of ModelB.</span>
+
+<span class="sd">    annotator_idx : int</span>
+<span class="sd">        Index of the annotator for which the parameters are displayed.</span>
+
+<span class="sd">    theta_samples : ndarray, shape = (n_samples x n_annotators x n_classes x n_classes)</span>
+<span class="sd">        Array of samples over the posterior of theta.</span>
+
+<span class="sd">    **kwargs : dictionary</span>
+<span class="sd">        Additional keyword arguments passed to the plot. The argument &#39;title&#39;</span>
+<span class="sd">        sets the title of the plot.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    theta_view : ThetaTensorPlot instance</span>
+<span class="sd">        Reference to the plot.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">theta_samples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">theta_samples</span><span class="p">[:,</span><span class="n">annotator_idx</span><span class="p">,:,:]</span>
+
+    <span class="n">theta_view</span> <span class="o">=</span> <span class="n">ThetaTensorPlot</span><span class="p">(</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">modelB</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">annotator_idx</span><span class="p">,:,:],</span>
+        <span class="n">annotator_idx</span> <span class="o">=</span> <span class="n">annotator_idx</span><span class="p">,</span>
+        <span class="n">theta_samples</span> <span class="o">=</span> <span class="n">samples</span>
+    <span class="p">)</span>
+    <span class="n">theta_view</span><span class="o">.</span><span class="n">configure_traits</span><span class="p">(</span><span class="n">view</span><span class="o">=</span><span class="s">&#39;resizable_view&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">theta_view</span>
+
+
+<span class="c">#### Testing and debugging ####################################################</span>
+</div>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Entry point for standalone testing/debugging. &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">pyanno.models</span> <span class="kn">import</span> <span class="n">ModelB</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ModelB</span><span class="o">.</span><span class="n">create_initial_state</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">anno</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate_annotations</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">sample_posterior_over_accuracy</span><span class="p">(</span><span class="n">anno</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+    <span class="n">theta_view</span> <span class="o">=</span> <span class="n">plot_theta_tensor</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span>
+                                   <span class="n">title</span><span class="o">=</span><span class="s">&#39;Debug plot_theta_parameters&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">theta_view</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">model</span><span class="p">,</span> <span class="n">theta_view</span> <span class="o">=</span> <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
