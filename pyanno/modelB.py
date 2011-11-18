@@ -794,3 +794,53 @@ class ModelB(AbstractModel):
                                           self.theta)
 
         return category
+
+
+    ##### Compute accuracy ###################################################
+
+    def annotator_accuracy(self):
+        """Return the accuracy of each annotator.
+
+        Compute a summary of the accuracy of each annotator, i.e.,
+        P( annotator j is correct ). This can be computed from the parameters
+        theta and pi, as
+
+        P( annotator j is correct )
+        = \sum_k P( annotator reports k | label is k ) P( label is k )
+        = \sum_k theta[j,k,k] * pi[k]
+
+        Returns
+        -------
+        accuracy : ndarray, shape = (n_annotators, )
+            accuracy[j] = P( annotator j is correct )
+        """
+
+        accuracy = np.zeros((self.nannotators,))
+        for k in range(self.nclasses):
+            accuracy += self.theta[:,k,k] * self.pi[k]
+        return accuracy
+
+
+    def annotator_accuracy_samples(self, theta_samples, pi_samples):
+        """Return samples from the accuracy of each annotator.
+
+        Given samples from the posterior of accuracy parameters theta
+        (see :method:`sample_posterior_over_accuracy`), compute
+        samples from the accuracy per annotator, i.e.,
+        P( annotator j is correct ).
+
+        See also :method:`sample_posterior_over_accuracy`,
+        :method:`annotator_accuracy`
+
+        Returns
+        -------
+        accuracy : ndarray, shape = (n_annotators, )
+            accuracy[j] = P( annotator j is correct )
+        """
+
+        nsamples = theta_samples.shape[0]
+
+        accuracy = np.zeros((nsamples, self.nannotators,))
+        for k in range(self.nclasses):
+            accuracy += theta_samples[:,:,k,k] * pi_samples[:,k,np.newaxis]
+        return accuracy
