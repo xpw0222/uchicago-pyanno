@@ -801,12 +801,12 @@ class ModelB(AbstractModel):
     def annotator_accuracy(self):
         """Return the accuracy of each annotator.
 
-        Compute a summary of the accuracy of each annotator, i.e.,
+        Compute a summary of the a-priori accuracy of each annotator, i.e.,
         P( annotator j is correct ). This can be computed from the parameters
         theta and pi, as
 
         P( annotator j is correct )
-        = \sum_k P( annotator reports k | label is k ) P( label is k )
+        = \sum_k P( annotator j reports k | label is k ) P( label is k )
         = \sum_k theta[j,k,k] * pi[k]
 
         Returns
@@ -826,8 +826,10 @@ class ModelB(AbstractModel):
 
         Given samples from the posterior of accuracy parameters theta
         (see :method:`sample_posterior_over_accuracy`), compute
-        samples from the accuracy per annotator, i.e.,
-        P( annotator j is correct ).
+        samples from the posterior distribution of the annotator accuracy,
+        i.e.,
+
+        P( annotator j is correct | annotations).
 
         See also :method:`sample_posterior_over_accuracy`,
         :method:`annotator_accuracy`
