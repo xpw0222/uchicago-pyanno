@@ -17,6 +17,7 @@ from traitsui.view import View
 from pyanno.modelB import ModelB, ALPHA_DEFAULT
 from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.plots.matrix_plot import MatrixPlot
+from pyanno.plots.theta_plot import ThetaScatterPlot, ThetaDistrPlot
 from pyanno.plots.theta_tensor_plot import ThetaTensorPlot
 from pyanno.ui.appbase.wx_utils import is_display_small
 from pyanno.ui.arrayview import Array2DAdapter
@@ -265,14 +266,25 @@ class ModelBView(PyannoModelView):
 
         self.theta_line_plot = ModelB_LineThetaView(theta=self.model.theta)
 
+        self.accuracy_plot = ThetaDistrPlot(theta=self.model.theta)
+
         self._theta_view_update()
 
 
-    def plot_theta_samples(self, theta_samples):
+    def plot_theta_samples(self, samples):
+        theta_samples, pi_samples, _ = samples
+
         self.theta_line_plot = ModelB_LineThetaView(
             theta = self.model.theta,
             theta_samples = theta_samples
         )
+
+        self.accuracy_plot = ThetaDistrPlot(
+            theta = self.model.annotator_accuracy(),
+            theta_samples = self.model.annotator_accuracy_samples(
+                theta_samples, pi_samples)
+        )
+
         self._theta_view_update()
 
 
@@ -284,10 +296,13 @@ class ModelBView(PyannoModelView):
 
     theta_line_plot = Instance(ModelB_LineThetaView)
 
-    theta_views = Enum('Line plot',
-                       'Matrix plot (does not support samples)')
+    accuracy_plot = Instance(ThetaDistrPlot)
 
-    theta_view = Instance(ModelB_MultipleThetaView)
+    theta_views = Enum('Line plot',
+                       'Matrix plot (does not support samples)',
+                       'Accuracy plot (P(annotator j is correct))')
+
+    theta_view = Instance(HasTraits)
 
     def _theta_view_default(self):
         return self.theta_line_plot
@@ -296,8 +311,10 @@ class ModelBView(PyannoModelView):
     def _theta_view_update(self):
         if self.theta_views.startswith('Line'):
             self.theta_view = self.theta_line_plot
-        else:
+        elif self.theta_views.startswith('Matrix'):
             self.theta_view = self.theta_matrix_plot
+        else:
+            self.theta_view = self.accuracy_plot
 
 
     #### Actions
