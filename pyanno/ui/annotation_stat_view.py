@@ -7,6 +7,7 @@ from traits.trait_numeric import Array
 from traits.trait_types import Enum, Button, Instance, Int, Str, Float
 from traitsui.group import VGroup, HGroup
 from traitsui.item import Item, Spring
+from traitsui.message import message
 from traitsui.view import View
 
 import numpy as np
@@ -70,6 +71,15 @@ class AnnotationsStatisticsView(HasTraits):
     stats_view = Instance(HasTraits)
 
 
+    def _info_button_fired(self):
+        """Open dialog with description of statistics."""
+        if self.statistics_name in GLOBAL_STATS:
+            stat_func = GLOBAL_STATS[self.statistics_name]
+        else:
+            stat_func = PAIRWISE_STATS[self.statistics_name]
+        message(message = stat_func.__doc__, title='Statistics info')
+
+
     @on_trait_change('statistics_name')
     def _update_stats_view(self):
         if self.statistics_name in GLOBAL_STATS:
@@ -108,7 +118,7 @@ class AnnotationsStatisticsView(HasTraits):
             VGroup(
                 HGroup(
                     Item("statistics_name", show_label=False),
-                    Item("info_button", show_label=False, enabled_when="False")
+                    Item("info_button", show_label=False)
                 ),
                 Spring(),
                 HGroup(

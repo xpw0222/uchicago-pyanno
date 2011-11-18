@@ -36,9 +36,11 @@ import numpy as np
 # TODO remember last setting of parameters
 from pyanno.ui.posterior_view import PosteriorView
 from pyanno.util import PyannoValueError
+from traitsui.message import message
 
 import logging
 logger = logging.getLogger(__name__)
+
 
 class ModelDataView(HasTraits):
 
@@ -267,7 +269,6 @@ class ModelDataView(HasTraits):
 
     def _get_info_on_model_fired(self):
         """Open dialog with model description."""
-        from traitsui.message import message
         model_class = self._model_name_to_class[self.model_name]
         message(message = model_class.__doc__, title='Model info')
 
