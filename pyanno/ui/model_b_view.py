@@ -5,7 +5,7 @@ from enable.component_editor import ComponentEditor
 
 from traits.has_traits import on_trait_change, HasTraits
 from traits.trait_numeric import Array
-from traits.trait_types import Instance, Str, Range, Button, Int, Any, Enum, List
+from traits.trait_types import Instance, Str, Range, Button, Int, Any, Enum, List, Float
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.group import VGroup, VGrid, HGroup, Group
@@ -14,7 +14,7 @@ from traitsui.item import Item, Spring, UItem, Label
 from traitsui.menu import OKButton
 from traitsui.view import View
 
-from pyanno.modelB import ModelB
+from pyanno.modelB import ModelB, ALPHA_DEFAULT
 from pyanno.plots.hinton_plot import HintonDiagramPlot
 from pyanno.plots.matrix_plot import MatrixPlot
 from pyanno.plots.theta_tensor_plot import ThetaTensorPlot
@@ -24,6 +24,7 @@ from pyanno.ui.model_view import PyannoModelView, NewModelDialog
 from pyanno.ui.parameters_tabular_viewer import ParametersTabularView
 
 import numpy as np
+from pyanno.util import create_band_matrix
 
 
 WIDTH_CELL = 100
@@ -40,8 +41,13 @@ class NewModelBDialog(NewModelDialog):
     """Create a dialog requesting the parameters to create Model B."""
 
     model_name = Str(MODEL_B_NAME)
+
     nclasses = Int(5)
+
     nannotators = Int(8)
+
+    # prior strength multiplies the dirichlet parameters alpha
+    prior_strength = Float(1.0)
 
     parameters_group = VGroup(
         Item(name='nclasses',
@@ -52,6 +58,12 @@ class NewModelBDialog(NewModelDialog):
              editor=RangeEditor(mode='spinner', low=2, high=1000),
              label='Number of annotators:',
              width=100),
+        Item(name='prior_strength',
+             editor=RangeEditor(mode='slider',
+                                low=0.0, low_label='null ',
+                                high=3.0, high_label=' high',
+                                label_width=50),
+             label='Informativeness of prior:')
     )
 
 
@@ -231,7 +243,15 @@ class ModelBView(PyannoModelView):
 
     @classmethod
     def _create_model_from_dialog(cls, dialog):
-        return ModelB.create_initial_state(dialog.nclasses, dialog.nannotators)
+        # create prior alpha from user choice
+        # prior strength multiplies the dirichlet parameters alpha
+        alpha = (np.array(ALPHA_DEFAULT) - 1.) * dialog.prior_strength + 1.
+        alpha = create_band_matrix(dialog.nclasses, alpha)
+
+        model = ModelB.create_initial_state(dialog.nclasses,
+                                            dialog.nannotators,
+                                            alpha=alpha)
+        return model
 
 
     @on_trait_change('model,model_updated')

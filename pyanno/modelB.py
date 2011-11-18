@@ -22,6 +22,8 @@ from pyanno.util import (random_categorical, create_band_matrix,
 import logging
 logger = logging.getLogger(__name__)
 
+ALPHA_DEFAULT = [16., 4., 2., 1.]
+
 
 class ModelB(AbstractModel):
     """Bayesian generalization of the model proposed in (Dawid et al., 1979).
@@ -221,7 +223,7 @@ class ModelB(AbstractModel):
 
     @staticmethod
     def default_alpha(nclasses):
-        return create_band_matrix(nclasses, [16., 4., 2., 1.])
+        return create_band_matrix(nclasses, ALPHA_DEFAULT)
 
 
     def generate_labels(self, nitems):
