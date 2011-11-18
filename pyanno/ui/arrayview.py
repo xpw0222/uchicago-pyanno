@@ -22,6 +22,7 @@ class Array2DAdapter(TabularAdapter):
     format = data_format
     index_text = Property
     index_alignment = Property
+    width = 60
 
 
     def _get_index_text(self):

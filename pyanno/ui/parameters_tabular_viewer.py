@@ -13,7 +13,7 @@ HEIGHT_CELL = 20
 MAX_WIDTH = 800
 MAX_HEIGHT = 800
 W_MARGIN = 50
-H_MARGIN = 150
+H_MARGIN = 100
 
 class ParametersTabularView(HasTraits):
     """Tabular view of a set of parameters (not editable).

@@ -4,13 +4,13 @@
 
 from traits.has_traits import HasTraits, on_trait_change
 from traits.trait_numeric import Array
-from traits.trait_types import Instance, Int, ListFloat, Str, Button, Event, File, Any
+from traits.trait_types import (Instance, Int, ListFloat, Button, Event, File,
+                                Any)
 from traits.traits import Property
 from traitsui.api import  View, VGroup
 from traitsui.editors.file_editor import FileEditor
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.editors.tabular_editor import TabularEditor
-from traitsui.file_dialog import save_file
 from traitsui.group import HGroup, VGrid, Group
 from traitsui.item import Item, Spring, Label
 from traitsui.menu import OKCancelButtons
@@ -18,23 +18,23 @@ from pyanno.annotations import AnnotationsContainer
 from pyanno.ui.appbase.wx_utils import is_display_small
 from pyanno.ui.arrayview import Array2DAdapter
 from pyanno.plots.hinton_plot import HintonDiagramPlot
-from pyanno.util import labels_frequency, is_valid, MISSING_VALUE, PyannoValueError
+from pyanno.util import labels_frequency, MISSING_VALUE, PyannoValueError
 import numpy as np
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-WIDTH_CELL = 40
-MAX_WIDTH = 800
-W_MARGIN = 50
+WIDTH_CELL = 60
+MAX_WIDTH = 1000
+W_MARGIN = 150
 
 class DataView(HasTraits):
     data = Array(dtype=object)
 
     def traits_view(self):
         ncolumns = len(self.data[0])
-        w_table = WIDTH_CELL * ncolumns
+        w_table = min(WIDTH_CELL * ncolumns, MAX_WIDTH)
         w_view = min(w_table + W_MARGIN, MAX_WIDTH)
         return View(
             Group(
