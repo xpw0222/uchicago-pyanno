@@ -17,7 +17,7 @@ import numpy as np
 from pyanno.abstract_model import AbstractModel
 from pyanno.util import (random_categorical, create_band_matrix,
                          normalize, dirichlet_llhood,
-                         is_valid, SMALLEST_FLOAT, PyannoValueError)
+                         is_valid, SMALLEST_FLOAT, PyannoValueError, labels_count)
 
 import logging
 logger = logging.getLogger(__name__)
@@ -633,7 +633,8 @@ class ModelB(AbstractModel):
 
     def sample_posterior_over_accuracy(self, annotations, nsamples,
                                        burn_in_samples=0,
-                                       thin_samples=1):
+                                       thin_samples=1,
+                                       return_all_samples=True):
         """Return samples from posterior distribution over theta given data.
 
         Samples are drawn using Gibbs sampling, i.e., alternating between
@@ -662,11 +663,20 @@ class ModelB(AbstractModel):
             the auto-correlation in the sampling chain. This is called
             "thinning" in MCMC parlance.
 
+        return_all_samples : bool
+            If True, return not only samples for the parameters theta,
+            but also for the parameters pi, and the label classes, y.
+
         Returns
         -------
         samples : ndarray, shape = (n_samples, n_annotators, nclasses, nclasses)
             samples[i,...] is one sample from the posterior distribution over
             the parameters `theta`
+
+        (theta, pi, labels) : tuple of ndarray
+            If the keyword argument `return_all_samples` is set to True,
+            return a tuple with the samples for the parameters theta,
+            the parameters pi, and the label classes, y
         """
 
         self._raise_if_incompatible(annotations)
@@ -680,20 +690,27 @@ class ModelB(AbstractModel):
         nitems, nannotators = annotations.shape
         nclasses = self.nclasses
         alpha_prior = self.alpha
+        beta_prior = self.beta
 
+        # arrays holding the current samples
         theta_samples = np.empty((nsamples, nannotators, nclasses, nclasses))
+        if return_all_samples:
+            pi_samples = np.empty((nsamples, nclasses))
+            label_samples = np.empty((nsamples, nitems))
 
         theta_curr = self.theta.copy()
+        pi_curr = self.pi.copy()
         label_curr = np.empty((nitems,), dtype=int)
 
         for sidx in xrange(nsamples):
             if ((sidx+1) % 50) == 0:
                 logger.info('... collected {} samples'.format(sidx+1))
 
-            ### sample categories given theta
-            # get posterior over labels
+            ####### A: sample labels given annotations, theta and pi
+
+            ### compute posterior over label classes given theta and pi
             category_distr = self._compute_category(annotations,
-                                                    self.pi,
+                                                    pi_curr,
                                                     theta_curr)
 
             ### sample from the categorical distribution over labels
@@ -706,7 +723,8 @@ class ModelB(AbstractModel):
                 # 3) samples from i-th categorical distribution
                 label_curr[i] = cum_distr[i,:].searchsorted(rand[i])
 
-            ### sample theta given categories
+            ####### B: sample theta given annotations and label classes
+
             # 1) compute alpha parameters of Dirichlet posterior
             alpha_post = np.tile(alpha_prior, (nannotators, 1, 1))
             for l in range(nannotators):
@@ -720,10 +738,33 @@ class ModelB(AbstractModel):
                 for k in range(nclasses):
                     theta_curr[l,k,:] = np.random.dirichlet(alpha_post[l,k,:])
 
-            theta_samples[sidx,...] = theta_curr
+            ####### C: sample pi given label classes
 
-        return self._post_process_samples(theta_samples, burn_in_samples,
-                                          thin_samples)
+            # 1) compute beta parameters of dirichlet posterior
+            # number of labels of class k
+            count = np.bincount(label_curr, minlength=nclasses)
+            beta_hat = beta_prior + count
+            pi_curr = np.random.dirichlet(beta_hat)
+
+            # copy current samples
+            theta_samples[sidx,...] = theta_curr
+            if return_all_samples:
+                pi_samples[sidx,:] = pi_curr
+                label_samples[sidx,:] = label_curr
+
+        theta_samples = self._post_process_samples(theta_samples,
+                                                   burn_in_samples,
+                                                   thin_samples)
+        if return_all_samples:
+            pi_samples = self._post_process_samples(pi_samples,
+                                                    burn_in_samples,
+                                                    thin_samples)
+            label_samples = self._post_process_samples(label_samples,
+                                                       burn_in_samples,
+                                                       thin_samples)
+            return (theta_samples, pi_samples, label_samples)
+
+        return theta_samples
 
 
     ##### Posterior distributions #############################################

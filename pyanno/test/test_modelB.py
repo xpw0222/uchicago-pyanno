@@ -293,22 +293,22 @@ class TestModelB(unittest.TestCase):
         model.theta = model._random_theta(nclasses, nannotators, model.alpha)
         # save current parameters
         pi_before, theta_before = model.pi.copy(), model.theta.copy()
-        samples = model.sample_posterior_over_accuracy(
+        theta, pi, label = model.sample_posterior_over_accuracy(
             annotations,
             nsamples,
             burn_in_samples = 100,
-            thin_samples = 2
+            thin_samples = 2,
+            return_all_samples = True
         )
 
-        self.assertEqual(samples.shape[0], nsamples)
-
-        # eliminate bootstrap samples
-        samples = samples[5:]
+        self.assertEqual(theta.shape[0], nsamples)
+        self.assertEqual(pi.shape, (nsamples, nclasses))
+        self.assertEqual(label.shape, (nsamples, nitems))
 
         # test: the mean of the sampled parameters is the same as the MLE one
         # (up to 3 standard deviations of the estimate sample distribution)
-        testing.assert_array_less(np.absolute(samples.mean(0)-real_theta),
-                                  3.*samples.std(0))
+        testing.assert_array_less(np.absolute(theta.mean(0)-real_theta),
+                                  3.*theta.std(0))
 
         # check that original parameters are intact
         testing.assert_equal(model.pi, pi_before)
