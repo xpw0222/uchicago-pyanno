@@ -266,7 +266,8 @@ class ModelBView(PyannoModelView):
 
         self.theta_line_plot = ModelB_LineThetaView(theta=self.model.theta)
 
-        self.accuracy_plot = ThetaDistrPlot(theta=self.model.theta)
+        self.accuracy_plot = ThetaDistrPlot(
+            theta=self.model.annotator_accuracy())
 
         self._theta_view_update()
 
@@ -282,7 +283,7 @@ class ModelBView(PyannoModelView):
         self.accuracy_plot = ThetaDistrPlot(
             theta = self.model.annotator_accuracy(),
             theta_samples = self.model.annotator_accuracy_samples(
-                theta_samples, pi_samples)
+                theta_samples, pi_samples),
         )
 
         self._theta_view_update()
@@ -300,7 +301,7 @@ class ModelBView(PyannoModelView):
 
     theta_views = Enum('Line plot',
                        'Matrix plot (does not support samples)',
-                       'Accuracy plot (P(annotator j is correct))')
+                       'Accuracy plot, P(annotator j is correct)')
 
     theta_view = Instance(HasTraits)
 
