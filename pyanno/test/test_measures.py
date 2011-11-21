@@ -311,7 +311,6 @@ class TestMeasures(unittest.TestCase):
                                1.0, 6)
 
 
-    # ??? check that I got this right
     def test_cronbachs_alpha(self):
         # test basic functionality with full agreement, missing annotations
         fa = self.full_agreement

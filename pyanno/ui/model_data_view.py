@@ -197,8 +197,6 @@ class ModelDataView(HasTraits):
 
     #### Model creation actions
 
-    # FIXME tooltip begins with "specifies..."
-
     # create a new model
     new_model = Button(label='Create...')
 
