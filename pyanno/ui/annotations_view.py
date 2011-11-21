@@ -12,6 +12,7 @@ from traitsui.editors.file_editor import FileEditor
 from traitsui.editors.range_editor import RangeEditor
 from traitsui.editors.tabular_editor import TabularEditor
 from traitsui.group import HGroup, VGrid, Group
+from traitsui.handler import ModelView
 from traitsui.item import Item, Spring, Label
 from traitsui.menu import OKCancelButtons
 from pyanno.annotations import AnnotationsContainer
@@ -56,11 +57,11 @@ class DataView(HasTraits):
         )
 
 
-class AnnotationsView(HasTraits):
+class AnnotationsView(ModelView):
     """ Traits UI Model/View for annotations."""
 
     # reference to main application
-    Application = Any
+    application = Any
 
     ### Model-related traits ###
 
@@ -106,7 +107,7 @@ class AnnotationsView(HasTraits):
 
     def _edit_data_fired(self):
         data_view = DataView(data=self.annotations_container.raw_annotations)
-        data_view.edit_traits(kind='modal')
+        data_view.edit_traits(kind='livemodal', parent=self.info.ui.control)
         self.annotations_container = AnnotationsContainer.from_array(
             data_view.data,
             name = self.annotations_container.name
@@ -296,7 +297,7 @@ def main():
     annotations = model.generate_annotations(2)
 
     anno = AnnotationsContainer.from_array(annotations, name='blah')
-    model_view = AnnotationsView(annotations_container=anno)
+    model_view = AnnotationsView(annotations_container=anno, model=HasTraits())
     model_view.configure_traits()
     return model, annotations, model_view
 

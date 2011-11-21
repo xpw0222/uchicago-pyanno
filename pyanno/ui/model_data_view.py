@@ -42,7 +42,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ModelDataView(HasTraits):
+class ModelDataView(ModelView):
 
     #### Information about available models
 
@@ -126,7 +126,8 @@ class ModelDataView(HasTraits):
         anno = AnnotationsContainer.from_array([[0]], name='<undefined>')
         return AnnotationsView(annotations_container = anno,
                                nclasses = self.model.nclasses,
-                               application = self.application)
+                               application = self.application,
+                               model=HasTraits())
 
 
     @on_trait_change('annotations_file')
@@ -168,7 +169,7 @@ class ModelDataView(HasTraits):
         self.model = model
         model_view_class = self._model_class_to_view[model.__class__]
         self.model_view = model_view_class(model=model)
-        self.model_update = True
+        self.model_updated = True
 
 
     def set_annotations(self, annotations_container):
@@ -176,7 +177,8 @@ class ModelDataView(HasTraits):
         self.annotations_view = AnnotationsView(
             annotations_container = annotations_container,
             nclasses = self.model.nclasses,
-            application = self.application
+            application = self.application,
+            model = HasTraits()
         )
         self.annotations_stats_view = AnnotationsStatisticsView(
             annotations = self.annotations,
@@ -244,7 +246,7 @@ class ModelDataView(HasTraits):
         responsible_view = self._model_class_to_view[model_class]
 
         # model == None if the user cancelled the action
-        model = responsible_view.create_model_dialog()
+        model = responsible_view.create_model_dialog(self.info.ui.control)
         if model is not None:
             self.set_model(model)
 

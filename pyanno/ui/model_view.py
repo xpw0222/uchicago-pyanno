@@ -24,7 +24,7 @@ class NewModelDialog(HasTraits):
             Include('parameters_group'),
             buttons=OKCancelButtons,
             title='Create new ' + self.model_name,
-            kind='modal'
+            #kind='modal'
         )
         return traits_view
 
@@ -54,11 +54,12 @@ class PyannoModelView(ModelView):
         raise NotImplementedError()
 
     @classmethod
-    def create_model_dialog(cls):
+    def create_model_dialog(cls, parent):
         """Open a dialog to create a new model."""
 
         dialog = cls.new_model_dialog_class()
-        dialog_ui = dialog.edit_traits()
+        dialog_ui = dialog.edit_traits(kind="livemodal",
+                                       parent=parent)
         if dialog_ui.result:
             # user pressed 'Ok'
             # create model and update view

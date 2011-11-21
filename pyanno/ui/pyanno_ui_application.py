@@ -93,7 +93,7 @@ class PyannoApplication(HasTraits):
         self.main_window = ModelDataView(application=self)
 
         model = ModelBt.create_initial_state(5, 8)
-        self.main_window.set_model(model)
+        self.main_window.set_model(model=model)
 
         self.main_window.configure_traits()
 
