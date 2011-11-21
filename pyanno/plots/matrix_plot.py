@@ -129,16 +129,17 @@ class MatrixPlot(PyannoPlotContainer):
 
 
 def plot_square_matrix(matrix, **kwargs):
-    """Create and display a Chaco plot of a 2D matrix.
+    """Plot a square matrix using a color code.
 
-    The matrix is shown with a color code, and the plot will allow saving the
-    plot (with Ctrl-S), and copying the matrix data to the clipboard (with
-    Ctrl-C).
+    Arguments
+    ---------
+    matrix : ndarray, shape = (n, n)
+        Square array of numberical values.
 
-    It is possible to set a number of keyword arguments:
-    title -- title for the resulting plot
-    colormap_low -- lower value for the colormap
-    colormap_high -- higher value for the colormap
+    **kwargs : dictionary
+        Additional keyword arguments passed to the plot. The argument `title`
+        sets the title of the plot. The arguments `colormap_low` and
+        `colormap_high` set the lowest and highest value for the color map.
     """
     matrix_view = MatrixPlot(matrix=matrix, **kwargs)
     matrix_view.edit_traits(view='resizable_view')

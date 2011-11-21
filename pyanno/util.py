@@ -14,8 +14,11 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
-
+#: In annotations arrays, this is the value used to indicate missing values
 MISSING_VALUE = -1
+
+#: Smallest possible floating point number, somtimes used instead of -np.inf
+#: to make numberical calculation return a meaningful value
 SMALLEST_FLOAT = getlimits.finfo(np.float).min
 
 
