@@ -34,7 +34,7 @@ def plot_pairwise_statistics(stat_func, annotations, nclasses=None, **kwargs):
         Number of annotation classes. If None, `nclasses` is inferred from the
         values in the annotations
 
-    **kwargs : dictionary
+    kwargs : dictionary
         Additional keyword arguments passed to the plot. The argument 'title'
         sets the title of the plot.
     """

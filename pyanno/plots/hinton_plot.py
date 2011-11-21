@@ -160,7 +160,7 @@ def plot_hinton_diagram(data, **kwargs):
     data : list of floats
         List of numbers between zero and one
 
-    **kwargs : dictionary
+    kwargs : dictionary
         Additional keyword arguments passed to the plot. The argument 'title'
         sets the title of the plot.
     """

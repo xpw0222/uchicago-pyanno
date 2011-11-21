@@ -136,7 +136,7 @@ def plot_square_matrix(matrix, **kwargs):
     matrix : ndarray, shape = (n, n)
         Square array of numberical values.
 
-    **kwargs : dictionary
+    kwargs : dictionary
         Additional keyword arguments passed to the plot. The argument `title`
         sets the title of the plot. The arguments `colormap_low` and
         `colormap_high` set the lowest and highest value for the color map.

@@ -235,7 +235,7 @@ def plot_theta_tensor(modelB, annotator_idx, theta_samples=None, **kwargs):
     theta_samples : ndarray, shape = (n_samples x n_annotators x n_classes x n_classes)
         Array of samples over the posterior of theta.
 
-    **kwargs : dictionary
+    kwargs : dictionary
         Additional keyword arguments passed to the plot. The argument 'title'
         sets the title of the plot.
 

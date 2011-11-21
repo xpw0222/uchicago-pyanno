@@ -412,7 +412,7 @@ def plot_theta_parameters(model, theta_samples=None,
     type : string
         Either 'scatter' or 'distr'. Parametrizes two different kind of plots.
 
-    **kwargs : dictionary
+    kwargs : dictionary
         Additional keyword arguments passed to the plot. The argument 'title'
         sets the title of the plot.
     """

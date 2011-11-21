@@ -235,7 +235,7 @@ def plot_posterior(posterior, show_maximum=False, **kwargs):
     show_maximum : bool
         if True, indicate the position of the maxima with white circles
 
-    **kwargs : dictionary
+    kwargs : dictionary
         Additional keyword arguments passed to the plot. The argument 'title'
         sets the title of the plot.
     """
