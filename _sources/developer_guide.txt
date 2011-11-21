@@ -1,50 +1,50 @@
 Developer guide
 ===============
 
-**Under construction**
-
 git repository
 --------------
 
-pyAnno is hosted on github at https://github.com/enthought/uchicago-pyanno .
+pyAnno is hosted on GitHub at
+`https://github.com/enthought/uchicago-pyanno <https://github.com/enthought/uchicago-pyanno>`_.
 
-*describe workflow: fork, pull request*
+The recommended workflow to extend and improve pyAnno is the following:
+
+1. Fork the project on GitHub
+
+2. Implement your changes on your repository
+
+3. Submit a pull request on GitHub
 
 
 Running tests
 -------------
 
-We recommend the use of `nosetests`. From the root directory of the
+Even though the tests are written using `unittest`, we recommend the use of
+`nosetests` to execute the library test suites. From the root directory of the
 pyanno project, type ::
 
     $ nosetests -v pyanno/test
 
-
-Compiling the documentation
----------------------------
-
-The documentation is based on `Sphinx <http://sphinx.pocoo.org/index.html>`_.
-It can be found in `pyanno\docs`.
-
-After editing the documentation, you whould compile it, revise the result,
-and publish it online:
-
-1) In `pyanno\docs` type ::
-
-    $ make html
-
-[under construction]
+**Important** The tests that verify some of the models' functionality (e.g.,
+the estimation of the model parameters), are stochastic. This has the advantage
+that they test different, general scenarios at each round, but occasionally
+lead to test failures. If one of the test fails, please run it a second time.
+If it continues failing, please report a bug using the
+`issue tracker <https://github.com/enthought/uchicago-pyanno/issues>`_.
 
 Adding a new model
 ------------------
 
-This is a checklist when implementing a new model in pyAnno:
+This is a checklist of things to do when implementing a new model in pyAnno:
 
 1) Write a new model implementation as a subclass of
    :class:`pyanno.abstract_model.AbstractModel`, implementing the full
    interface.
 
 2) Add an import statement in :py:mod:`pyanno.models`
+
+3) Add some documentation about the class in the `models` page.
+
 
 To add the model to the UI:
 
@@ -60,51 +60,23 @@ To add the model to the UI:
    at the beginning of the :class:`pyanno.ui.model_data_view.ModelDataView`.
 
 
-BUILD AND INSTALL
-------------------------------------------------------------
-You only need to build and install if you want to run
-the contained scripts, because they import the packages
-assuming they are installed.  Unit testing, for instance,
-doesn't require a build or install.
+Compiling the documentation
+---------------------------
 
-Building pyanno
-----------------------------------------
-To build a gzipped tarball (suffix .tar.gz)
-and zipped archive (suffix .zip), use:
+The documentation is based on `Sphinx <http://sphinx.pocoo.org/index.html>`_.
+It can be found in `pyanno\docs`.
 
-    % cd $PYANNO_HOME
-    % python setup.py sdist --formats=gztar,zip
+After editing the documentation, you should compile it, revise the result,
+and publish it online:
 
-The result will be to create two distribution
-files:
+1) In `pyanno\docs` type ::
 
-    $PYANNO_HOME/dist/pyanno-1.0.tar.gz
-                     /pyanno-1.0.zip
+    $ make html
 
-Developer Installation of pyanno
-----------------------------------------
-After following the build instructions above,
+   To compile the pyAnno documentation.
 
-    % cd $PYANNO_HOME
-    % python setup.py install
+2) Check out the `gh-pages` branch from the git repository, and copy the
+   newly built HTML docs
 
-End-user installation instructions in Install.txt.
-
-
-Scripted Operation
-----------------------------------------
-There are Windows batch (.bat) and Unix shell (.sh) scripts
-to build and install.  
-
-On Windows:
-
-     % cd $PYANNO_HOME
-     % build.bat
-
-On Unix:
-
-     % cd $PYANNO_HOME
-     % sh build.sh
-
-
+3) push the branch back to GitHub
 

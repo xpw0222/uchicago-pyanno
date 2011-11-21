@@ -84,9 +84,9 @@ Educational and Psychological Measurement, 20, 37&#8211;46.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>annotations1</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>annotations2</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of annotation classes. If None, <cite>nclasses</cite> is inferred from the
 values in the annotations</li>
 </ul>
@@ -101,7 +101,7 @@ values in the annotations</li>
 
 <dl class="function">
 <dt id="pyanno.measures.agreement.cohens_weighted_kappa">
-<tt class="descclassname">pyanno.measures.agreement.</tt><tt class="descname">cohens_weighted_kappa</tt><big>(</big><em>annotations1</em>, <em>annotations2</em>, <em>weights_func=&lt;function diagonal_distance at 0x65588b0&gt;</em>, <em>nclasses=None</em><big>)</big><a class="reference internal" href="_modules/pyanno/measures/agreement.html#cohens_weighted_kappa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.agreement.cohens_weighted_kappa" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pyanno.measures.agreement.</tt><tt class="descname">cohens_weighted_kappa</tt><big>(</big><em>annotations1</em>, <em>annotations2</em>, <em>weights_func=&lt;function diagonal_distance at 0x659f2b0&gt;</em>, <em>nclasses=None</em><big>)</big><a class="reference internal" href="_modules/pyanno/measures/agreement.html#cohens_weighted_kappa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.agreement.cohens_weighted_kappa" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute Cohen&#8217;s weighted kappa for two annotators.</p>
 <p>Assumes that the annotators draw annotations at random with different but
 constant frequencies. Disagreements are weighted by a weights
@@ -127,9 +127,9 @@ for scaled disagreement or partial credit&#8221;. Psychological Bulletin
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>annotations1</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>annotations2</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>weights_func</strong> (<em>function(m_i, m_j)</em>) &#8211; Weights function that receives two matrices of indices
 i, j and returns the matrix of weights between them.
 Default is <a class="reference internal" href="#pyanno.measures.distances.diagonal_distance" title="pyanno.measures.distances.diagonal_distance"><tt class="xref py py-func docutils literal"><span class="pre">diagonal_distance()</span></tt></a></li>
@@ -161,7 +161,7 @@ raters.&#8221;. Psychological Bulletin, Vol 76(5), 378-382</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; Array of annotations for multiple annotators. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of annotation classes. If None, <cite>nclasses</cite> is inferred from the
 values in the annotations</li>
 </ul>
@@ -176,7 +176,7 @@ values in the annotations</li>
 
 <dl class="function">
 <dt id="pyanno.measures.agreement.krippendorffs_alpha">
-<tt class="descclassname">pyanno.measures.agreement.</tt><tt class="descname">krippendorffs_alpha</tt><big>(</big><em>annotations</em>, <em>metric_func=&lt;function diagonal_distance at 0x65588b0&gt;</em>, <em>nclasses=None</em><big>)</big><a class="reference internal" href="_modules/pyanno/measures/agreement.html#krippendorffs_alpha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.agreement.krippendorffs_alpha" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pyanno.measures.agreement.</tt><tt class="descname">krippendorffs_alpha</tt><big>(</big><em>annotations</em>, <em>metric_func=&lt;function diagonal_distance at 0x659f2b0&gt;</em>, <em>nclasses=None</em><big>)</big><a class="reference internal" href="_modules/pyanno/measures/agreement.html#krippendorffs_alpha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.measures.agreement.krippendorffs_alpha" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute Krippendorff&#8217;s alpha for multiple annotators.</p>
 <p><strong>References:</strong></p>
 <ul class="simple">
@@ -194,7 +194,7 @@ In particular, Chapter 11, pages 219&#8211;250.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; Array of annotations for multiple annotators. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>weights_func</strong> (<em>function(m_i, m_j)</em>) &#8211; Weights function that receives two matrices of indices
 i, j and returns the matrix of weights between them.
 Default is <a class="reference internal" href="#pyanno.measures.distances.diagonal_distance" title="pyanno.measures.distances.diagonal_distance"><tt class="xref py py-func docutils literal"><span class="pre">diagonal_distance()</span></tt></a></li>
@@ -229,9 +229,9 @@ scale coding.&#8221; Public Opinion Quarterly, 19(3), 321-325.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>annotations1</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>annotations2</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of annotation classes. If None, <cite>nclasses</cite> is inferred from the
 values in the annotations</li>
 </ul>
@@ -264,7 +264,7 @@ of tests.&#8221; Psychometrika, 16(3), 297-334.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; Array of annotations for multiple annotators. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of annotation classes. If None, <cite>nclasses</cite> is inferred from the
 values in the annotations</li>
 </ul>
@@ -292,9 +292,9 @@ values in the annotations</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>annotations1</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>annotations2</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of annotation classes. If None, <cite>nclasses</cite> is inferred from the
 values in the annotations</li>
 </ul>
@@ -322,9 +322,9 @@ values in the annotations</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>annotations1</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>annotations2</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of annotation classes. If None, <cite>nclasses</cite> is inferred from the
 values in the annotations</li>
 </ul>
@@ -398,9 +398,9 @@ constant frequencies.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>annotations1</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>annotations2</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>weights_func</strong> (<em>function(m_i, m_j)</em>) &#8211; Weights function that receives two matrices of indices
 i, j and returns the matrix of weights between them.
 Default is <a class="reference internal" href="#pyanno.measures.distances.diagonal_distance" title="pyanno.measures.distances.diagonal_distance"><tt class="xref py py-func docutils literal"><span class="pre">diagonal_distance()</span></tt></a></li>
@@ -427,9 +427,9 @@ frequency as the combined observed annotations.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>annotations1</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>annotations2</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>weights_func</strong> (<em>function(m_i, m_j)</em>) &#8211; Weights function that receives two matrices of indices
 i, j and returns the matrix of weights between them.
 Default is <a class="reference internal" href="#pyanno.measures.distances.diagonal_distance" title="pyanno.measures.distances.diagonal_distance"><tt class="xref py py-func docutils literal"><span class="pre">diagonal_distance()</span></tt></a></li>
@@ -460,7 +460,7 @@ in the data (across annotators), over the total number of observed pairs.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; Array of annotations for multiple annotators. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of annotation classes. If None, <cite>nclasses</cite> is inferred from the
 values in the annotations</li>
 </ul>
@@ -493,9 +493,9 @@ values in the annotations</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>annotations1</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>annotations2</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of annotation classes. If None, <cite>nclasses</cite> is inferred from the
 values in the annotations</li>
 </ul>
@@ -522,9 +522,9 @@ frequency.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>annotations1</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>annotations2</strong> (<em>ndarray, shape = (n_items, )</em>) &#8211; Array of annotations for a single annotator. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>weights_func</strong> (<em>function(m_i, m_j)</em>) &#8211; Weights function that receives two matrices of indices
 i, j and returns the matrix of weights between them.
 Default is <a class="reference internal" href="#pyanno.measures.distances.diagonal_distance" title="pyanno.measures.distances.diagonal_distance"><tt class="xref py py-func docutils literal"><span class="pre">diagonal_distance()</span></tt></a></li>

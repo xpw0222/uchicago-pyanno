@@ -1,0 +1,232 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using the library from the pyAnno GUI &mdash; pyanno 2.0dev documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pyanno 2.0dev documentation" href="index.html" />
+    <link rel="up" title="User guide" href="user_guide.html" />
+    <link rel="next" title="Finding help" href="help.html" />
+    <link rel="prev" title="Using the library from a Python shell" href="shell_guide.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="help.html" title="Finding help"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="shell_guide.html" title="Using the library from a Python shell"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="user_guide.html" accesskey="U">User guide</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-the-library-from-the-pyanno-gui">
+<h1>Using the library from the pyAnno GUI<a class="headerlink" href="#using-the-library-from-the-pyanno-gui" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="starting-the-gui">
+<h2>Starting the GUI<a class="headerlink" href="#starting-the-gui" title="Permalink to this headline">¶</a></h2>
+<p>From a terminal, type:</p>
+<div class="highlight-python"><pre>$ pyanno-ui</pre>
+</div>
+<p>to start the pyAnno GUI.</p>
+</div>
+<div class="section" id="navigating-the-main-window">
+<h2>Navigating the main window<a class="headerlink" href="#navigating-the-main-window" title="Permalink to this headline">¶</a></h2>
+<p>The main window of the pyAnno GUI looks like this:</p>
+<img alt="_images/main_window_screenshot.png" src="_images/main_window_screenshot.png" style="width: 600pt;" />
+<p>It contains three panels:</p>
+<ul>
+<li><p class="first">On the left side we find the <strong>model panel</strong>. At the top, there are buttons
+to create a new model. Select the desired model from the selection box,
+and click on &#8220;Create...&#8221; to enter the basic parameters for the model, for
+example:</p>
+<img alt="_images/create_model.png" src="_images/create_model.png" style="width: 300pt;" />
+<p>Below that, one sees a summary of the model information, and a graphical
+display of the current model parameters:</p>
+<img alt="_images/model_info.png" src="_images/model_info.png" style="width: 300pt;" />
+</li>
+<li><p class="first">On the right side we find the <strong>annotations panel</strong>. Open an annotations
+data file or create an empty annotation set from the file dialog at the top:</p>
+<img alt="_images/open_file.png" src="_images/open_file.png" style="width: 300pt;" />
+<p>Once opened, the panel shows some basic information about the annotations:</p>
+<img alt="_images/annotations_info.png" src="_images/annotations_info.png" style="width: 300pt;" />
+<p>Finally, the bottommost part of the panel displays standard statistics
+of annotators agreement and covariance:</p>
+<img alt="_images/stats_view.png" src="_images/stats_view.png" style="width: 300pt;" />
+</li>
+<li><p class="first">At the bottom we can see the <strong>actions panel</strong>. If the current model
+and annotations are compatible (e.g., they have the same number of
+annotators, the panel will show the log likelihood of the data under
+the model given the current parameters, and wil also offer a number
+of actions:</p>
+<blockquote>
+<div><img alt="_images/action_panel.png" src="_images/action_panel.png" style="width: 300pt;" />
+</div></blockquote>
+<p>From left to right, the buttons allow to estimate parameters by
+maximum likelihood (&#8220;ML estimate...&#8221;), or by maximum a posteriori estimate
+(&#8220;MAP estimate...&#8221;).</p>
+<p>The third button allows to draw a number of samples from the posterior
+distribution of the accuracy parameters, which represent the correctness
+of the annotators.</p>
+<blockquote>
+<div><img alt="_images/sampling_dialog.png" src="_images/sampling_dialog.png" style="width: 300pt;" />
+</div></blockquote>
+<p>After sampling, the model panel will show credible
+intervals around the parameters.</p>
+<blockquote>
+<div><img alt="_images/credible_intervals.png" src="_images/credible_intervals.png" style="width: 300pt;" />
+</div></blockquote>
+<p>The last button, &#8220;Estimate labels...&#8221; computes the posterior probability
+of the &#8220;true&#8221; labels underlying the observed data, and show it as a plot
+in a separate window:</p>
+<blockquote>
+<div><img alt="_images/estimate_labels_screenshot.png" src="_images/estimate_labels_screenshot.png" style="width: 200pt;" />
+</div></blockquote>
+<p>You can left-click and drag on the plot to examine all the data.</p>
+</li>
+</ul>
+<div class="section" id="plot-tools">
+<h3>Plot tools<a class="headerlink" href="#plot-tools" title="Permalink to this headline">¶</a></h3>
+<p>All plots on the main window offer these tools:</p>
+<ul class="simple">
+<li>To save a plot as displayed in the window, click on the plot and press Ctrl-S
+(Cmd-S on Mac). A dialog will open, asking for a destination file
+and the resolution of the saved image (in dpi).</li>
+<li>It is possible to copy the <em>data</em> underlying the plots by pressing Ctrl-C
+(Cmd-C on Mac). The data is copied on the clipboard as a Python string,
+which can be copied in a text file, or in a Python shell to further analyze
+it. For most plots, the copied data will be a numpy array. Make sure to
+type <cite>from numpy import array</cite> in your Python shell so that Python can create
+an array object when you paste the string.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="the-database-window">
+<h2>The database window<a class="headerlink" href="#the-database-window" title="Permalink to this headline">¶</a></h2>
+<p>In the bottom right part of the window there are two additional buttons that
+can be used to interact with the <strong>results database</strong>:</p>
+<blockquote>
+<div><img alt="_images/database_buttons.png" src="_images/database_buttons.png" style="width: 200pt;" />
+</div></blockquote>
+<p>Clicking on
+&#8220;Open database&#8221; opens a new window showing the current
+contents of the database:</p>
+<blockquote>
+<div><img alt="_images/database_screenshot.png" src="_images/database_screenshot.png" style="width: 500pt;" />
+</div></blockquote>
+<p>Each row of the table shows a pyAnno result: for each annotations set
+(first column), one can examine the models that have been applied to
+it (second column), sorted by decreasing log likelihood (third column).</p>
+<p>To save the current results in the database, press &#8220;Add to database&#8221;.
+Vice versa, to load old results in the main window, select the
+corresponding row in the database window, and click on &#8220;Load results&#8221;.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Using the library from the pyAnno GUI</a><ul>
+<li><a class="reference internal" href="#starting-the-gui">Starting the GUI</a></li>
+<li><a class="reference internal" href="#navigating-the-main-window">Navigating the main window</a><ul>
+<li><a class="reference internal" href="#plot-tools">Plot tools</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-database-window">The database window</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="shell_guide.html"
+                        title="previous chapter">Using the library from a Python shell</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="help.html"
+                        title="next chapter">Finding help</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/gui_guide.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="help.html" title="Finding help"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="shell_guide.html" title="Using the library from a Python shell"
+             >previous</a> |</li>
+        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+          <li><a href="user_guide.html" >User guide</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Pietro Berkes, Bob Carpenter, Andrey Rzhetsky, James A. Evans.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

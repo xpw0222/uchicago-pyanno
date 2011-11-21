@@ -56,41 +56,40 @@
             
   <div class="section" id="developer-guide">
 <h1>Developer guide<a class="headerlink" href="#developer-guide" title="Permalink to this headline">¶</a></h1>
-<p><strong>Under construction</strong></p>
 <div class="section" id="git-repository">
 <h2>git repository<a class="headerlink" href="#git-repository" title="Permalink to this headline">¶</a></h2>
-<p>pyAnno is hosted on github at <a class="reference external" href="https://github.com/enthought/uchicago-pyanno">https://github.com/enthought/uchicago-pyanno</a> .</p>
-<p><em>describe workflow: fork, pull request</em></p>
+<p>pyAnno is hosted on GitHub at
+<a class="reference external" href="https://github.com/enthought/uchicago-pyanno">https://github.com/enthought/uchicago-pyanno</a>.</p>
+<p>The recommended workflow to extend and improve pyAnno is the following:</p>
+<ol class="arabic simple">
+<li>Fork the project on GitHub</li>
+<li>Implement your changes on your repository</li>
+<li>Submit a pull request on GitHub</li>
+</ol>
 </div>
 <div class="section" id="running-tests">
 <h2>Running tests<a class="headerlink" href="#running-tests" title="Permalink to this headline">¶</a></h2>
-<p>We recommend the use of <cite>nosetests</cite>. From the root directory of the
+<p>Even though the tests are written using <cite>unittest</cite>, we recommend the use of
+<cite>nosetests</cite> to execute the library test suites. From the root directory of the
 pyanno project, type</p>
 <div class="highlight-python"><pre>$ nosetests -v pyanno/test</pre>
 </div>
-</div>
-<div class="section" id="compiling-the-documentation">
-<h2>Compiling the documentation<a class="headerlink" href="#compiling-the-documentation" title="Permalink to this headline">¶</a></h2>
-<p>The documentation is based on <a class="reference external" href="http://sphinx.pocoo.org/index.html">Sphinx</a>.
-It can be found in <cite>pyannodocs</cite>.</p>
-<p>After editing the documentation, you whould compile it, revise the result,
-and publish it online:</p>
-<ol class="arabic">
-<li><p class="first">In <cite>pyannodocs</cite> type</p>
-<div class="highlight-python"><pre>$ make html</pre>
-</div>
-</li>
-</ol>
-<p>[under construction]</p>
+<p><strong>Important</strong> The tests that verify some of the models&#8217; functionality (e.g.,
+the estimation of the model parameters), are stochastic. This has the advantage
+that they test different, general scenarios at each round, but occasionally
+lead to test failures. If one of the test fails, please run it a second time.
+If it continues failing, please report a bug using the
+<a class="reference external" href="https://github.com/enthought/uchicago-pyanno/issues">issue tracker</a>.</p>
 </div>
 <div class="section" id="adding-a-new-model">
 <h2>Adding a new model<a class="headerlink" href="#adding-a-new-model" title="Permalink to this headline">¶</a></h2>
-<p>This is a checklist when implementing a new model in pyAnno:</p>
+<p>This is a checklist of things to do when implementing a new model in pyAnno:</p>
 <ol class="arabic simple">
 <li>Write a new model implementation as a subclass of
 <a class="reference internal" href="pyanno.html#pyanno.abstract_model.AbstractModel" title="pyanno.abstract_model.AbstractModel"><tt class="xref py py-class docutils literal"><span class="pre">pyanno.abstract_model.AbstractModel</span></tt></a>, implementing the full
 interface.</li>
 <li>Add an import statement in <tt class="xref py py-mod docutils literal"><span class="pre">pyanno.models</span></tt></li>
+<li>Add some documentation about the class in the <cite>models</cite> page.</li>
 </ol>
 <p>To add the model to the UI:</p>
 <ol class="arabic simple">
@@ -105,49 +104,24 @@ in <cite>model_name</cite>, <cite>_model_name_to_class</cite>, and <cite>_model_
 at the beginning of the <a class="reference internal" href="pyanno.ui.html#pyanno.ui.model_data_view.ModelDataView" title="pyanno.ui.model_data_view.ModelDataView"><tt class="xref py py-class docutils literal"><span class="pre">pyanno.ui.model_data_view.ModelDataView</span></tt></a>.</li>
 </ol>
 </div>
-<div class="section" id="build-and-install">
-<h2>BUILD AND INSTALL<a class="headerlink" href="#build-and-install" title="Permalink to this headline">¶</a></h2>
-<p>You only need to build and install if you want to run
-the contained scripts, because they import the packages
-assuming they are installed.  Unit testing, for instance,
-doesn&#8217;t require a build or install.</p>
+<div class="section" id="compiling-the-documentation">
+<h2>Compiling the documentation<a class="headerlink" href="#compiling-the-documentation" title="Permalink to this headline">¶</a></h2>
+<p>The documentation is based on <a class="reference external" href="http://sphinx.pocoo.org/index.html">Sphinx</a>.
+It can be found in <cite>pyannodocs</cite>.</p>
+<p>After editing the documentation, you should compile it, revise the result,
+and publish it online:</p>
+<ol class="arabic">
+<li><p class="first">In <cite>pyannodocs</cite> type</p>
+<div class="highlight-python"><pre>$ make html</pre>
 </div>
-<div class="section" id="building-pyanno">
-<h2>Building pyanno<a class="headerlink" href="#building-pyanno" title="Permalink to this headline">¶</a></h2>
-<p>To build a gzipped tarball (suffix .tar.gz)
-and zipped archive (suffix .zip), use:</p>
-<blockquote>
-<div>% cd $PYANNO_HOME
-% python setup.py sdist &#8211;formats=gztar,zip</div></blockquote>
-<p>The result will be to create two distribution
-files:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>$PYANNO_HOME/dist/pyanno-1.0.tar.gz</dt>
-<dd>/pyanno-1.0.zip</dd>
-</dl>
-</div></blockquote>
-</div>
-<div class="section" id="developer-installation-of-pyanno">
-<h2>Developer Installation of pyanno<a class="headerlink" href="#developer-installation-of-pyanno" title="Permalink to this headline">¶</a></h2>
-<p>After following the build instructions above,</p>
-<blockquote>
-<div>% cd $PYANNO_HOME
-% python setup.py install</div></blockquote>
-<p>End-user installation instructions in Install.txt.</p>
-</div>
-<div class="section" id="scripted-operation">
-<h2>Scripted Operation<a class="headerlink" href="#scripted-operation" title="Permalink to this headline">¶</a></h2>
-<p>There are Windows batch (.bat) and Unix shell (.sh) scripts
-to build and install.</p>
-<p>On Windows:</p>
-<blockquote>
-<div>% cd $PYANNO_HOME
-% build.bat</div></blockquote>
-<p>On Unix:</p>
-<blockquote>
-<div>% cd $PYANNO_HOME
-% sh build.sh</div></blockquote>
+<p>To compile the pyAnno documentation.</p>
+</li>
+<li><p class="first">Check out the <cite>gh-pages</cite> branch from the git repository, and copy the
+newly built HTML docs</p>
+</li>
+<li><p class="first">push the branch back to GitHub</p>
+</li>
+</ol>
 </div>
 </div>
 
@@ -162,12 +136,8 @@ to build and install.</p>
 <li><a class="reference internal" href="#">Developer guide</a><ul>
 <li><a class="reference internal" href="#git-repository">git repository</a></li>
 <li><a class="reference internal" href="#running-tests">Running tests</a></li>
-<li><a class="reference internal" href="#compiling-the-documentation">Compiling the documentation</a></li>
 <li><a class="reference internal" href="#adding-a-new-model">Adding a new model</a></li>
-<li><a class="reference internal" href="#build-and-install">BUILD AND INSTALL</a></li>
-<li><a class="reference internal" href="#building-pyanno">Building pyanno</a></li>
-<li><a class="reference internal" href="#developer-installation-of-pyanno">Developer Installation of pyanno</a></li>
-<li><a class="reference internal" href="#scripted-operation">Scripted Operation</a></li>
+<li><a class="reference internal" href="#compiling-the-documentation">Compiling the documentation</a></li>
 </ul>
 </li>
 </ul>

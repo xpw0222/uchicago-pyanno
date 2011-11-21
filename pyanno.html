@@ -92,11 +92,163 @@
 </ul>
 </div>
 </div>
-</div>
 <div class="section" id="other-modules">
-<h1>Other modules<a class="headerlink" href="#other-modules" title="Permalink to this headline">¶</a></h1>
+<h2>Other modules<a class="headerlink" href="#other-modules" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-pyanno.abstract_model">
+<span id="abstract-model-module"></span><h3><tt class="xref py py-mod docutils literal"><span class="pre">abstract_model</span></tt> Module<a class="headerlink" href="#module-pyanno.abstract_model" title="Permalink to this headline">¶</a></h3>
+<p>Defines <a class="reference internal" href="#pyanno.abstract_model.AbstractModel" title="pyanno.abstract_model.AbstractModel"><tt class="xref py py-class docutils literal"><span class="pre">AbstractModel</span></tt></a>, an abstract class that specifies the
+interface of pyAnno models.</p>
+<dl class="class">
+<dt id="pyanno.abstract_model.AbstractModel">
+<em class="property">class </em><tt class="descclassname">pyanno.abstract_model.</tt><tt class="descname">AbstractModel</tt><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">traits.has_traits.HasTraits</span></tt></p>
+<p>Abstract class defining the interface of a pyAnno model.</p>
+<dl class="method">
+<dt id="pyanno.abstract_model.AbstractModel.are_annotations_compatible">
+<tt class="descname">are_annotations_compatible</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.are_annotations_compatible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.are_annotations_compatible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the annotations are compatible with the model.</p>
+<p>The standard implementation is: valid if the number of annotators
+is correct, if the classes are between 0 and nclasses-1,
+and if missing values are marked with <a class="reference internal" href="#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="pyanno.abstract_model.AbstractModel.create_initial_state">
+<em class="property">static </em><tt class="descname">create_initial_state</tt><big>(</big><em>nclasses</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.create_initial_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.create_initial_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory method returning a model with random initial parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nclasses</strong> (<em>int</em>) &#8211; Number of label classes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.abstract_model.AbstractModel.generate_annotations">
+<tt class="descname">generate_annotations</tt><big>(</big><em>nitems</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.generate_annotations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.generate_annotations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a random annotation set from the model.</p>
+<p>Sample a random set of annotations from the probability distribution
+defined the current model parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nitems</strong> (<em>int</em>) &#8211; Number of items to sample</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>annotations</strong> (ndarray, shape = (n_items, n_annotators)) - annotations[i,j] is the annotation of annotator j for item i</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.abstract_model.AbstractModel.infer_labels">
+<tt class="descname">infer_labels</tt><big>(</big><em>annotations</em><big>)</big><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.infer_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infer posterior distribution over label classes.</p>
+<p>Compute the posterior distribution over label classes given observed
+annotations, <img class="math" src="_images/math/9215880e98d0a142659f35ee0ed928728161fde5.png" alt="P( \mathbf{y} | \mathbf{x})"/>.</p>
+<dl class="docutils">
+<dt>annotations <span class="classifier-delimiter">:</span> <span class="classifier">ndarray, shape = (n_items, n_annotators)</span></dt>
+<dd>annotations[i,j] is the annotation of annotator j for item i</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>posterior</strong> (ndarray, shape = (n_items, n_classes)) - posterior[i,k] is the posterior probability of class k given the annotation observed in item i.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.abstract_model.AbstractModel.log_likelihood">
+<tt class="descname">log_likelihood</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.log_likelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.log_likelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the log likelihood of a set of annotations given the model.</p>
+<p>Returns log P(annotations | current model parameters).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>log_lhood</strong> (float) - log likelihood of <cite>annotations</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.abstract_model.AbstractModel.map">
+<tt class="descname">map</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes maximum a posteriori (MAP) estimate of parameters.</p>
+<p>Estimate the model parameters from a set of observed annotations
+using maximum a posteriori estimation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.abstract_model.AbstractModel.mle">
+<tt class="descname">mle</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.mle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.mle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes maximum likelihood estimate (MLE) of parameters.</p>
+<p>Estimate the model parameters from a set of observed annotations
+using maximum likelihood estimation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyanno.abstract_model.AbstractModel.sample_posterior_over_accuracy">
+<tt class="descname">sample_posterior_over_accuracy</tt><big>(</big><em>annotations</em>, <em>nsamples</em>, <em>burn_in_samples=0</em>, <em>thin_samples=1</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.sample_posterior_over_accuracy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.sample_posterior_over_accuracy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return samples from posterior over the accuracy parameters.</p>
+<p>Draw samples from <cite>P(accuracy parameters | data, model parameters)</cite>.
+The accuracy parameters control the probability of an annotator
+reporting the correct label (the exact nature of these parameters
+varies from model to model).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</li>
+<li><strong>nsamples</strong> (<em>int</em>) &#8211; Number of samples to return (i.e., burn-in and thinning samples
+are not included)</li>
+<li><strong>burn_in_samples</strong> (<em>int</em>) &#8211; Discard the first <cite>burn_in_samples</cite> during the initial burn-in
+phase, where the Monte Carlo chain converges to the posterior</li>
+<li><strong>thin_samples</strong> (<em>int</em>) &#8211; Only return one every <cite>thin_samples</cite> samples in order to reduce
+the auto-correlation in the sampling chain. This is called
+&#8220;thinning&#8221; in MCMC parlance.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>samples</strong> (ndarray, shape = (n_samples, ??)) - Array of samples from the posterior distribution over parameters.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-pyanno.util">
-<span id="util-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">util</span></tt> Module<a class="headerlink" href="#module-pyanno.util" title="Permalink to this headline">¶</a></h2>
+<span id="util-module"></span><h3><tt class="xref py py-mod docutils literal"><span class="pre">util</span></tt> Module<a class="headerlink" href="#module-pyanno.util" title="Permalink to this headline">¶</a></h3>
 <p>Utility functions.</p>
 <dl class="exception">
 <dt id="pyanno.util.PyannoValueError">
@@ -202,7 +354,7 @@ MISSING_VALUE.</p>
 <li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation made by annotator j on item i</li>
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of label classes in <cite>annotations</cite></li>
 <li><strong>missing_val</strong> (<em>int</em>) &#8211; Value used to indicate missing values in the annotations.
-Default is <tt class="xref py py-attr docutils literal"><span class="pre">MISSING_VALUE</span></tt></li>
+Default is <a class="reference internal" href="#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">MISSING_VALUE</span></tt></a></li>
 </ul>
 </td>
 </tr>
@@ -225,7 +377,7 @@ Default is <tt class="xref py py-attr docutils literal"><span class="pre">MISSIN
 <li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation made by annotator j on item i</li>
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of label classes in <cite>annotations</cite></li>
 <li><strong>missing_val</strong> (<em>int</em>) &#8211; Value used to indicate missing values in the annotations.
-Default is <tt class="xref py py-attr docutils literal"><span class="pre">MISSING_VALUE</span></tt></li>
+Default is <a class="reference internal" href="#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">MISSING_VALUE</span></tt></a></li>
 </ul>
 </td>
 </tr>
@@ -295,9 +447,22 @@ Default is <tt class="xref py py-attr docutils literal"><span class="pre">MISSIN
 <tt class="descclassname">pyanno.util.</tt><tt class="descname">string_wrap</tt><big>(</big><em>st</em>, <em>mode</em><big>)</big><a class="reference internal" href="_modules/pyanno/util.html#string_wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.util.string_wrap" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="data">
+<dt id="pyanno.util.MISSING_VALUE">
+<tt class="descclassname">pyanno.util.</tt><tt class="descname">MISSING_VALUE</tt><em class="property"> = -1</em><a class="headerlink" href="#pyanno.util.MISSING_VALUE" title="Permalink to this definition">¶</a></dt>
+<dd><p>In annotations arrays, this is the value used to indicate missing values</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="pyanno.util.SMALLEST_FLOAT">
+<tt class="descclassname">pyanno.util.</tt><tt class="descname">SMALLEST_FLOAT</tt><em class="property"> = -1.7976931348623157e+308</em><a class="headerlink" href="#pyanno.util.SMALLEST_FLOAT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Smallest possible floating point number, somtimes used instead of -np.inf
+to make numberical calculation return a meaningful value</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-pyanno.sampling">
-<span id="sampling-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">sampling</span></tt> Module<a class="headerlink" href="#module-pyanno.sampling" title="Permalink to this headline">¶</a></h2>
+<span id="sampling-module"></span><h3><tt class="xref py py-mod docutils literal"><span class="pre">sampling</span></tt> Module<a class="headerlink" href="#module-pyanno.sampling" title="Permalink to this headline">¶</a></h3>
 <p>This module defines functions to sample from a distribution given its
 log likelihood.</p>
 <dl class="function">
@@ -396,138 +561,6 @@ additional argument that is needed to compute the log likelihood.</li>
 </dd></dl>
 
 </div>
-<div class="section" id="abstract-model-module">
-<h2><tt class="xref py py-mod docutils literal"><span class="pre">abstract_model</span></tt> Module<a class="headerlink" href="#abstract-model-module" title="Permalink to this headline">¶</a></h2>
-<span class="target" id="module-pyanno.abstract_model"></span><p>Defines <a class="reference internal" href="#pyanno.abstract_model.AbstractModel" title="pyanno.abstract_model.AbstractModel"><tt class="xref py py-class docutils literal"><span class="pre">AbstractModel</span></tt></a>, an abstract class that specifies the
-interface of pyAnno models.</p>
-<dl class="class">
-<dt id="pyanno.abstract_model.AbstractModel">
-<em class="property">class </em><tt class="descclassname">pyanno.abstract_model.</tt><tt class="descname">AbstractModel</tt><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">traits.has_traits.HasTraits</span></tt></p>
-<p>Abstract class defining the interface of a pyAnno model.</p>
-<dl class="method">
-<dt id="pyanno.abstract_model.AbstractModel.are_annotations_compatible">
-<tt class="descname">are_annotations_compatible</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.are_annotations_compatible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.are_annotations_compatible" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns True if the annotations are compatible with the model.</p>
-<p>The standard implementation is: valid if the number of annotators
-is correct, if the classes are between 0 and nclasses-1,
-and if missing values are marked with <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></p>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="pyanno.abstract_model.AbstractModel.create_initial_state">
-<em class="property">static </em><tt class="descname">create_initial_state</tt><big>(</big><em>nclasses</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.create_initial_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.create_initial_state" title="Permalink to this definition">¶</a></dt>
-<dd><p>Factory method returning a model with random initial parameters.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nclasses</strong> (<em>int</em>) &#8211; Number of label classes</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyanno.abstract_model.AbstractModel.generate_annotations">
-<tt class="descname">generate_annotations</tt><big>(</big><em>nitems</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.generate_annotations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.generate_annotations" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a random annotation set from the model.</p>
-<p>Sample a random set of annotations from the probability distribution
-defined the current model parameters.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nitems</strong> (<em>int</em>) &#8211; Number of items to sample</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>annotations</strong> (ndarray, shape = (n_items, n_annotators)) - annotations[i,j] is the annotation of annotator j for item i</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyanno.abstract_model.AbstractModel.log_likelihood">
-<tt class="descname">log_likelihood</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.log_likelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.log_likelihood" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the log likelihood of a set of annotations given the model.</p>
-<p>Returns log P(annotations | current model parameters).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>log_lhood</strong> (float) - log likelihood of <cite>annotations</cite></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyanno.abstract_model.AbstractModel.map">
-<tt class="descname">map</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.map" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes maximum a posteriori (MAP) estimate of parameters.</p>
-<p>Estimate the model parameters from a set of observed annotations
-using maximum a posteriori estimation.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyanno.abstract_model.AbstractModel.mle">
-<tt class="descname">mle</tt><big>(</big><em>annotations</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.mle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.mle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes maximum likelihood estimate (MLE) of parameters.</p>
-<p>Estimate the model parameters from a set of observed annotations
-using maximum likelihood estimation.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyanno.abstract_model.AbstractModel.sample_posterior_over_accuracy">
-<tt class="descname">sample_posterior_over_accuracy</tt><big>(</big><em>annotations</em>, <em>nsamples</em>, <em>burn_in_samples=0</em>, <em>thin_samples=1</em><big>)</big><a class="reference internal" href="_modules/pyanno/abstract_model.html#AbstractModel.sample_posterior_over_accuracy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.abstract_model.AbstractModel.sample_posterior_over_accuracy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return samples from posterior over the accuracy parameters.</p>
-<p>Draw samples from <cite>P(accuracy parameters | data, model parameters)</cite>.
-The accuracy parameters control the probability of an annotator
-reporting the correct label (the exact nature of these parameters
-varies from model to model).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; annotations[i,j] is the annotation of annotator j for item i</li>
-<li><strong>nsamples</strong> (<em>int</em>) &#8211; Number of samples to return (i.e., burn-in and thinning samples
-are not included)</li>
-<li><strong>burn_in_samples</strong> (<em>int</em>) &#8211; Discard the first <cite>burn_in_samples</cite> during the initial burn-in
-phase, where the Monte Carlo chain converges to the posterior</li>
-<li><strong>thin_samples</strong> (<em>int</em>) &#8211; Only return one every <cite>thin_samples</cite> samples in order to reduce
-the auto-correlation in the sampling chain. This is called
-&#8220;thinning&#8221; in MCMC parlance.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>samples</strong> (ndarray, shape = (n_samples, ??)) - Array of samples from the posterior distribution over parameters.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
 </div>
 </div>
 
@@ -543,12 +576,12 @@ the auto-correlation in the sampling chain. This is called
 <li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">pyanno</span></tt> Package</a><ul>
 </ul>
 </li>
-</ul>
-</li>
 <li><a class="reference internal" href="#other-modules">Other modules</a><ul>
+<li><a class="reference internal" href="#module-pyanno.abstract_model"><tt class="docutils literal"><span class="pre">abstract_model</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pyanno.util"><tt class="docutils literal"><span class="pre">util</span></tt> Module</a></li>
 <li><a class="reference internal" href="#module-pyanno.sampling"><tt class="docutils literal"><span class="pre">sampling</span></tt> Module</a></li>
-<li><a class="reference internal" href="#abstract-model-module"><tt class="docutils literal"><span class="pre">abstract_model</span></tt> Module</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

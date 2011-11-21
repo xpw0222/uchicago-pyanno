@@ -81,19 +81,16 @@ annotators, and the resulting matrix is displayed in a window.</p>
 annotations, and returning a single scalar measuring some annotations
 statistics.</li>
 <li><strong>annotations</strong> (<em>ndarray, shape = (n_items, n_annotators)</em>) &#8211; Array of annotations for multiple annotators. Missing values should be
-indicated by <tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></li>
+indicated by <a class="reference internal" href="pyanno.html#pyanno.util.MISSING_VALUE" title="pyanno.util.MISSING_VALUE"><tt class="xref py py-attr docutils literal"><span class="pre">pyanno.util.MISSING_VALUE</span></tt></a></li>
 <li><strong>nclasses</strong> (<em>int</em>) &#8211; Number of annotation classes. If None, <cite>nclasses</cite> is inferred from the
 values in the annotations</li>
+<li><strong>kwargs</strong> (<em>dictionary</em>) &#8211; Additional keyword arguments passed to the plot. The argument &#8216;title&#8217;
+sets the title of the plot.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<dl class="docutils">
-<dt><a href="#id2"><span class="problematic" id="id3">**</span></a>kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dictionary</span></dt>
-<dd>Additional keyword arguments passed to the plot. The argument &#8216;title&#8217;
-sets the title of the plot.</dd>
-</dl>
 </dd></dl>
 
 <dl class="function">
@@ -108,15 +105,15 @@ area proportional to the value of each element.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>list of floats</em>) &#8211; List of numbers between zero and one</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<em>list of floats</em>) &#8211; List of numbers between zero and one</li>
+<li><strong>kwargs</strong> (<em>dictionary</em>) &#8211; Additional keyword arguments passed to the plot. The argument &#8216;title&#8217;
+sets the title of the plot.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
-<dl class="docutils">
-<dt><a href="#id4"><span class="problematic" id="id5">**</span></a>kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dictionary</span></dt>
-<dd>Additional keyword arguments passed to the plot. The argument &#8216;title&#8217;
-sets the title of the plot.</dd>
-</dl>
 </dd></dl>
 
 <dl class="function">
@@ -144,16 +141,13 @@ all models, e.g.:</p>
 <li><strong>posterior</strong> (<em>ndarray, shape=(n_annotations, n_classes)</em>) &#8211; posterior[i,:] is the posterior distribution over classes for the
 i-th annotation.</li>
 <li><strong>show_maximum</strong> (<em>bool</em>) &#8211; if True, indicate the position of the maxima with white circles</li>
+<li><strong>kwargs</strong> (<em>dictionary</em>) &#8211; Additional keyword arguments passed to the plot. The argument &#8216;title&#8217;
+sets the title of the plot.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<dl class="docutils">
-<dt><a href="#id6"><span class="problematic" id="id7">**</span></a>kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dictionary</span></dt>
-<dd>Additional keyword arguments passed to the plot. The argument &#8216;title&#8217;
-sets the title of the plot.</dd>
-</dl>
 </dd></dl>
 
 <dl class="function">
@@ -177,16 +171,13 @@ as returned by the method <cite>model.sample_posterior_over_accuracy</cite>.
 If given, they are displayed as a probability distribution superimposed
 to the values or <cite>model.theta</cite>.</li>
 <li><strong>type</strong> (<em>string</em>) &#8211; Either &#8216;scatter&#8217; or &#8216;distr&#8217;. Parametrizes two different kind of plots.</li>
+<li><strong>kwargs</strong> (<em>dictionary</em>) &#8211; Additional keyword arguments passed to the plot. The argument &#8216;title&#8217;
+sets the title of the plot.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<dl class="docutils">
-<dt><a href="#id8"><span class="problematic" id="id9">**</span></a>kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dictionary</span></dt>
-<dd>Additional keyword arguments passed to the plot. The argument &#8216;title&#8217;
-sets the title of the plot.</dd>
-</dl>
 </dd></dl>
 
 <dl class="function">
@@ -200,25 +191,17 @@ theta[annotator_idx,k,:] = P(annotator_idx outputs : | real class is k).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>modelB</strong> (<em>ModelB instance</em>) &#8211; An instance of ModelB.</li>
 <li><strong>annotator_idx</strong> (<em>int</em>) &#8211; Index of the annotator for which the parameters are displayed.</li>
 <li><strong>theta_samples</strong> (<em>ndarray, shape = (n_samples x n_annotators x n_classes x n_classes)</em>) &#8211; Array of samples over the posterior of theta.</li>
+<li><strong>kwargs</strong> (<em>dictionary</em>) &#8211; Additional keyword arguments passed to the plot. The argument &#8216;title&#8217;
+sets the title of the plot.</li>
 </ul>
 </td>
 </tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt><a href="#id10"><span class="problematic" id="id11">**</span></a>kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dictionary</span></dt>
-<dd>Additional keyword arguments passed to the plot. The argument &#8216;title&#8217;
-sets the title of the plot.</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>theta_view</strong> (ThetaTensorPlot instance) - Reference to the plot.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>theta_view</strong> (ThetaTensorPlot instance) - Reference to the plot.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -227,14 +210,21 @@ sets the title of the plot.</dd>
 <dl class="function">
 <dt id="pyanno.plots.matrix_plot.plot_square_matrix">
 <tt class="descclassname">pyanno.plots.matrix_plot.</tt><tt class="descname">plot_square_matrix</tt><big>(</big><em>matrix</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/pyanno/plots/matrix_plot.html#plot_square_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyanno.plots.matrix_plot.plot_square_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create and display a Chaco plot of a 2D matrix.</p>
-<p>The matrix is shown with a color code, and the plot will allow saving the
-plot (with Ctrl-S), and copying the matrix data to the clipboard (with
-Ctrl-C).</p>
-<p>It is possible to set a number of keyword arguments:
-title &#8211; title for the resulting plot
-colormap_low &#8211; lower value for the colormap
-colormap_high &#8211; higher value for the colormap</p>
+<dd><p>Plot a square matrix using a color code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>matrix</strong> (<em>ndarray, shape = (n, n)</em>) &#8211; Square array of numberical values.</li>
+<li><strong>kwargs</strong> (<em>dictionary</em>) &#8211; Additional keyword arguments passed to the plot. The argument <cite>title</cite>
+sets the title of the plot. The arguments <cite>colormap_low</cite> and
+<cite>colormap_high</cite> set the lowest and highest value for the color map.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
