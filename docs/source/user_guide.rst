@@ -227,6 +227,38 @@ given the current estimate of the parameters,
     -1698.1356816301102
 
 
+Computing the posterior distribution over label classes
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+After the model parameters have been estimated, one can compute the
+posterior distribution over the "true" label classes using the
+:meth:`~pyanno.abstract_model.AbstractModel.infer_labels`: ::
+
+    >>> # load annotations
+    >>> from pyanno.annotations import AnnotationsContainer
+    >>> anno = AnnotationsContainer.from_file("data/testdata_words.txt")
+
+    >>> # create and fit model
+    >>> from pyanno.models import ModelBt
+    >>> model = ModelBt.create_initial_state(3, 8)
+    >>> model.map(anno.annotations)
+
+    >>> # compute the posterior distribution over true annotations
+    >>> posterior = model.infer_labels(anno.annotations)
+
+    >>> # each row show the probability of each label class for the
+    >>> # corresponding item
+    >>> print posterior
+    [[  6.11296106e-05   9.99845391e-01   9.34796369e-05]
+     [  6.11296106e-05   9.99845391e-01   9.34796369e-05]
+     [  1.72435609e-04   7.44387155e-04   9.99083177e-01]
+     ...,
+     [  8.98559709e-04   9.75743127e-01   2.33583134e-02]
+     [  9.98634702e-01   1.00816769e-03   3.57129927e-04]
+     [  5.41655039e-05   9.99863004e-01   8.28300980e-05]]
+
+
+
 Computing the posterior distribution over accuracy
 ''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -395,8 +427,84 @@ to start the pyAnno GUI.
 Navigating the main window
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+The main window of the pyAnno GUI looks like this:
+
+.. image:: images/main_window_screenshot.png
+     :width: 600pt
+
+It contains three panels:
+
+* On the left side we find the **model panel**. At the top, there are buttons
+  to create a new model. Select the desired model from the selection box,
+  and click on "Create..." to enter the basic parameters for the model, for
+  example:
+
+  .. image:: images/create_model.png
+       :width: 300pt
+
+  Below that, one sees a summary of the model information, and a graphical
+  display of the current model parameters:
+
+  .. image:: images/model_info.png
+       :width: 300pt
+
+* On the right side we find the **annotations panel**. Open an annotations
+  data file or create an empty annotation set from the file dialog at the top:
+
+  .. image:: images/open_file.png
+       :width: 300pt
+
+  Once opened, the panel shows some basic information about the annotations:
+
+  .. image:: images/annotations_info.png
+       :width: 300pt
+
+  Finally, the bottommost part of the panel displays standard statistics
+  of annotators agreement and covariance:
+
+  .. image:: images/stats_view.png
+       :width: 300pt
+
+* At the bottom we can see the **actions panel**. If the current model
+  and annotations are compatible (e.g., they have the same number of
+  annotators, the panel will show the log likelihood of the data under
+  the model given the current parameters, and wil also offer a number
+  of actions:
+
+    .. image:: images/action_panel.png
+         :width: 300pt
+
+  From left to right, the buttons allow to estimate parameters by
+  maximum likelihood ("ML estimate..."), or by maximum a posteriori estimate
+  ("MAP estimate...").
+
+  The third button allows to draw a number of samples from the posterior
+  distribution of the accuracy parameters, which represent the correctness
+  of the annotators.
+
+    .. image:: images/sampling_dialog.png
+         :width: 300pt
+
+  After sampling, the model panel will show credible
+  intervals around the parameters.
+
+    .. image:: images/credible_intervals.png
+         :width: 300pt
+
+  The last button, "Estimate labels..." computes the posterior probability
+  of the "true" labels underlying the observed data, and show it as a plot
+  in a separate window:
+
+    .. image:: images/estimate_labels_screenshot.png
+         :width: 200pt
+
+  You can left-click and drag on the plot to examine all the data.
+
+
 Plot tools
 ''''''''''
+
+All plots on the main window offer these tools:
 
 * To save a plot as displayed in the window, click on the plot and press Ctrl-S
   (Cmd-S on Mac). A dialog will open, asking for a destination file
@@ -413,17 +521,35 @@ Plot tools
 The database window
 ^^^^^^^^^^^^^^^^^^^
 
+In the bottom right part of the window there are two additional buttons that
+can be used to interact with the **results database**:
 
+    .. image:: images/database_buttons.png
+         :width: 200pt
 
+Clicking on
+"Open database" opens a new window showing the current
+contents of the database:
+
+    .. image:: images/database_screenshot.png
+         :width: 500pt
+
+Each row of the table shows a pyAnno result: for each annotations set
+(first column), one can examine the models that have been applied to
+it (second column), sorted by decreasing log likelihood (third column).
+
+To save the current results in the database, press "Add to database".
+Vice versa, to load old results in the main window, select the
+corresponding row in the database window, and click on "Load results".
 
 Finding help
 ------------
 
-* Online API: [REF]
+* :doc:`Online API reference <pyanno>`
 
 * Another way to see how the functions are intended to work
   is to have a look at the unit tests, which can be found in
-  the directory `pyanno\tests` of the pyanno library
+  the directory `pyanno/tests` of the pyAnno library folder
 
 * If everything else fails, please describe your issue in
   pyAnno's

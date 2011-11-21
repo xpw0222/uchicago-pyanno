@@ -22,7 +22,6 @@ allows Maximum Likelihood and Maximum A Posteriori estimation of parameters,
 and to draw samples from the full posterior distribution over annotator
 accuracy.
 
-
 Contents:
 
 .. toctree::
@@ -33,6 +32,15 @@ Contents:
    pyAnno models <models>
    Developer guide <developer_guide>
    Library Reference <modules>
+
+pyAnno GUI
+----------
+
+pyAnno also provides a convenient graphical user interface. This is a
+screenshot from a session in Mac OS X:
+
+.. image:: images/main_window_screenshot.png
+     :width: 500pt
 
 
 Licensing
