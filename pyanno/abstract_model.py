@@ -154,6 +154,26 @@ class AbstractModel(HasTraits):
         raise NotImplementedError()
 
 
+    def infer_labels(self, annotations):
+        """Infer posterior distribution over label classes.
+
+         Compute the posterior distribution over label classes given observed
+         annotations, :math:`P( \mathbf{y} | \mathbf{x})`.
+
+         Arguments
+         ----------
+         annotations : ndarray, shape = (n_items, n_annotators)
+             annotations[i,j] is the annotation of annotator j for item i
+
+         Returns
+         -------
+         posterior : ndarray, shape = (n_items, n_classes)
+             posterior[i,k] is the posterior probability of class k given the
+             annotation observed in item i.
+         """
+        raise NotImplementedError()
+
+
     def are_annotations_compatible(self, annotations):
         """Returns True if the annotations are compatible with the model.
 
