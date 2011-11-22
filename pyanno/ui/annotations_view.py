@@ -223,7 +223,7 @@ class SaveAnnotationsDialog(HasTraits):
 
     def _filename_default(self):
         import os
-        home = os.getenv('HOME')
+        home = os.getenv('HOME') or os.getenv('HOMEPATH')
         return  os.path.join(home, 'annotations.txt')
 
     @staticmethod
