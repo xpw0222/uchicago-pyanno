@@ -30,6 +30,12 @@ pyanno.egg-info/dependency_links.txt
 pyanno.egg-info/entry_points.txt
 pyanno.egg-info/top_level.txt
 pyanno.egg-info/inst/appinst.dat
+pyanno.egg-info/inst/folder.ico
+pyanno.egg-info/prefix/pyAnno_data/e-2.txt
+pyanno.egg-info/prefix/pyAnno_data/testdata_irregular.txt
+pyanno.egg-info/prefix/pyAnno_data/testdata_large.txt
+pyanno.egg-info/prefix/pyAnno_data/testdata_numerical.txt
+pyanno.egg-info/prefix/pyAnno_data/testdata_words.txt
 pyanno/measures/__init__.py
 pyanno/measures/agreement.py
 pyanno/measures/covariation.py

@@ -1,3 +1,6 @@
+from os.path import join
+import sys
+
 # This file is used by 'enicab' to produce the application installer.
 SHORTCUTS = [
     {
@@ -7,6 +10,15 @@ SHORTCUTS = [
         'name'        : 'pyAnno',
         'desktop'     : True,
         'quicklaunch' : True,
-        'terminal'    : False,
+        'terminal'    : True,
+    },
+    { # pyAnno data files
+        'cmd': ['{{FILEBROWSER}}', join(sys.prefix, "pyAnno_data")],
+        'comment': 'pyAnno example data files',
+        'icon': 'folder.ico',
+        'id': 'pyanno_examples',
+        'name': 'pyAnno Data',
+        'desktop'     : True,
+        'terminal': False,
     }
 ]
