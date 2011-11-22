@@ -1,15 +1,13 @@
 Installation guide
 ==================
 
-**[under construction]**
-
 pyAnno can be installed on any platform that runs Python, including
 all recent flavors of Windows, Mac, and Linux.
 
 Install Dependencies
 --------------------
 
-To use pyAnno you will need to have the following Python libraries installed:
+To use pyAnno you will need the following:
 
    - Python 2.7
      http://www.python.org/
@@ -26,9 +24,33 @@ To use pyAnno you will need to have the following Python libraries installed:
    - chaco 4.1.0
      http://code.enthought.com/chaco/
 
-The easiest way to install all of these dependencies is to install the EPD
-Free Python distribution:
-http://enthought.com/products/epd_free.php
+   - wxPython 2.8.10
+     http://www.wxpython.org/
+
+The easiest way to satisfy all of these dependencies is to install the `EPD
+Free Python distribution <http://enthought.com/products/epd_free.php>`_
+
+For your convenience, we prepared installers for Mac OS X and Windows
+that include both pyAnno and the EPD Free distribution:
+
+[ADD LINK TO INSTALLERS]
+
+
+Binary installers
+-----------------
+
+If you already have a Python installation with all the dependencies listed
+above, you will find Windows and Mac OS X binary installers on the
+`pyAnno page on PyPI <http://pypi.python.org/pypi?:action=display&name=pyanno>`_.
+
+To executable scripts to start the pyAnno GUI will be installed in the
+scripts path of your Python installation. On Windowns, this will usually be at
+:file:`C:\\Python27\\Scripts\\pyanno-ui` , and on Mac OS X at
+:file:`/Library/Frameworks/Python.framework/Versions/Current/bin/pyanno-ui`.
+
+You can also start the pyAnno GUI from a terminal with the command ::
+
+   pyanno-ui
 
 
 Installing with `easy_install` or `pip`
@@ -36,9 +58,9 @@ Installing with `easy_install` or `pip`
 
 pyAnno is hosted on PyPi_, so it can be installed simply with either
 pip_ (preferred) or easy_install_ . Both tools are very easy to install,
-and are already available on most Python distributions.
+and are often available out of the box on many Python distributions.
 
-To install pyAnno, simply type in your command line:
+To install pyAnno, simply type on the command line:
 
 ::
 
@@ -50,26 +72,23 @@ or
 
    easy_install pyanno
 
-If you do not have administrative permissions in the Python folder,
+If you do not have administrator permissions in the Python folder,
 you should pre-pend the commands above with `sudo` (e.g.,
 `sudo pip install pyanno`).
 
+The pyAnno GUI can then be started from the terminal by typing ::
 
-.. _PyPi: http://pypi.python.org/pypi
-.. _pip: http://www.pip-installer.org/en/latest/index.html
-.. _easy_install: http://peak.telecommunity.com/DevCenter/EasyInstall.html
-
-
-Mac OS X and Windows installers
--------------------------------
-
-[Where to find the installers, and how to use them.]
+   pyanno-ui
 
 
 Installing from source
 ----------------------
 
-1. Clone pyAnno's git repository_ ::
+pyAnno's source code repository is hosted on GitHub at
+https://github.com/enthought/uchicago-pyanno . To install the library
+from the latest source:
+
+1. Clone pyAnno's git repository ::
 
     git clone git://github.com/enthought/uchicago-pyanno.git
 
@@ -81,4 +100,7 @@ Installing from source
 
     python setup.py install
 
-.. _repository: https://github.com/enthought/uchicago-pyanno
+
+.. _PyPi: http://pypi.python.org/pypi
+.. _pip: http://www.pip-installer.org/en/latest/index.html
+.. _easy_install: http://peak.telecommunity.com/DevCenter/EasyInstall.html

@@ -65,8 +65,8 @@
 <p>3. <a class="reference internal" href="#model-b">Model B</a>, a Bayesian generalization of the model proposed in
 <a class="reference internal" href="#dawid1979">[Dawid1979]</a>.</p>
 </div></blockquote>
-<div class="section" id="definitions">
-<h2>Definitions<a class="headerlink" href="#definitions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="glossary">
+<h2>Glossary<a class="headerlink" href="#glossary" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt>annotations</dt>
 <dd>The values emitted by the annotator on the available data items.
@@ -87,7 +87,40 @@ for each data item, i, is indicated in the documentation as <img class="math" sr
 </div>
 <div class="section" id="model-a">
 <h2>Model A<a class="headerlink" href="#model-a" title="Permalink to this headline">¶</a></h2>
-<p>descr</p>
+<p>Model A  defines a probability distribution over data annotations with
+a loop design in which each item is annotated by three users.
+The distributions over annotations is defined by a
+three-steps generative model:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>First, the model independently generates correctness values for the
+triplet of annotators (e.g., CCI where C=correct, I=incorrect)</li>
+<li>Second, the model generates an agreement pattern compatible with
+the correctness values (e.g., CII is compatible with the agreement
+patterns &#8216;abb&#8217; and &#8216;abc&#8217;, where different letters correspond to
+different annotations</li>
+<li>Finally, the model generates actual observations compatible with
+the agreement patterns</li>
+</ol>
+</div></blockquote>
+<p>More in detail, the model is described as follows:</p>
+<ul>
+<li><p class="first">Parameters <img class="math" src="_images/math/f00785bb5b1fbba0514652b693cdfd0c72c7801d.png" alt="\theta_j"/> control the prior probability that annotator
+<img class="math" src="_images/math/8122aa89ea6e80784c6513d22787ad86e36ad0cc.png" alt="j"/> is correct. Thus, for each triplet of annotations
+for annotators <img class="math" src="_images/math/f5047d1e0cbb50ec208923a22cd517c55100fa7b.png" alt="m"/>, <img class="math" src="_images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/>, and <img class="math" src="_images/math/9b25f8e64b484493fda944d25cad453423041fe6.png" alt="l"/>, we have</p>
+<p><img class="math" src="_images/math/bbffa5175db25ffd436161594d2ec2e7bb39c9d1.png" alt="P( \mathrm{X}_m \mathrm{X}_n \mathrm{X}_l | \theta ) = P( \mathrm{X}_m | \theta ) P( \mathrm{X}_n | \theta ) P( \mathrm{X}_l | \theta )"/></p>
+<p>where</p>
+<p><img class="math" src="_images/math/cb6a6abef6ace6d3136a2bba349feca71dc27f7d.png" alt="P( \mathrm{X}_j ) =\left\{\begin{array}{l l} \theta_j &amp; \quad \text{if } \mathrm{X}_j = \mathrm{C} \\ 1-\theta_j &amp; \quad \text{if } \mathrm{X}_j = \mathrm{I}\\ \end{array} \right."/></p>
+</li>
+<li><p class="first">Parameters <img class="math" src="_images/math/ff9c62c564e81a783cedf3176ff0d8859b540d08.png" alt="\omega_k"/> control the probability of observing an
+annotation of class <img class="math" src="_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> over all items and annotators. From these
+one can derive the parameters <img class="math" src="_images/math/10f32377ac67d94f764f12a15ea987e88c85d3e1.png" alt="\alpha"/>, which correspond
+to the probability
+of each agreement pattern according to the tables published in
+<a class="reference internal" href="#rzhetsky2009">[Rzhetsky2009]</a>.</p>
+</li>
+</ul>
+<p>See <a class="reference internal" href="#rzhetsky2009">[Rzhetsky2009]</a> for a more complete presentation of the model.</p>
 </div>
 <div class="section" id="model-b-with-theta">
 <h2>Model B-with-theta<a class="headerlink" href="#model-b-with-theta" title="Permalink to this headline">¶</a></h2>
@@ -123,14 +156,36 @@ efficient.</p>
 <p>Model B is a more general form of B-with-theta, and is also a Bayesian
 generalization of the earlier model proposed in <a class="reference internal" href="#dawid1979">[Dawid1979]</a>. The generative
 process is identical to the one in model B-with-theta, except that
-a)</p>
+a) the accuracy parameters are represented by a full tensor
+<img class="math" src="_images/math/8648f47a3677a4cc40a73cd200677e553d32c491.png" alt="\\theta_{j,k,k'} = P(x^j = k' | y = k)"/>, and b) it defines prior
+probabilities over the model parameters, <img class="math" src="_images/math/496e264a6cc9eb133fa53fbf8cfb586155bd1d42.png" alt="\\theta"/>, and <img class="math" src="_images/math/f2ca003a7da0de4994b4733e203b74ff52d42553.png" alt="\pi"/>.</p>
+<p>The complete model description is as follows:</p>
+<ul>
+<li><p class="first">The probability of the true label classes is</p>
+<p><img class="math" src="_images/math/7979783a3f454ef69db27930eb70a648b7e3a6c9.png" alt="P(\pi | \beta) = \mathrm{Dirichlet} (\pi ; \beta)"/></p>
+<p><img class="math" src="_images/math/18dbf6cfe4ec013ed8acdd04b070e616cdf25fe4.png" alt="P(\mathbf{y} | \pi) = \prod_i P(y_i | \pi)"/>,</p>
+<p><img class="math" src="_images/math/ebf7fb1079c7819f05769c0a2bc98f3e172ee925.png" alt="P(y_i | \pi) = \mathrm{Categorical}(y_i; \pi) = \pi_{y_i}"/></p>
+</li>
+<li><p class="first">The distribution over accuracy parameters is</p>
+<p><img class="math" src="_images/math/4a7cadce98ec49b083ca51df680c103808c77278.png" alt="P(\theta_{j,k,:} | \alpha_k) = \mathrm{Dirichlet} ( \theta_{j,k,:} ; \alpha_k)"/></p>
+<p>The hyper-parameters <img class="math" src="_images/math/63b67135e8833d91f039ecd50338c25a564d0a5a.png" alt="\alpha_k"/> define what kind of error distributions
+are more likely for an annotator. For example, they can be defined such that
+<img class="math" src="_images/math/6fe14cc026be555250f250f3d945529f511cf27c.png" alt="\alpha_{k,k'}"/> peaks at <img class="math" src="_images/math/81de74ae6ae28d1c2c0ede72bddac32ed7f38156.png" alt="k = k'"/> and decays for <img class="math" src="_images/math/5c20717468053f101f9a58dda7990817e9469ad9.png" alt="k'"/>
+becoming increasingly dissimilar to <img class="math" src="_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>. Such a prior is adequate
+for ordinal data, where the label classes have a meaningful order.</p>
+</li>
+<li><p class="first">The distribution over annotation is defined as</p>
+<p><img class="math" src="_images/math/ed704de688240e6f34131160937ab990e1bee511.png" alt="P(\mathbf{x} | \mathbf{y}, \theta) = \prod_i \prod_j P(x^j_i | y_i, \theta_{j,:,:})"/>,</p>
+<p><img class="math" src="_images/math/38cbfb96fb753e6011d53ff067080319004f00fb.png" alt="P(x^j_i = k' | y_i = k, \theta_{j,:,:}) = \theta{j,k,k'}"/>.</p>
+</li>
+</ul>
 </div>
 <div class="section" id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <table class="docutils citation" frame="void" id="rzhetsky2009" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[Rzhetsky2009]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>, <a class="fn-backref" href="#id4">3</a>)</em> Rzhetsky A., Shatkay, H., and Wilbur,
+<tr><td class="label">[Rzhetsky2009]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>, <a class="fn-backref" href="#id4">3</a>, <a class="fn-backref" href="#id5">4</a>, <a class="fn-backref" href="#id6">5</a>)</em> Rzhetsky A., Shatkay, H., and Wilbur,
 W.J. (2009). &#8220;How to get the most from
 your curation effort&#8221;, PLoS Computational Biology, 5(5).</td></tr>
 </tbody>
@@ -138,164 +193,11 @@ your curation effort&#8221;, PLoS Computational Biology, 5(5).</td></tr>
 <table class="docutils citation" frame="void" id="dawid1979" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[Dawid1979]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id5">2</a>)</em> Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
+<tr><td class="label">[Dawid1979]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id7">2</a>)</em> Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
 estimation of observer error-rates using the EM algorithm.  Applied
 Statistics, 28(1):20&#8211;28.</td></tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="dawid-and-skene-s-multinomial-model-w-arbitrary-design">
-<h2>DAWID AND SKENE&#8217;S MULTINOMIAL MODEL W. ARBITRARY DESIGN<a class="headerlink" href="#dawid-and-skene-s-multinomial-model-w-arbitrary-design" title="Permalink to this headline">¶</a></h2>
-<p>Our first model generalizes the model in (Dawid and Skene 1979) to
-arbitrary designs, including that of (Rzhetsky et al. 2009).  There
-are no priors, so estimation is necessarily through maximum
-likelihood.</p>
-<p>Example math:
-<img class="math" src="_images/math/7be83399ce3fe0183530ae6f44987fed5b4cb4dd.png" alt="P(x_i = y^t)"/></p>
-</div>
-<div class="section" id="data">
-<h2>Data<a class="headerlink" href="#data" title="Permalink to this headline">¶</a></h2>
-<p>I                 number of items being annotated
-J                 number of annotators
-N                 number of annotations
-K                 number of categories
-jj[n] in 0:(J-1)  annotator for annotation n in 1:N
-ii[n] in 0:(I-1)  item for annotation n in 1:N
-y[n]  in 0:(K-1)  category for annotation n in 1:N</p>
-</div>
-<div class="section" id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
-<p>z[i]  in 1:K                 (latent) category for item i in 1:I
-pi[k] in [0,1]               prevalence of category k in 1:K;</p>
-<blockquote>
-<div>SUM_k pi[k] = 1</div></blockquote>
-<dl class="docutils">
-<dt>theta[j][kRef][k] in [0,1]   probability of annotator j in 1:J</dt>
-<dd>returning category k in 1:K for
-item of true category kRef;
-SUM_k theta[j,kRef,k] = 1</dd>
-</dl>
-</div>
-<div class="section" id="model">
-<h2>Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h2>
-<p>z[i] ~ Categorical(pi)
-y[n] ~ Categorical(theta[ jj[n] ][ z[ii[n]] ])</p>
-</div>
-<div class="section" id="complete-data-likelihood">
-<h2>Complete Data Likelihood<a class="headerlink" href="#complete-data-likelihood" title="Permalink to this headline">¶</a></h2>
-<dl class="docutils">
-<dt>p(y,z|theta,pi)</dt>
-<dd><p class="first">= p(z|pi) * p(y|theta,z)
-= PROD_{i in 1:I} p(z[i]|pi)</p>
-<blockquote>
-<div><ul class="simple">
-<li>PROD_{n in 1:N} p(y[n]|theta,z)</li>
-</ul>
-</div></blockquote>
-<dl class="last docutils">
-<dt>= PROD_{i in 1:K} pi[ z[i] ]</dt>
-<dd><ul class="first last simple">
-<li>PROD_{n in 1:N} theta[ jj[n] ][ z[ii[n]] ][ y[n] ]</li>
-</ul>
-</dd>
-</dl>
-</dd>
-</dl>
-</div>
-<div class="section" id="observed-data-likelihood">
-<h2>Observed Data Likelihood<a class="headerlink" href="#observed-data-likelihood" title="Permalink to this headline">¶</a></h2>
-<p>p(y|theta,pi) = INTEGRAL_z p(y,z|theta,pi) dz</p>
-</div>
-<div class="section" id="maximum-likelihood-estimate-mle">
-<h2>Maximum Likelihood Estimate (MLE)<a class="headerlink" href="#maximum-likelihood-estimate-mle" title="Permalink to this headline">¶</a></h2>
-<p>(theta*,pi*) = ARGMAX_{theta,pi} p(y|theta,pi)</p>
-</div>
-<div class="section" id="dawid-and-skene-s-model-with-priors">
-<h2>DAWID AND SKENE&#8217;S MODEL WITH PRIORS<a class="headerlink" href="#dawid-and-skene-s-model-with-priors" title="Permalink to this headline">¶</a></h2>
-<p>The second model adds priors to the Dawid and Skene model, which
-corresponds to the full Model B in (Rzhetsky et al. 2009).</p>
-</div>
-<div class="section" id="priors">
-<h2>Priors<a class="headerlink" href="#priors" title="Permalink to this headline">¶</a></h2>
-<p>This model basically adds Dirichlet priors for the categorical
-parameters.  There is one prior beta for prevalence pi, and
-K priors alpha[k] for annotator response for items of reference
-category k.</p>
-<blockquote>
-<div><p>beta in (0,infty)^K</p>
-<p>alpha[k] in (0,infty)^K</p>
-</div></blockquote>
-<p>For maximum a posteriori fitting, all values must be
-greater than or equal to 1.0.</p>
-</div>
-<div class="section" id="id6">
-<h2>Model<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
-<p>In BUGS-like notation, we add the following:</p>
-<p>pi ~ Dirichlet(beta)</p>
-<dl class="docutils">
-<dt>for (j in 1:J) {</dt>
-<dd><dl class="first docutils">
-<dt>for (k in 1:K) {</dt>
-<dd>theta[j][k] ~ Dirichlet(alpha[k])</dd>
-</dl>
-<p class="last">}</p>
-</dd>
-</dl>
-<p>}</p>
-</div>
-<div class="section" id="complete-likelihood">
-<h2>Complete Likelihood<a class="headerlink" href="#complete-likelihood" title="Permalink to this headline">¶</a></h2>
-<p>We just add in terms for the priors to the data likelihood
-above, giving us:</p>
-<dl class="docutils">
-<dt>p(y,z,theta,pi|alpha,beta)</dt>
-<dd>= p(theta|alpha) * p(pi|beta) * p(y,z|theta,pi)</dd>
-</dl>
-<p>where</p>
-<blockquote>
-<div>p(theta|alpha) = Dirichlet(theta|alpha)</div></blockquote>
-<p>and</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>p(theta|alpha)</dt>
-<dd><dl class="first last docutils">
-<dt>= PROD_{j in 1:J} PROD_{k in 1:K}</dt>
-<dd>Dirichlet(theta[j][k]|alpha[k]).</dd>
-</dl>
-</dd>
-</dl>
-</div></blockquote>
-</div>
-<div class="section" id="em-algorithm">
-<h2>EM ALGORITHM<a class="headerlink" href="#em-algorithm" title="Permalink to this headline">¶</a></h2>
-<p>All of the expecation-maximization (EM) algorithms work the
-same way for computing either maximum likelihood estimates (MLE)
-or maximum a posterioiri (MAP estimates).  The basic idea is
-to treat the the unknown category labels as missing data,
-alternating between estimating the category expecations and
-then maximizing the parameters for those expectations.</p>
-<ol class="arabic" start="0">
-<li><p class="first">Initialize parameters (pi(0),theta(0))</p>
-</li>
-<li><p class="first">for n = 1; ; ++n</p>
-<dl class="docutils">
-<dt>1.a  (E Step)</dt>
-<dd><dl class="first last docutils">
-<dt>Calculate observed data likelihood given previous params</dt>
-<dd><p class="first last">p(cat|pi(n-1),theta(n-1),y)</p>
-</dd>
-</dl>
-</dd>
-<dt>1.b  (M Step)</dt>
-<dd><p class="first last">Set next params pi(n), theta(n) to maximize observed
-data likelihood w.r.t. previous params</p>
-</dd>
-<dt>1.c  (convergence test)</dt>
-<dd><p class="first last">if log likelihood doesn&#8217;t change much, exit</p>
-</dd>
-</dl>
-</li>
-</ol>
 </div>
 </div>
 
@@ -308,23 +210,11 @@ data likelihood w.r.t. previous params</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Model definitions</a><ul>
-<li><a class="reference internal" href="#definitions">Definitions</a></li>
+<li><a class="reference internal" href="#glossary">Glossary</a></li>
 <li><a class="reference internal" href="#model-a">Model A</a></li>
 <li><a class="reference internal" href="#model-b-with-theta">Model B-with-theta</a></li>
 <li><a class="reference internal" href="#model-b">Model B</a></li>
 <li><a class="reference internal" href="#references">References</a></li>
-<li><a class="reference internal" href="#dawid-and-skene-s-multinomial-model-w-arbitrary-design">DAWID AND SKENE&#8217;S MULTINOMIAL MODEL W. ARBITRARY DESIGN</a></li>
-<li><a class="reference internal" href="#data">Data</a></li>
-<li><a class="reference internal" href="#parameters">Parameters</a></li>
-<li><a class="reference internal" href="#model">Model</a></li>
-<li><a class="reference internal" href="#complete-data-likelihood">Complete Data Likelihood</a></li>
-<li><a class="reference internal" href="#observed-data-likelihood">Observed Data Likelihood</a></li>
-<li><a class="reference internal" href="#maximum-likelihood-estimate-mle">Maximum Likelihood Estimate (MLE)</a></li>
-<li><a class="reference internal" href="#dawid-and-skene-s-model-with-priors">DAWID AND SKENE&#8217;S MODEL WITH PRIORS</a></li>
-<li><a class="reference internal" href="#priors">Priors</a></li>
-<li><a class="reference internal" href="#id6">Model</a></li>
-<li><a class="reference internal" href="#complete-likelihood">Complete Likelihood</a></li>
-<li><a class="reference internal" href="#em-algorithm">EM ALGORITHM</a></li>
 </ul>
 </li>
 </ul>

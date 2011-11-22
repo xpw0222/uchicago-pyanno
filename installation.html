@@ -56,12 +56,11 @@
             
   <div class="section" id="installation-guide">
 <h1>Installation guide<a class="headerlink" href="#installation-guide" title="Permalink to this headline">¶</a></h1>
-<p><strong>[under construction]</strong></p>
 <p>pyAnno can be installed on any platform that runs Python, including
 all recent flavors of Windows, Mac, and Linux.</p>
 <div class="section" id="install-dependencies">
 <h2>Install Dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this headline">¶</a></h2>
-<p>To use pyAnno you will need to have the following Python libraries installed:</p>
+<p>To use pyAnno you will need the following:</p>
 <blockquote>
 <div><ul class="simple">
 <li>Python 2.7
@@ -74,35 +73,56 @@ all recent flavors of Windows, Mac, and Linux.</p>
 <a class="reference external" href="http://code.enthought.com/projects/traits/">http://code.enthought.com/projects/traits/</a></li>
 <li>chaco 4.1.0
 <a class="reference external" href="http://code.enthought.com/chaco/">http://code.enthought.com/chaco/</a></li>
+<li>wxPython 2.8.10
+<a class="reference external" href="http://www.wxpython.org/">http://www.wxpython.org/</a></li>
 </ul>
 </div></blockquote>
-<p>The easiest way to install all of these dependencies is to install the EPD
-Free Python distribution:
-<a class="reference external" href="http://enthought.com/products/epd_free.php">http://enthought.com/products/epd_free.php</a></p>
+<p>The easiest way to satisfy all of these dependencies is to install the <a class="reference external" href="http://enthought.com/products/epd_free.php">EPD
+Free Python distribution</a></p>
+<p>For your convenience, we prepared installers for Mac OS X and Windows
+that include both pyAnno and the EPD Free distribution:</p>
+<p>[ADD LINK TO INSTALLERS]</p>
+</div>
+<div class="section" id="binary-installers">
+<h2>Binary installers<a class="headerlink" href="#binary-installers" title="Permalink to this headline">¶</a></h2>
+<p>If you already have a Python installation with all the dependencies listed
+above, you will find Windows and Mac OS X binary installers on the
+<a class="reference external" href="http://pypi.python.org/pypi?:action=display&amp;name=pyanno">pyAnno page on PyPI</a>.</p>
+<p>To executable scripts to start the pyAnno GUI will be installed in the
+scripts path of your Python installation. On Windowns, this will usually be at
+<tt class="file docutils literal"><span class="pre">C:\Python27\Scripts\pyanno-ui</span></tt> , and on Mac OS X at
+<tt class="file docutils literal"><span class="pre">/Library/Frameworks/Python.framework/Versions/Current/bin/pyanno-ui</span></tt>.</p>
+<p>You can also start the pyAnno GUI from a terminal with the command</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pyanno</span><span class="o">-</span><span class="n">ui</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="installing-with-easy-install-or-pip">
 <h2>Installing with <cite>easy_install</cite> or <cite>pip</cite><a class="headerlink" href="#installing-with-easy-install-or-pip" title="Permalink to this headline">¶</a></h2>
 <p>pyAnno is hosted on <a class="reference external" href="http://pypi.python.org/pypi">PyPi</a>, so it can be installed simply with either
 <a class="reference external" href="http://www.pip-installer.org/en/latest/index.html">pip</a> (preferred) or <a class="reference external" href="http://peak.telecommunity.com/DevCenter/EasyInstall.html">easy_install</a> . Both tools are very easy to install,
-and are already available on most Python distributions.</p>
-<p>To install pyAnno, simply type in your command line:</p>
+and are often available out of the box on many Python distributions.</p>
+<p>To install pyAnno, simply type on the command line:</p>
 <div class="highlight-python"><pre>pip install pyanno</pre>
 </div>
 <p>or</p>
 <div class="highlight-python"><pre>easy_install pyanno</pre>
 </div>
-<p>If you do not have administrative permissions in the Python folder,
+<p>If you do not have administrator permissions in the Python folder,
 you should pre-pend the commands above with <cite>sudo</cite> (e.g.,
 <cite>sudo pip install pyanno</cite>).</p>
+<p>The pyAnno GUI can then be started from the terminal by typing</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pyanno</span><span class="o">-</span><span class="n">ui</span>
+</pre></div>
 </div>
-<div class="section" id="mac-os-x-and-windows-installers">
-<h2>Mac OS X and Windows installers<a class="headerlink" href="#mac-os-x-and-windows-installers" title="Permalink to this headline">¶</a></h2>
-<p>[Where to find the installers, and how to use them.]</p>
 </div>
 <div class="section" id="installing-from-source">
 <h2>Installing from source<a class="headerlink" href="#installing-from-source" title="Permalink to this headline">¶</a></h2>
+<p>pyAnno&#8217;s source code repository is hosted on GitHub at
+<a class="reference external" href="https://github.com/enthought/uchicago-pyanno">https://github.com/enthought/uchicago-pyanno</a> . To install the library
+from the latest source:</p>
 <ol class="arabic">
-<li><p class="first">Clone pyAnno&#8217;s git <a class="reference external" href="https://github.com/enthought/uchicago-pyanno">repository</a></p>
+<li><p class="first">Clone pyAnno&#8217;s git repository</p>
 <div class="highlight-python"><pre>git clone git://github.com/enthought/uchicago-pyanno.git</pre>
 </div>
 </li>
@@ -128,8 +148,8 @@ you should pre-pend the commands above with <cite>sudo</cite> (e.g.,
   <ul>
 <li><a class="reference internal" href="#">Installation guide</a><ul>
 <li><a class="reference internal" href="#install-dependencies">Install Dependencies</a></li>
+<li><a class="reference internal" href="#binary-installers">Binary installers</a></li>
 <li><a class="reference internal" href="#installing-with-easy-install-or-pip">Installing with <cite>easy_install</cite> or <cite>pip</cite></a></li>
-<li><a class="reference internal" href="#mac-os-x-and-windows-installers">Mac OS X and Windows installers</a></li>
 <li><a class="reference internal" href="#installing-from-source">Installing from source</a></li>
 </ul>
 </li>

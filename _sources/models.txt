@@ -12,8 +12,8 @@ At present, pyAnno implements three probabilistic models of data annotation:
     3. `Model B`_, a Bayesian generalization of the model proposed in
     [Dawid1979]_.
 
-Definitions
------------
+Glossary
+--------
 
 annotations
     The values emitted by the annotator on the available data items.
@@ -39,7 +39,42 @@ accuracy
 Model A
 -------
 
-descr
+Model A  defines a probability distribution over data annotations with
+a loop design in which each item is annotated by three users.
+The distributions over annotations is defined by a
+three-steps generative model:
+
+    1. First, the model independently generates correctness values for the
+       triplet of annotators (e.g., CCI where C=correct, I=incorrect)
+
+    2. Second, the model generates an agreement pattern compatible with
+       the correctness values (e.g., CII is compatible with the agreement
+       patterns 'abb' and 'abc', where different letters correspond to
+       different annotations
+
+    3. Finally, the model generates actual observations compatible with
+       the agreement patterns
+
+More in detail, the model is described as follows:
+
+* Parameters :math:`\theta_j` control the prior probability that annotator
+  :math:`j` is correct. Thus, for each triplet of annotations
+  for annotators :math:`m`, :math:`n`, and :math:`l`, we have
+
+  :math:`P( \mathrm{X}_m \mathrm{X}_n \mathrm{X}_l | \theta ) = P( \mathrm{X}_m | \theta ) P( \mathrm{X}_n | \theta ) P( \mathrm{X}_l | \theta )`
+
+  where
+
+  :math:`P( \mathrm{X}_j ) =\left\{\begin{array}{l l} \theta_j & \quad \text{if } \mathrm{X}_j = \mathrm{C} \\ 1-\theta_j & \quad \text{if } \mathrm{X}_j = \mathrm{I}\\ \end{array} \right.`
+
+* Parameters :math:`\omega_k` control the probability of observing an
+  annotation of class :math:`k` over all items and annotators. From these
+  one can derive the parameters :math:`\alpha`, which correspond
+  to the probability
+  of each agreement pattern according to the tables published in
+  [Rzhetsky2009]_.
+
+See [Rzhetsky2009]_ for a more complete presentation of the model.
 
 Model B-with-theta
 ------------------
@@ -83,8 +118,35 @@ Model B
 Model B is a more general form of B-with-theta, and is also a Bayesian
 generalization of the earlier model proposed in [Dawid1979]_. The generative
 process is identical to the one in model B-with-theta, except that
-a) 
+a) the accuracy parameters are represented by a full tensor
+:math:`\\theta_{j,k,k'} = P(x^j = k' | y = k)`, and b) it defines prior
+probabilities over the model parameters, :math:`\\theta`, and :math:`\pi`.
 
+The complete model description is as follows:
+
+* The probability of the true label classes is
+
+  :math:`P(\pi | \beta) = \mathrm{Dirichlet} (\pi ; \beta)`
+
+  :math:`P(\mathbf{y} | \pi) = \prod_i P(y_i | \pi)`,
+
+  :math:`P(y_i | \pi) = \mathrm{Categorical}(y_i; \pi) = \pi_{y_i}`
+
+* The distribution over accuracy parameters is
+
+  :math:`P(\theta_{j,k,:} | \alpha_k) = \mathrm{Dirichlet} ( \theta_{j,k,:} ; \alpha_k)`
+
+  The hyper-parameters :math:`\alpha_k` define what kind of error distributions
+  are more likely for an annotator. For example, they can be defined such that
+  :math:`\alpha_{k,k'}` peaks at :math:`k = k'` and decays for :math:`k'`
+  becoming increasingly dissimilar to :math:`k`. Such a prior is adequate
+  for ordinal data, where the label classes have a meaningful order.
+
+* The distribution over annotation is defined as
+
+  :math:`P(\mathbf{x} | \mathbf{y}, \theta) = \prod_i \prod_j P(x^j_i | y_i, \theta_{j,:,:})`,
+
+  :math:`P(x^j_i = k' | y_i = k, \theta_{j,:,:}) = \theta{j,k,k'}`.
 
 References
 ----------
@@ -96,138 +158,5 @@ References
 .. [Dawid1979] Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
     estimation of observer error-rates using the EM algorithm.  Applied
     Statistics, 28(1):20--28.
-
-
-DAWID AND SKENE'S MULTINOMIAL MODEL W. ARBITRARY DESIGN
-------------------------------------------------------------
-
-Our first model generalizes the model in (Dawid and Skene 1979) to
-arbitrary designs, including that of (Rzhetsky et al. 2009).  There
-are no priors, so estimation is necessarily through maximum
-likelihood.
-
-
-Example math:
-:math:`P(x_i = y^t)`
-
-
-Data
---------------------
-I                 number of items being annotated
-J                 number of annotators
-N                 number of annotations
-K                 number of categories
-jj[n] in 0:(J-1)  annotator for annotation n in 1:N
-ii[n] in 0:(I-1)  item for annotation n in 1:N
-y[n]  in 0:(K-1)  category for annotation n in 1:N
-
-Parameters
---------------------
-z[i]  in 1:K                 (latent) category for item i in 1:I
-pi[k] in [0,1]               prevalence of category k in 1:K; 
-                                 SUM_k pi[k] = 1
-theta[j][kRef][k] in [0,1]   probability of annotator j in 1:J 
-                                 returning category k in 1:K for 
-                                 item of true category kRef; 
-                                 SUM_k theta[j,kRef,k] = 1
-Model
---------------------
-z[i] ~ Categorical(pi)
-y[n] ~ Categorical(theta[ jj[n] ][ z[ii[n]] ])
-
-Complete Data Likelihood
---------------------
-p(y,z|theta,pi)
-    = p(z|pi) * p(y|theta,z)
-    = PROD_{i in 1:I} p(z[i]|pi)
-      * PROD_{n in 1:N} p(y[n]|theta,z)
-    = PROD_{i in 1:K} pi[ z[i] ]
-      * PROD_{n in 1:N} theta[ jj[n] ][ z[ii[n]] ][ y[n] ]
-
-Observed Data Likelihood
---------------------
-p(y|theta,pi) = INTEGRAL_z p(y,z|theta,pi) dz
-
-Maximum Likelihood Estimate (MLE)
---------------------
-(theta*,pi*) = ARGMAX_{theta,pi} p(y|theta,pi)
-
-
-
-DAWID AND SKENE'S MODEL WITH PRIORS
-------------------------------------------------------------
-The second model adds priors to the Dawid and Skene model, which
-corresponds to the full Model B in (Rzhetsky et al. 2009).
-
-Priors
---------------------
-This model basically adds Dirichlet priors for the categorical
-parameters.  There is one prior beta for prevalence pi, and
-K priors alpha[k] for annotator response for items of reference
-category k.  
-
-   beta in (0,infty)^K
-
-   alpha[k] in (0,infty)^K
-
-For maximum a posteriori fitting, all values must be 
-greater than or equal to 1.0.
-
-
-Model
---------------------
-In BUGS-like notation, we add the following:
-
-pi ~ Dirichlet(beta)
-
-for (j in 1:J) {
-    for (k in 1:K) {
-    	theta[j][k] ~ Dirichlet(alpha[k])
-    }
-}
-
-Complete Likelihood
---------------------
-We just add in terms for the priors to the data likelihood
-above, giving us:
-
-p(y,z,theta,pi|alpha,beta)
-    = p(theta|alpha) * p(pi|beta) * p(y,z|theta,pi)
-
-where
-
-     p(theta|alpha) = Dirichlet(theta|alpha)
-
-and
-
-     p(theta|alpha) 
-         = PROD_{j in 1:J} PROD_{k in 1:K} 
-	     Dirichlet(theta[j][k]|alpha[k]).
-
-EM ALGORITHM
-------------------------------------------------------------
-
-All of the expecation-maximization (EM) algorithms work the
-same way for computing either maximum likelihood estimates (MLE)
-or maximum a posterioiri (MAP estimates).  The basic idea is
-to treat the the unknown category labels as missing data,
-alternating between estimating the category expecations and
-then maximizing the parameters for those expectations.
-
-0. Initialize parameters (pi(0),theta(0))
-
-1. for n = 1; ; ++n
-
-   1.a  (E Step)
-        Calculate observed data likelihood given previous params
-             p(cat|pi(n-1),theta(n-1),y)
-
-   1.b  (M Step)
-        Set next params pi(n), theta(n) to maximize observed 
-        data likelihood w.r.t. previous params
-         
-   1.c  (convergence test)
-        if log likelihood doesn't change much, exit
-
 
 
