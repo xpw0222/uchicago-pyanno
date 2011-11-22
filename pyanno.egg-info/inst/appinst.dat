@@ -15,10 +15,9 @@ SHORTCUTS = [
     { # pyAnno data files
         'cmd': ['{{FILEBROWSER}}', join(sys.prefix, "pyAnno_data")],
         'comment': 'pyAnno example data files',
-        'icon': 'folder.ico',
         'id': 'pyanno_examples',
         'name': 'pyAnno Data',
-        'desktop'     : True,
+        'desktop': True,
         'terminal': False,
     }
 ]
