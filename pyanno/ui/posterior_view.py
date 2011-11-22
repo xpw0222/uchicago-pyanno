@@ -2,8 +2,8 @@
 # Author: Pietro Berkes <pberkes@enthought.com>
 # License: Modified BSD license (2-clause)
 
-from tables.array import Array
 from traits.has_traits import HasTraits
+from traits.trait_numeric import Array
 from traits.trait_types import Bool, Instance
 from traitsui.editors.instance_editor import InstanceEditor
 from traitsui.group import VGroup, HGroup

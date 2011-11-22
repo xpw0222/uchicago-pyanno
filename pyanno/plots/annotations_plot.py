@@ -11,8 +11,8 @@ from chaco.plot import Plot
 from chaco.plot_containers import HPlotContainer
 from chaco.tools.pan_tool import PanTool
 from enable.component_editor import ComponentEditor
+from traits.trait_numeric import Array
 
-from tables.array import Array
 from traits.trait_types import Str, Instance, Float
 from traitsui.group import VGroup, HGroup
 from traitsui.include import Include
