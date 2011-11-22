@@ -32,7 +32,7 @@ def main():
     # are handled correctly by pyanno
     numpy.seterr(divide='ignore', invalid='ignore')
 
-    with pyanno_application(logging_level=logging.DEBUG) as app:
+    with pyanno_application(logging_level=logging.INFO) as app:
         app.open()
 
 if __name__ == '__main__':
