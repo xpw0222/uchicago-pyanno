@@ -10,18 +10,10 @@ At present, pyAnno implements three probabilistic models of data annotation:
     [Rzhetsky2009]_.
 
     3. `Model B`_, a Bayesian generalization of the model proposed in
-    [Dawid1979].
+    [Dawid1979]_.
 
-.. [Rzhetsky2009] Rzhetsky A., Shatkay, H., and Wilbur,
-    W.J. (2009). "How to get the most from
-    your curation effort", PLoS Computational Biology, 5(5).
-
-.. [Dawid1979] Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
-    estimation of observer error-rates using the EM algorithm.  Applied
-    Statistics, 28(1):20--28.
-
-Glossary
---------
+Definitions
+-----------
 
 annotations
     The values emitted by the annotator on the available data items.
@@ -32,7 +24,7 @@ labels
     The possible annotations. They may be numbers, or strings, or any
     discrete set of objects.
 
-class
+label class, or just class
     Every set of labels is ordered and numbered from 0 to K. The number
     associated with each label is the label class. The ground truth label class
     for each data item, i, is indicated in the documentation as :math:`y_i`.
@@ -52,12 +44,59 @@ descr
 Model B-with-theta
 ------------------
 
-descr
+Model B-with-theta is a multinomial generative model of the annotation
+process. The process begins with the generation of "true" label classes,
+drawn from a fixed categorical distribution. Each annotator reports
+a label class with some additional noise.
+
+There are two sets of parameters: :math:`\gamma_k` controls the
+prior probability of generating a label of class :math:`k`.
+The accuracy parameter :math:`\\theta^j_k` controls the probability of annotator
+:math:`j` reporting class :math:`k'` given that the true label is :math:`k`.
+An important part of the model is that the error probability is controlled
+by just one parameter per annotator, making estimation more robust and
+efficient.
+
+Formally, for annotations :math:`x_i^j` and true label classes :math:`y_i`:
+
+* The probability of the true label classes is
+
+  :math:`P(\mathbf{y} | \gamma) = \prod_i P(y_i | \gamma)`,
+
+  :math:`P(y_i | \gamma) = \mathrm{Categorical}(y_i; \gamma) = \gamma_{y_i}`.
+
+* The prior over the accuracy parameters is
+
+  :math:`P(\theta_j) = \mathrm{Beta}(\theta_j; 1, 2)`.
+
+* And finally the distribution over the annotations is
+
+  :math:`P(\mathbf{x} | \mathbf{y}, \theta) = \prod_i \prod_j P(x^j_i | y_i, \theta_j)`,
+
+  :math:`P(x^j_i | y_i, \theta_j) = \left\{\begin{array}{l l} \theta_j & \quad \text{if } x_i^j = y_i\\ \frac{1-\theta_j}{\sum_n \theta_n} & \quad \text{otherwise}\\ \end{array} \right.`.
+
+See [Rzhetsky2009]_ for more details.
 
 Model B
 -------
 
-descr
+Model B is a more general form of B-with-theta, and is also a Bayesian
+generalization of the earlier model proposed in [Dawid1979]_. The generative
+process is identical to the one in model B-with-theta, except that
+a) 
+
+
+References
+----------
+
+.. [Rzhetsky2009] Rzhetsky A., Shatkay, H., and Wilbur,
+    W.J. (2009). "How to get the most from
+    your curation effort", PLoS Computational Biology, 5(5).
+
+.. [Dawid1979] Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
+    estimation of observer error-rates using the EM algorithm.  Applied
+    Statistics, 28(1):20--28.
+
 
 DAWID AND SKENE'S MULTINOMIAL MODEL W. ARBITRARY DESIGN
 ------------------------------------------------------------
@@ -191,21 +230,4 @@ then maximizing the parameters for those expectations.
         if log likelihood doesn't change much, exit
 
 
-
-
-
-REFERENCES
-------------------------------------------------------------
-
-Artstein, Ron and Massimo Poesio. 2008. Inter-coder agreement for
-computational linguistics.  Computational Linguistics Journal
-34(4):555--596.
-
-Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood estimation of
-observer error-rates using the EM algorithm.  Applied Statistics,
-28(1):20--28.
-
-Rzhetsky, A., H. Shatkay, and W. J. Wilbur.  How to get the most out
-of your curation effort.  PLoS Computational Biology. 5(5). 2009.  
-doi: 10.1371/journal.pcbi.1000391
 

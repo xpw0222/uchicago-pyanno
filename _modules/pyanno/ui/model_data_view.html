@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pyanno.ui.model_data_view &mdash; pyanno 2.0dev documentation</title>
+    <title>pyanno.ui.model_data_view &mdash; pyanno 2.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '2.0dev',
+        VERSION:     '2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="pyanno 2.0dev documentation" href="../../../index.html" />
+    <link rel="top" title="pyanno 2.0 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body>
@@ -38,7 +38,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">pyanno 2.0 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -93,7 +93,7 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ModelDataView"><a class="viewcode-back" href="../../../pyanno.ui.html#pyanno.ui.model_data_view.ModelDataView">[docs]</a><span class="k">class</span> <span class="nc">ModelDataView</span><span class="p">(</span><span class="n">HasTraits</span><span class="p">):</span>
+<div class="viewcode-block" id="ModelDataView"><a class="viewcode-back" href="../../../pyanno.ui.html#pyanno.ui.model_data_view.ModelDataView">[docs]</a><span class="k">class</span> <span class="nc">ModelDataView</span><span class="p">(</span><span class="n">ModelView</span><span class="p">):</span>
 
     <span class="c">#### Information about available models</span>
 
@@ -177,7 +177,8 @@
         <span class="n">anno</span> <span class="o">=</span> <span class="n">AnnotationsContainer</span><span class="o">.</span><span class="n">from_array</span><span class="p">([[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;&lt;undefined&gt;&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">AnnotationsView</span><span class="p">(</span><span class="n">annotations_container</span> <span class="o">=</span> <span class="n">anno</span><span class="p">,</span>
                                <span class="n">nclasses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nclasses</span><span class="p">,</span>
-                               <span class="n">application</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">application</span><span class="p">)</span>
+                               <span class="n">application</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">application</span><span class="p">,</span>
+                               <span class="n">model</span><span class="o">=</span><span class="n">HasTraits</span><span class="p">())</span>
 
 
     <span class="nd">@on_trait_change</span><span class="p">(</span><span class="s">&#39;annotations_file&#39;</span><span class="p">)</span>
@@ -219,7 +220,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
         <span class="n">model_view_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_class_to_view</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">__class__</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_view</span> <span class="o">=</span> <span class="n">model_view_class</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_update</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_updated</span> <span class="o">=</span> <span class="bp">True</span>
 
 </div>
 <div class="viewcode-block" id="ModelDataView.set_annotations"><a class="viewcode-back" href="../../../pyanno.ui.html#pyanno.ui.model_data_view.ModelDataView.set_annotations">[docs]</a>    <span class="k">def</span> <span class="nf">set_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotations_container</span><span class="p">):</span>
@@ -227,7 +228,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">annotations_view</span> <span class="o">=</span> <span class="n">AnnotationsView</span><span class="p">(</span>
             <span class="n">annotations_container</span> <span class="o">=</span> <span class="n">annotations_container</span><span class="p">,</span>
             <span class="n">nclasses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nclasses</span><span class="p">,</span>
-            <span class="n">application</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">application</span>
+            <span class="n">application</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">application</span><span class="p">,</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">HasTraits</span><span class="p">()</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">annotations_stats_view</span> <span class="o">=</span> <span class="n">AnnotationsStatisticsView</span><span class="p">(</span>
             <span class="n">annotations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotations</span><span class="p">,</span>
@@ -247,8 +249,6 @@
     <span class="c">### Actions ##############################################################</span>
 
     <span class="c">#### Model creation actions</span>
-
-    <span class="c"># FIXME tooltip begins with &quot;specifies...&quot;</span>
 
     <span class="c"># create a new model</span></div>
     <span class="n">new_model</span> <span class="o">=</span> <span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;Create...&#39;</span><span class="p">)</span>
@@ -297,7 +297,7 @@
         <span class="n">responsible_view</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_class_to_view</span><span class="p">[</span><span class="n">model_class</span><span class="p">]</span>
 
         <span class="c"># model == None if the user cancelled the action</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">responsible_view</span><span class="o">.</span><span class="n">create_model_dialog</span><span class="p">()</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">responsible_view</span><span class="o">.</span><span class="n">create_model_dialog</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">control</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
@@ -672,7 +672,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">pyanno 2.0 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>

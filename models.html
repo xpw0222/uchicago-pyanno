@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Model definitions &mdash; pyanno 2.0dev documentation</title>
+    <title>Model definitions &mdash; pyanno 2.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.0dev',
+        VERSION:     '2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,9 +25,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pyanno 2.0dev documentation" href="index.html" />
+    <link rel="top" title="pyanno 2.0 documentation" href="index.html" />
     <link rel="next" title="Developer guide" href="developer_guide.html" />
-    <link rel="prev" title="User guide" href="user_guide.html" /> 
+    <link rel="prev" title="Finding help" href="help.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,12 +37,15 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="developer_guide.html" title="Developer guide"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="user_guide.html" title="User guide"
+          <a href="help.html" title="Finding help"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyanno 2.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -60,26 +63,10 @@
 <p>2. <a class="reference internal" href="#model-b-with-theta">Model B-with-theta</a> , a multinomial generative model from the paper
 <a class="reference internal" href="#rzhetsky2009">[Rzhetsky2009]</a>.</p>
 <p>3. <a class="reference internal" href="#model-b">Model B</a>, a Bayesian generalization of the model proposed in
-[Dawid1979].</p>
+<a class="reference internal" href="#dawid1979">[Dawid1979]</a>.</p>
 </div></blockquote>
-<table class="docutils citation" frame="void" id="rzhetsky2009" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[Rzhetsky2009]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>)</em> Rzhetsky A., Shatkay, H., and Wilbur,
-W.J. (2009). &#8220;How to get the most from
-your curation effort&#8221;, PLoS Computational Biology, 5(5).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="dawid1979" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[Dawid1979]</td><td>Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
-estimation of observer error-rates using the EM algorithm.  Applied
-Statistics, 28(1):20&#8211;28.</td></tr>
-</tbody>
-</table>
-<div class="section" id="glossary">
-<h2>Glossary<a class="headerlink" href="#glossary" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="definitions">
+<h2>Definitions<a class="headerlink" href="#definitions" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt>annotations</dt>
 <dd>The values emitted by the annotator on the available data items.
@@ -88,7 +75,7 @@ In the documentation,
 <dt>labels</dt>
 <dd>The possible annotations. They may be numbers, or strings, or any
 discrete set of objects.</dd>
-<dt>class</dt>
+<dt>label class, or just class</dt>
 <dd>Every set of labels is ordered and numbered from 0 to K. The number
 associated with each label is the label class. The ground truth label class
 for each data item, i, is indicated in the documentation as <img class="math" src="_images/math/6e6ceb79ebc4bf613298e0144eae25dd73de9be3.png" alt="y_i"/>.</dd>
@@ -104,11 +91,58 @@ for each data item, i, is indicated in the documentation as <img class="math" sr
 </div>
 <div class="section" id="model-b-with-theta">
 <h2>Model B-with-theta<a class="headerlink" href="#model-b-with-theta" title="Permalink to this headline">¶</a></h2>
-<p>descr</p>
+<p>Model B-with-theta is a multinomial generative model of the annotation
+process. The process begins with the generation of &#8220;true&#8221; label classes,
+drawn from a fixed categorical distribution. Each annotator reports
+a label class with some additional noise.</p>
+<p>There are two sets of parameters: <img class="math" src="_images/math/f5b4fe56b817c346d5bfd0733800694b1ceb5a53.png" alt="\gamma_k"/> controls the
+prior probability of generating a label of class <img class="math" src="_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>.
+The accuracy parameter <img class="math" src="_images/math/b86e1116a21a0c7499e03e40e559b45273e230ac.png" alt="\\theta^j_k"/> controls the probability of annotator
+<img class="math" src="_images/math/8122aa89ea6e80784c6513d22787ad86e36ad0cc.png" alt="j"/> reporting class <img class="math" src="_images/math/5c20717468053f101f9a58dda7990817e9469ad9.png" alt="k'"/> given that the true label is <img class="math" src="_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>.
+An important part of the model is that the error probability is controlled
+by just one parameter per annotator, making estimation more robust and
+efficient.</p>
+<p>Formally, for annotations <img class="math" src="_images/math/391d16aa9be108ec679aeaf14a6f3b532f4fef19.png" alt="x_i^j"/> and true label classes <img class="math" src="_images/math/6e6ceb79ebc4bf613298e0144eae25dd73de9be3.png" alt="y_i"/>:</p>
+<ul>
+<li><p class="first">The probability of the true label classes is</p>
+<p><img class="math" src="_images/math/0b348acfad592e6496c70b92bcf02dc09b11bf0e.png" alt="P(\mathbf{y} | \gamma) = \prod_i P(y_i | \gamma)"/>,</p>
+<p><img class="math" src="_images/math/6a1b014c8eb786656dc139d497554b55a2c03796.png" alt="P(y_i | \gamma) = \mathrm{Categorical}(y_i; \gamma) = \gamma_{y_i}"/>.</p>
+</li>
+<li><p class="first">The prior over the accuracy parameters is</p>
+<p><img class="math" src="_images/math/bc6ba483d28d64e4ec16aaaa7e73403ac6767270.png" alt="P(\theta_j) = \mathrm{Beta}(\theta_j; 1, 2)"/>.</p>
+</li>
+<li><p class="first">And finally the distribution over the annotations is</p>
+<p><img class="math" src="_images/math/63618082d8f4baa94125af9f6d2ba08b6357ee90.png" alt="P(\mathbf{x} | \mathbf{y}, \theta) = \prod_i \prod_j P(x^j_i | y_i, \theta_j)"/>,</p>
+<p><img class="math" src="_images/math/32e4a5a493120a843f1aaa4311a5f28870d06b7e.png" alt="P(x^j_i | y_i, \theta_j) = \left\{\begin{array}{l l} \theta_j &amp; \quad \text{if } x_i^j = y_i\\ \frac{1-\theta_j}{\sum_n \theta_n} &amp; \quad \text{otherwise}\\ \end{array} \right."/>.</p>
+</li>
+</ul>
+<p>See <a class="reference internal" href="#rzhetsky2009">[Rzhetsky2009]</a> for more details.</p>
 </div>
 <div class="section" id="model-b">
 <h2>Model B<a class="headerlink" href="#model-b" title="Permalink to this headline">¶</a></h2>
-<p>descr</p>
+<p>Model B is a more general form of B-with-theta, and is also a Bayesian
+generalization of the earlier model proposed in <a class="reference internal" href="#dawid1979">[Dawid1979]</a>. The generative
+process is identical to the one in model B-with-theta, except that
+a)</p>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils citation" frame="void" id="rzhetsky2009" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Rzhetsky2009]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>, <a class="fn-backref" href="#id4">3</a>)</em> Rzhetsky A., Shatkay, H., and Wilbur,
+W.J. (2009). &#8220;How to get the most from
+your curation effort&#8221;, PLoS Computational Biology, 5(5).</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="dawid1979" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Dawid1979]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id5">2</a>)</em> Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood
+estimation of observer error-rates using the EM algorithm.  Applied
+Statistics, 28(1):20&#8211;28.</td></tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="dawid-and-skene-s-multinomial-model-w-arbitrary-design">
 <h2>DAWID AND SKENE&#8217;S MULTINOMIAL MODEL W. ARBITRARY DESIGN<a class="headerlink" href="#dawid-and-skene-s-multinomial-model-w-arbitrary-design" title="Permalink to this headline">¶</a></h2>
@@ -194,8 +228,8 @@ category k.</p>
 <p>For maximum a posteriori fitting, all values must be
 greater than or equal to 1.0.</p>
 </div>
-<div class="section" id="id3">
-<h2>Model<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h2>Model<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <p>In BUGS-like notation, we add the following:</p>
 <p>pi ~ Dirichlet(beta)</p>
 <dl class="docutils">
@@ -263,18 +297,6 @@ data likelihood w.r.t. previous params</p>
 </li>
 </ol>
 </div>
-<div class="section" id="references">
-<h2>REFERENCES<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
-<p>Artstein, Ron and Massimo Poesio. 2008. Inter-coder agreement for
-computational linguistics.  Computational Linguistics Journal
-34(4):555&#8211;596.</p>
-<p>Dawid, A. P. and A. M. Skene. 1979.  Maximum likelihood estimation of
-observer error-rates using the EM algorithm.  Applied Statistics,
-28(1):20&#8211;28.</p>
-<p>Rzhetsky, A., H. Shatkay, and W. J. Wilbur.  How to get the most out
-of your curation effort.  PLoS Computational Biology. 5(5). 2009.
-doi: 10.1371/journal.pcbi.1000391</p>
-</div>
 </div>
 
 
@@ -286,10 +308,11 @@ doi: 10.1371/journal.pcbi.1000391</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Model definitions</a><ul>
-<li><a class="reference internal" href="#glossary">Glossary</a></li>
+<li><a class="reference internal" href="#definitions">Definitions</a></li>
 <li><a class="reference internal" href="#model-a">Model A</a></li>
 <li><a class="reference internal" href="#model-b-with-theta">Model B-with-theta</a></li>
 <li><a class="reference internal" href="#model-b">Model B</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
 <li><a class="reference internal" href="#dawid-and-skene-s-multinomial-model-w-arbitrary-design">DAWID AND SKENE&#8217;S MULTINOMIAL MODEL W. ARBITRARY DESIGN</a></li>
 <li><a class="reference internal" href="#data">Data</a></li>
 <li><a class="reference internal" href="#parameters">Parameters</a></li>
@@ -299,17 +322,16 @@ doi: 10.1371/journal.pcbi.1000391</p>
 <li><a class="reference internal" href="#maximum-likelihood-estimate-mle">Maximum Likelihood Estimate (MLE)</a></li>
 <li><a class="reference internal" href="#dawid-and-skene-s-model-with-priors">DAWID AND SKENE&#8217;S MODEL WITH PRIORS</a></li>
 <li><a class="reference internal" href="#priors">Priors</a></li>
-<li><a class="reference internal" href="#id3">Model</a></li>
+<li><a class="reference internal" href="#id6">Model</a></li>
 <li><a class="reference internal" href="#complete-likelihood">Complete Likelihood</a></li>
 <li><a class="reference internal" href="#em-algorithm">EM ALGORITHM</a></li>
-<li><a class="reference internal" href="#references">REFERENCES</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="user_guide.html"
-                        title="previous chapter">User guide</a></p>
+  <p class="topless"><a href="help.html"
+                        title="previous chapter">Finding help</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="developer_guide.html"
                         title="next chapter">Developer guide</a></p>
@@ -342,12 +364,15 @@ doi: 10.1371/journal.pcbi.1000391</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="developer_guide.html" title="Developer guide"
              >next</a> |</li>
         <li class="right" >
-          <a href="user_guide.html" title="User guide"
+          <a href="help.html" title="Finding help"
              >previous</a> |</li>
-        <li><a href="index.html">pyanno 2.0dev documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyanno 2.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

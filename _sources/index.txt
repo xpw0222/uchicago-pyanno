@@ -6,9 +6,11 @@
 Welcome to pyAnno's documentation!
 ==================================
 
+
+
 pyAnno 2.0 is a Python library for the analysis and diagnostic testing of
 annotation and curation efforts. pyAnno implements statistical models for
-inferring from categorical data annotated by multiple annotators
+inferring from categorical data annotated by multiple annotators:
 
     * annotator accuracies and biases,
     * gold standard categories of items,
@@ -22,6 +24,9 @@ allows Maximum Likelihood and Maximum A Posteriori estimation of parameters,
 and to draw samples from the full posterior distribution over annotator
 accuracy.
 
+pyAnno features an intuitive GUI to analyze annotation sets
+and visualize model parameters.
+
 Contents:
 
 .. toctree::
@@ -33,20 +38,17 @@ Contents:
    Developer guide <developer_guide>
    Library Reference <modules>
 
-pyAnno GUI
-----------
 
-pyAnno also provides a convenient graphical user interface. This is a
-screenshot from a session in Mac OS X:
 
-.. image:: images/main_window_screenshot.png
-     :width: 500pt
-
++------------------------------+------------------------------+------------------------------+
+| .. image:: images/sshot1.png | .. image:: images/sshot2.png | .. image:: images/sshot3.png |
+|    :height: 80pt             |    :height: 100pt            |    :height: 100pt            |
++------------------------------+------------------------------+------------------------------+
 
 Licensing
 ---------
 
-pyAnno is licensed under the Apache License, Version 2.0.
+pyAnno is licensed under the modified BSD license (2-clause).
 
 
 Contributors

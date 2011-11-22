@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pyanno.ui.annotations_view &mdash; pyanno 2.0dev documentation</title>
+    <title>pyanno.ui.annotations_view &mdash; pyanno 2.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '2.0dev',
+        VERSION:     '2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="pyanno 2.0dev documentation" href="../../../index.html" />
+    <link rel="top" title="pyanno 2.0 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body>
@@ -38,7 +38,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">pyanno 2.0 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
@@ -63,6 +63,7 @@
 <span class="kn">from</span> <span class="nn">traitsui.editors.range_editor</span> <span class="kn">import</span> <span class="n">RangeEditor</span>
 <span class="kn">from</span> <span class="nn">traitsui.editors.tabular_editor</span> <span class="kn">import</span> <span class="n">TabularEditor</span>
 <span class="kn">from</span> <span class="nn">traitsui.group</span> <span class="kn">import</span> <span class="n">HGroup</span><span class="p">,</span> <span class="n">VGrid</span><span class="p">,</span> <span class="n">Group</span>
+<span class="kn">from</span> <span class="nn">traitsui.handler</span> <span class="kn">import</span> <span class="n">ModelView</span>
 <span class="kn">from</span> <span class="nn">traitsui.item</span> <span class="kn">import</span> <span class="n">Item</span><span class="p">,</span> <span class="n">Spring</span><span class="p">,</span> <span class="n">Label</span>
 <span class="kn">from</span> <span class="nn">traitsui.menu</span> <span class="kn">import</span> <span class="n">OKCancelButtons</span>
 <span class="kn">from</span> <span class="nn">pyanno.annotations</span> <span class="kn">import</span> <span class="n">AnnotationsContainer</span>
@@ -107,11 +108,11 @@
         <span class="p">)</span>
 
 </div></div>
-<div class="viewcode-block" id="AnnotationsView"><a class="viewcode-back" href="../../../pyanno.ui.html#pyanno.ui.annotations_view.AnnotationsView">[docs]</a><span class="k">class</span> <span class="nc">AnnotationsView</span><span class="p">(</span><span class="n">HasTraits</span><span class="p">):</span>
+<div class="viewcode-block" id="AnnotationsView"><a class="viewcode-back" href="../../../pyanno.ui.html#pyanno.ui.annotations_view.AnnotationsView">[docs]</a><span class="k">class</span> <span class="nc">AnnotationsView</span><span class="p">(</span><span class="n">ModelView</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Traits UI Model/View for annotations.&quot;&quot;&quot;</span>
 
     <span class="c"># reference to main application</span>
-    <span class="n">Application</span> <span class="o">=</span> <span class="n">Any</span>
+    <span class="n">application</span> <span class="o">=</span> <span class="n">Any</span>
 
     <span class="c">### Model-related traits ###</span>
 
@@ -157,7 +158,7 @@
 
     <span class="k">def</span> <span class="nf">_edit_data_fired</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">data_view</span> <span class="o">=</span> <span class="n">DataView</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">annotations_container</span><span class="o">.</span><span class="n">raw_annotations</span><span class="p">)</span>
-        <span class="n">data_view</span><span class="o">.</span><span class="n">edit_traits</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;modal&#39;</span><span class="p">)</span>
+        <span class="n">data_view</span><span class="o">.</span><span class="n">edit_traits</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;livemodal&#39;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">control</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">annotations_container</span> <span class="o">=</span> <span class="n">AnnotationsContainer</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span>
             <span class="n">data_view</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
             <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotations_container</span><span class="o">.</span><span class="n">name</span>
@@ -273,7 +274,7 @@
 
     <span class="k">def</span> <span class="nf">_filename_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="kn">import</span> <span class="nn">os</span>
-        <span class="n">home</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">&#39;HOME&#39;</span><span class="p">)</span>
+        <span class="n">home</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">&#39;HOME&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">&#39;HOMEPATH&#39;</span><span class="p">)</span>
         <span class="k">return</span>  <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">home</span><span class="p">,</span> <span class="s">&#39;annotations.txt&#39;</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
@@ -347,7 +348,7 @@
     <span class="n">annotations</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate_annotations</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="n">anno</span> <span class="o">=</span> <span class="n">AnnotationsContainer</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">annotations</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;blah&#39;</span><span class="p">)</span>
-    <span class="n">model_view</span> <span class="o">=</span> <span class="n">AnnotationsView</span><span class="p">(</span><span class="n">annotations_container</span><span class="o">=</span><span class="n">anno</span><span class="p">)</span>
+    <span class="n">model_view</span> <span class="o">=</span> <span class="n">AnnotationsView</span><span class="p">(</span><span class="n">annotations_container</span><span class="o">=</span><span class="n">anno</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">HasTraits</span><span class="p">())</span>
     <span class="n">model_view</span><span class="o">.</span><span class="n">configure_traits</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">annotations</span><span class="p">,</span> <span class="n">model_view</span>
 
@@ -387,7 +388,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../../index.html">pyanno 2.0dev documentation</a> &raquo;</li>
+        <li><a href="../../../index.html">pyanno 2.0 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
