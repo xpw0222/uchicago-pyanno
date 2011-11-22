@@ -1,13 +1,13 @@
 # Copyright (c) 2011, Enthought, Ltd.
-# Author: Mark Dickinson and Martin Chilvers
+# Author: Pietro Berkes, Mark Dickinson and Martin Chilvers
 # License: Modified BSD license (2-clause)
 
 
 """ A progress dialog that shows a 'pulse' as opposed to progress ;^) """
 
 
-from enthought.pyface.api import GUI, ProgressDialog
-from enthought.traits.api import Bool, Int
+from pyface.api import GUI, ProgressDialog
+from traits.api import Bool, Int
 
 
 class PulseProgressDialog(ProgressDialog):
@@ -95,7 +95,7 @@ class PulseProgressDialog(ProgressDialog):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from enthought.pyface.api import GUI
+    from pyface.api import GUI
 
     gui = GUI()
 

@@ -5,9 +5,7 @@
 
 """ A progress dialog that shows a 'pulse' as opposed to progress ;^) """
 
-
-from enthought.pyface.api import GUI, ProgressDialog
-from enthought.traits.api import Bool, Int
+from traits.api import Int
 from pyanno.ui.appbase.pulse_progress_dialog import PulseProgressDialog
 
 class MacOSXPulseProgressDialog(PulseProgressDialog):
@@ -47,7 +45,7 @@ class MacOSXPulseProgressDialog(PulseProgressDialog):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    from enthought.pyface.api import GUI
+    from pyface.api import GUI
 
     gui = GUI()
 

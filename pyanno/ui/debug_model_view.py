@@ -4,9 +4,9 @@
 
 """ Base class for Model/View's to provide a python shell for debugging. """
 
-from enthought.traits.api import PythonValue
-from enthought.traits.ui.api import Group, Include, Item, ModelView
-from enthought.traits.ui.api import ShellEditor, VGroup, View
+from traits.api import PythonValue
+from traitsui.api import Group, Include, Item, ModelView
+from traitsui.api import ShellEditor, VGroup, View
 
 
 class DebugModelView(ModelView):

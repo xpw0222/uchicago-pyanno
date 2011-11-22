@@ -122,7 +122,7 @@ def main():
     def divide_succeeded(result): print 'divide succeeded', result
     def divide_failed(exc): print 'divide failed', exc
     
-    from enthought.pyface.api import GUI
+    from pyface.api import GUI
 
     gui = GUI()
 

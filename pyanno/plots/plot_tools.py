@@ -40,7 +40,7 @@ def get_class_color(idx):
     return list(CLASS_COLORS.color_bands[color_idx])
 
 
-# NOTE this code can be deleted after the next release of enthought.enable
+# NOTE this code can be deleted after the next release of enable
 # NOTE current version is enable.__version__ == '4.0.1'
 def _key_event_repackaging(key_event):
     """Workaround for Issue #37 in enable.

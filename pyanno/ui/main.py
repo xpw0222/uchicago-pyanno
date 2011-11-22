@@ -14,7 +14,7 @@ It also supports 2 screen formats:
 """
 
 
-from enthought.etsconfig.api import ETSConfig
+from traits.etsconfig.api import ETSConfig
 ETSConfig.toolkit = 'wx'
 
 import pyanno.ui.appbase.wx_utils as wx_utils
