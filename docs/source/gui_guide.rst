@@ -13,14 +13,14 @@ to start the pyAnno GUI.
 Navigating the main window
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The main window of the pyAnno GUI looks like this:
+This is the main window of the pyAnno GUI:
 
 .. image:: images/main_window_screenshot.png
      :width: 600pt
 
 It contains three panels:
 
-* On the left side we find the **model panel**. At the top, there are buttons
+* On the left side we find the **model panel**. At the top, there are controls
   to create a new model. Select the desired model from the selection box,
   and click on "Create..." to enter the basic parameters for the model, for
   example:
@@ -28,7 +28,7 @@ It contains three panels:
   .. image:: images/create_model.png
        :width: 300pt
 
-  Below that, one sees a summary of the model information, and a graphical
+  Just below, we find a summary of the model information, and a graphical
   display of the current model parameters:
 
   .. image:: images/model_info.png
