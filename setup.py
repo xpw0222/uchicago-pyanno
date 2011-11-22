@@ -10,7 +10,7 @@ with open('README') as f:
 
 setup_dict = dict(
     name = "pyanno",
-    version = "2.0dev-12",
+    version = "2.0",
     packages = find_packages(),
 
     description = 'Package for curating data annotation efforts.',
