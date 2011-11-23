@@ -1,6 +1,3 @@
-[setuptools.installation]
-eggsecutable = pyanno.ui.main:main
-
 [console_scripts]
 
 
