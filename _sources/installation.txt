@@ -4,6 +4,8 @@ Installation guide
 pyAnno can be installed on any platform that runs Python, including
 all recent flavors of Windows, Mac, and Linux.
 
+.. contents:: Index
+
 Install Dependencies
 --------------------
 
@@ -27,24 +29,39 @@ To use pyAnno you will need the following:
    - wxPython 2.8.10
      http://www.wxpython.org/
 
-The easiest way to satisfy all of these dependencies is to install the `EPD
-Free Python distribution <http://enthought.com/products/epd_free.php>`_
-
+The easiest way to satisfy all of these dependencies is to install the
+`EPD Free Python distribution <http://enthought.com/products/epd_free.php>`_.
 For your convenience, we prepared installers for Mac OS X and Windows
 that include both pyAnno and the EPD Free distribution:
 
 [ADD LINK TO INSTALLERS]
 
+.. note::
+
+    The 64-bit EPD Free distribution for Mac OS X does not include
+    wxPython (because of `lack of support from Apple
+    <http://enthought.com/products/epdfaq.php#mac>`_). Please install the
+    fully-featured 32-bit version.
+
+
+.. _binary_installers:
 
 Binary installers
 -----------------
+
+The most convenient way to install pyAnno is to use our custom
+EPD Free installers for Mac OS X and Windows, which include the latest
+version of Python and all scientific libraries necessary to run pyAnno:
+
+[ADD LINK TO INSTALLERS]
+
 
 If you already have a Python installation with all the dependencies listed
 above, you will find Windows and Mac OS X binary installers on the
 `pyAnno page on PyPI <http://pypi.python.org/pypi?:action=display&name=pyanno>`_.
 
 To executable scripts to start the pyAnno GUI will be installed in the
-scripts path of your Python installation. On Windowns, this will usually be at
+scripts path of your Python installation. On Windows, this will usually be at
 :file:`C:\\Python27\\Scripts\\pyanno-ui` , and on Mac OS X at
 :file:`/Library/Frameworks/Python.framework/Versions/Current/bin/pyanno-ui`.
 
