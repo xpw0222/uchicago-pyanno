@@ -201,7 +201,8 @@ class ThetaTensorPlot(PyannoPlotContainer):
         editor=ComponentEditor(),
         resizable=True,
         show_label=False,
-        height=-300
+        height=-250,
+        width=-500
         )
 
     traits_plot_item = Instance(Item)
@@ -266,7 +267,8 @@ def main():
 
     model = ModelB.create_initial_state(4, 5)
     anno = model.generate_annotations(100)
-    samples = model.sample_posterior_over_accuracy(anno, 10)
+    samples = model.sample_posterior_over_accuracy(anno, 10,
+                                                   return_all_samples=False)
 
     theta_view = plot_theta_tensor(model, 2, samples,
                                    title='Debug plot_theta_parameters')

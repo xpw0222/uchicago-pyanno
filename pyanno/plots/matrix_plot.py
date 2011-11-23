@@ -155,6 +155,7 @@ def main():
 
     matrix = np.eye(5)
     matrix_view = plot_square_matrix(matrix, title='Debug plot_matrix')
+    matrix_view.configure_traits()
     return matrix_view
 
 

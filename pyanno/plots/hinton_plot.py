@@ -165,7 +165,7 @@ def plot_hinton_diagram(data, **kwargs):
         sets the title of the plot.
     """
     hinton_diagram = HintonDiagramPlot(data=data, **kwargs)
-    hinton_diagram.edit_traits(view='resizable_view')
+    hinton_diagram.edit_traits(view='traits_view')
     return hinton_diagram
 
 
@@ -175,7 +175,7 @@ def plot_hinton_diagram(data, **kwargs):
 def main():
     """ Entry point for standalone testing/debugging. """
 
-    data = np.random.random(5)
+    data = np.random.random(15)
     data /= data.sum()
     hinton_view = plot_hinton_diagram(data.tolist(),
                                       title='Debug plot_hinton_diagram')
