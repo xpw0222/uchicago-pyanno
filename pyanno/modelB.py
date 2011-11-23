@@ -362,7 +362,7 @@ class ModelB(AbstractModel):
         obj_history = []
         diff = np.inf
         for objective, prev_est, cat_est, acc_est in learning_iterator:
-            logger.debug(info_str.format(epoch, objective, diff))
+            logger.info(info_str.format(epoch, objective, diff))
 
             obj_history.append(objective)
 
