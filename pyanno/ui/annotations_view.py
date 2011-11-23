@@ -82,7 +82,7 @@ class AnnotationsView(ModelView):
                 self.annotations_container.annotations,
                 nclasses).tolist()
         except PyannoValueError as e:
-            logger.info(e)
+            logger.debug(e)
             frequency = np.zeros((nclasses,)).tolist()
 
         self.frequency = frequency
