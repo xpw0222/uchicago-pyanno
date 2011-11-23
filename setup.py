@@ -34,9 +34,9 @@ setup_dict = dict(
       'gui_scripts': [
           'pyanno-ui = pyanno.ui.main:main',
       ],
-      'setuptools.installation': [
-        'eggsecutable = pyanno.ui.main:main',
-      ]
+      #'setuptools.installation': [
+      #  'eggsecutable = pyanno.ui.main:main',
+      #]
     },
     #scripts = ['examples/mle_sim.py',
     #           'examples/map_sim.py',
