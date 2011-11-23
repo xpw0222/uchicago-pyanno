@@ -27,7 +27,13 @@ accuracy.
 pyAnno features an intuitive GUI to analyze annotation sets
 and visualize model parameters.
 
-Contents:
++------------------------------+------------------------------+------------------------------+
+| .. image:: images/sshot1.png | .. image:: images/sshot2.png | .. image:: images/sshot3.png |
+|    :height: 80pt             |    :height: 100pt            |    :height: 100pt            |
++------------------------------+------------------------------+------------------------------+
+
+Contents
+--------
 
 .. toctree::
    :maxdepth: 1
@@ -40,13 +46,8 @@ Contents:
 
 
 
-+------------------------------+------------------------------+------------------------------+
-| .. image:: images/sshot1.png | .. image:: images/sshot2.png | .. image:: images/sshot3.png |
-|    :height: 80pt             |    :height: 100pt            |    :height: 100pt            |
-+------------------------------+------------------------------+------------------------------+
-
-Licensing
----------
+License
+-------
 
 pyAnno is licensed under the modified BSD license (2-clause).
 
