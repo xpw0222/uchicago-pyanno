@@ -23,30 +23,22 @@ class PulseProgressDialog(ProgressDialog):
     #### 'PulseProgressDialog' protocol #######################################
 
     # The delay between pulses (in milliseconds).
-    delay = Int(70)
+    delay = Int(40)
 
     def pulse(self):
         """ Pulse the progress bar. """
 
         # The actual value passed to 'update' here isn't used by pyface because
         # 'max' is set to 0 (zero) which makes the progress bar 'pulse'!
-        if self.ascend:
-            self.counter += 1
-            self.ascend = self.counter < self.max
-        else:
-            self.counter -= 1
-            self.ascend = self.counter <= 0
-
-        self.update(self.counter)
+        widget = self.progress_bar.control
+        widget.Pulse()
 
         return
 
     #### 'IProgressDialog' protocol ###########################################
 
-    ascend       = True
-    counter      = 1
     can_cancel   = False
-    max          = 30
+    max          = 100
     show_percent = False
     show_time    = False
 

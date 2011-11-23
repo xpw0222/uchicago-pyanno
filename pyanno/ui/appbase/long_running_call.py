@@ -11,7 +11,6 @@ from traits.api import Any, Callable, Dict, HasTraits, Tuple, Unicode
 import sys
 
 from pyanno.ui.appbase.pulse_progress_dialog import PulseProgressDialog
-from pyanno.ui.appbase.mac_pulse_progress_dialog import MacOSXPulseProgressDialog
 
 
 class LongRunningCall(HasTraits):
@@ -76,10 +75,7 @@ class LongRunningCall(HasTraits):
             # its parent!
             self.parent.Enable(False)
 
-        if sys.platform == 'darwin':
-            progress_dialog_class = MacOSXPulseProgressDialog
-        else:
-            progress_dialog_class = PulseProgressDialog
+        progress_dialog_class = PulseProgressDialog
         self.progress_dialog = progress_dialog_class(
             parent=self.parent, title=self.title, message=self.message
         )
