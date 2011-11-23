@@ -1,5 +1,5 @@
 # Copyright (c) 2011, Enthought, Ltd.
-# Author: Mark Dickinson and Martin Chilvers
+# Author: Mark Dickinson Martin Chilvers, and Ioannis Tziakos
 # License: Modified BSD license (2-clause)
 
 
@@ -8,7 +8,6 @@
 
 from pyface.api import GUI
 from traits.api import Any, Callable, Dict, HasTraits, Tuple, Unicode
-import sys
 
 from pyanno.ui.appbase.pulse_progress_dialog import PulseProgressDialog
 
