@@ -126,9 +126,9 @@ class TestModelB(unittest.TestCase):
         # errors in the estimation are due to the the high uncertainty over
         # real labels, due to the relatively high error probability under the
         # prior
-        testing.assert_allclose(model.pi, true_model.pi, atol=1e-1, rtol=0.)
+        testing.assert_allclose(model.pi, true_model.pi, atol=0.05, rtol=0.)
         testing.assert_allclose(model.theta, true_model.theta,
-                                atol=1e-1, rtol=0.)
+                                atol=0.05, rtol=0.)
         self.assertGreater(after_llhood, before_llhood)
 
 
@@ -147,9 +147,9 @@ class TestModelB(unittest.TestCase):
         model = ModelB(nclasses, nannotators, pi, theta)
         model.map(annotations, epsilon=1e-3, max_epochs=1000)
 
-        testing.assert_allclose(model.pi, true_model.pi, atol=1e-1, rtol=0.)
+        testing.assert_allclose(model.pi, true_model.pi, atol=0.05, rtol=0.)
         testing.assert_allclose(model.theta, true_model.theta,
-                                atol=1e-1, rtol=0.)
+                                atol=0.05, rtol=0.)
 
 
     def test_mle_estimation(self):
