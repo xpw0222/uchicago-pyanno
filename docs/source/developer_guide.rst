@@ -34,7 +34,7 @@ pyanno project, type ::
     The tests that verify some of the models' functionality (e.g.,
     the estimation of the model parameters), are stochastic. This has the advantage
     that they test different, general scenarios at each round, but occasionally
-    lead to test failures. If one of the test fails, please run it a second time.
+    leads to test failures. If one of the test fails, please run it a second time.
     If the failures are consistent, please report a bug using the
     `issue tracker <https://github.com/enthought/uchicago-pyanno/issues>`_.
 
@@ -71,7 +71,7 @@ Publishing the documentation
 ----------------------------
 
 The documentation is based on `Sphinx <http://sphinx.pocoo.org/index.html>`_.
-It can be found in `pyanno\docs`.
+It can be found in :file:`pyanno/docs`.
 
 After editing the documentation, you should compile it, revise the result,
 and publish it online:
@@ -79,7 +79,7 @@ and publish it online:
 1) Check out the `gh-pages` branch from the git repository in a new
    directory, `DOCPATH`.
 
-2) Enter the directory `pyanno\docs` and
+2) Enter the directory :file:`pyanno/docs` and
    edit the `BUILDDIR` variable in the local `Makfile` to `DOCPATH`.
 
 3) Type ::
@@ -87,7 +87,7 @@ and publish it online:
     $ make html
 
    Make sure the the `pyanno` package
-   is in the `PYTHONPATH`, or Shpinx will fail to generate the API
+   is in the `PYTHONPATH`, or Sphinx will fail to generate the API
    documentation.
 
 4) Enter `DOCPATH`, check that the documentation has been correctly generated,

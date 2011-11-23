@@ -86,7 +86,7 @@ a label class with some additional noise.
 
 There are two sets of parameters: :math:`\gamma_k` controls the
 prior probability of generating a label of class :math:`k`.
-The accuracy parameter :math:`\\theta^j_k` controls the probability of annotator
+The accuracy parameter :math:`\theta^j_k` controls the probability of annotator
 :math:`j` reporting class :math:`k'` given that the true label is :math:`k`.
 An important part of the model is that the error probability is controlled
 by just one parameter per annotator, making estimation more robust and
@@ -119,8 +119,8 @@ Model B is a more general form of B-with-theta, and is also a Bayesian
 generalization of the earlier model proposed in [Dawid1979]_. The generative
 process is identical to the one in model B-with-theta, except that
 a) the accuracy parameters are represented by a full tensor
-:math:`\\theta_{j,k,k'} = P(x^j = k' | y = k)`, and b) it defines prior
-probabilities over the model parameters, :math:`\\theta`, and :math:`\pi`.
+:math:`\theta_{j,k,k'} = P(x^j = k' | y = k)`, and b) it defines prior
+probabilities over the model parameters, :math:`\theta`, and :math:`\pi`.
 
 The complete model description is as follows:
 
