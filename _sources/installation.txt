@@ -6,7 +6,7 @@ all recent flavors of Windows, Mac, and Linux.
 
 .. contents:: Index
 
-Install Dependencies
+Install dependencies
 --------------------
 
 To use pyAnno you will need the following:
@@ -57,8 +57,9 @@ version of Python and all scientific libraries necessary to run pyAnno:
 
 
 If you already have a Python installation with all the dependencies listed
-above, you will find Windows and Mac OS X binary installers on the
-`pyAnno page on PyPI <http://pypi.python.org/pypi?:action=display&name=pyanno>`_.
+above, you will find Windows and Mac OS X binary installers at
+
+[ADD LINK TO INSTALLERS]
 
 To executable scripts to start the pyAnno GUI will be installed in the
 scripts path of your Python installation. On Windows, this will usually be at
@@ -70,11 +71,11 @@ You can also start the pyAnno GUI from a terminal with the command ::
    pyanno-ui
 
 
-Installing with `easy_install` or `pip`
+Installing with `pip` or `easy_install`
 ---------------------------------------
 
 pyAnno is hosted on PyPi_, so it can be installed simply with either
-pip_ (preferred) or easy_install_ . Both tools are very easy to install,
+pip_ (recommended) or easy_install_ . Both tools are very easy to install,
 and are often available out of the box on many Python distributions.
 
 To install pyAnno, simply type on the command line:

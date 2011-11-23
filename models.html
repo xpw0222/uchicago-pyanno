@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pyanno 2.0 documentation" href="index.html" />
     <link rel="next" title="Developer guide" href="developer_guide.html" />
-    <link rel="prev" title="Finding help" href="help.html" /> 
+    <link rel="prev" title="User guide" href="user_guide.html" /> 
   </head>
   <body>
     <div class="related">
@@ -43,7 +43,7 @@
           <a href="developer_guide.html" title="Developer guide"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="help.html" title="Finding help"
+          <a href="user_guide.html" title="User guide"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">pyanno 2.0 documentation</a> &raquo;</li> 
       </ul>
@@ -130,7 +130,7 @@ drawn from a fixed categorical distribution. Each annotator reports
 a label class with some additional noise.</p>
 <p>There are two sets of parameters: <img class="math" src="_images/math/f5b4fe56b817c346d5bfd0733800694b1ceb5a53.png" alt="\gamma_k"/> controls the
 prior probability of generating a label of class <img class="math" src="_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>.
-The accuracy parameter <img class="math" src="_images/math/b86e1116a21a0c7499e03e40e559b45273e230ac.png" alt="\\theta^j_k"/> controls the probability of annotator
+The accuracy parameter <img class="math" src="_images/math/8fef47254279e9b22f28b809b0b70d0d5013ba7d.png" alt="\theta^j_k"/> controls the probability of annotator
 <img class="math" src="_images/math/8122aa89ea6e80784c6513d22787ad86e36ad0cc.png" alt="j"/> reporting class <img class="math" src="_images/math/5c20717468053f101f9a58dda7990817e9469ad9.png" alt="k'"/> given that the true label is <img class="math" src="_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>.
 An important part of the model is that the error probability is controlled
 by just one parameter per annotator, making estimation more robust and
@@ -157,8 +157,8 @@ efficient.</p>
 generalization of the earlier model proposed in <a class="reference internal" href="#dawid1979">[Dawid1979]</a>. The generative
 process is identical to the one in model B-with-theta, except that
 a) the accuracy parameters are represented by a full tensor
-<img class="math" src="_images/math/8648f47a3677a4cc40a73cd200677e553d32c491.png" alt="\\theta_{j,k,k'} = P(x^j = k' | y = k)"/>, and b) it defines prior
-probabilities over the model parameters, <img class="math" src="_images/math/496e264a6cc9eb133fa53fbf8cfb586155bd1d42.png" alt="\\theta"/>, and <img class="math" src="_images/math/f2ca003a7da0de4994b4733e203b74ff52d42553.png" alt="\pi"/>.</p>
+<img class="math" src="_images/math/3c2c5a53674d606b01b5f28add6eab7d2c11cfae.png" alt="\theta_{j,k,k'} = P(x^j = k' | y = k)"/>, and b) it defines prior
+probabilities over the model parameters, <img class="math" src="_images/math/52e8ed7a3ba22130ad3984eb2cd413406475a689.png" alt="\theta"/>, and <img class="math" src="_images/math/f2ca003a7da0de4994b4733e203b74ff52d42553.png" alt="\pi"/>.</p>
 <p>The complete model description is as follows:</p>
 <ul>
 <li><p class="first">The probability of the true label classes is</p>
@@ -207,21 +207,18 @@ Statistics, 28(1):20&#8211;28.</td></tr>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Model definitions</a><ul>
-<li><a class="reference internal" href="#glossary">Glossary</a></li>
-<li><a class="reference internal" href="#model-a">Model A</a></li>
-<li><a class="reference internal" href="#model-b-with-theta">Model B-with-theta</a></li>
-<li><a class="reference internal" href="#model-b">Model B</a></li>
-<li><a class="reference internal" href="#references">References</a></li>
-</ul>
-</li>
+<h3><a href="index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">User guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">pyAnno models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer_guide.html">Developer guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Library Reference</a></li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="help.html"
-                        title="previous chapter">Finding help</a></p>
+  <p class="topless"><a href="user_guide.html"
+                        title="previous chapter">User guide</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="developer_guide.html"
                         title="next chapter">Developer guide</a></p>
@@ -260,7 +257,7 @@ Statistics, 28(1):20&#8211;28.</td></tr>
           <a href="developer_guide.html" title="Developer guide"
              >next</a> |</li>
         <li class="right" >
-          <a href="help.html" title="Finding help"
+          <a href="user_guide.html" title="User guide"
              >previous</a> |</li>
         <li><a href="index.html">pyanno 2.0 documentation</a> &raquo;</li> 
       </ul>
