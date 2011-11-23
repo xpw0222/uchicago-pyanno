@@ -25,6 +25,16 @@ import numpy
 
 import logging
 
+# FIXME remove errors coming from the traitsui editors when pressing
+#       a button before the editing is over
+import sys
+_old_excepthook = sys.excepthook
+def _pyanno_excepthook(type, value, traceback):
+    if str(value).startswith("'NoneType' object"):
+        return
+    _old_excepthook(type, value, traceback)
+
+
 def main():
     """Create and start the application."""
 
@@ -33,7 +43,11 @@ def main():
     numpy.seterr(divide='ignore', invalid='ignore')
 
     with pyanno_application(logging_level=logging.INFO) as app:
-        app.open()
+        try:
+            sys.excepthook = _pyanno_excepthook
+            app.open()
+        finally:
+            sys.excepthook = _old_excepthook
 
 if __name__ == '__main__':
     main()
