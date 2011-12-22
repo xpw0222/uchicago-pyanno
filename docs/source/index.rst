@@ -19,12 +19,12 @@ inferring from categorical data annotated by multiple annotators:
 
 The models include a generalization of Dawid and Skene's (1979) multinomial
 model with Dirichlet priors on prevalence and estimator accuracy,
-and the two models introduces in Rzhetsky et al.'s (2009). The implementation
-allows Maximum Likelihood and Maximum A Posteriori estimation of parameters,
-and to draw samples from the full posterior distribution over annotator
+and the two models introduced in Rzhetsky et al.'s (2009). The implementation
+allows estimating parameters using Maximum Likelihood and Maximum A Posteriori
+estimation, and drawing samples from the full posterior distribution over annotator
 accuracy.
 
-pyAnno features an intuitive GUI to analyze annotation sets
+pyAnno also features an intuitive GUI to analyze annotation sets
 and visualize model parameters.
 
 +------------------------------+------------------------------+------------------------------+
