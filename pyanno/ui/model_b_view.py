@@ -52,7 +52,7 @@ class NewModelBDialog(NewModelDialog):
 
     parameters_group = VGroup(
         Item(name='nclasses',
-             editor=RangeEditor(mode='spinner', low=3, high=1000),
+             editor=RangeEditor(mode='spinner', low=2, high=1000),
              label='Number of annotation classes:',
              width=100),
         Item(name='nannotators',
