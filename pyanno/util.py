@@ -262,6 +262,7 @@ def majority_vote(annotations):
     """Compute an estimate of the real class by majority vote.
 
     In case of ties, return the class with smallest number.
+    If a row only contains invalid entries, return `MISSING_VALUE`.
 
     Arguments
     ---------
@@ -280,8 +281,12 @@ def majority_vote(annotations):
     vote = np.empty((nitems,), dtype=int)
 
     for i in xrange(nitems):
-        count = np.bincount(annotations[i,valid[i,:]])
-        vote[i] = count.argmax()
+        if not np.any(valid[i,:]):
+            # no valid entries on this row
+            vote[i] = MISSING_VALUE
+        else:
+            count = np.bincount(annotations[i,valid[i,:]])
+            vote[i] = count.argmax()
 
     return vote
 
