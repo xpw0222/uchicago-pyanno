@@ -28,21 +28,21 @@ class ModelBt(AbstractModel):
 
     The model assumes the existence of "true" underlying labels for each item,
     which are drawn from a categorical distribution, gamma. Annotators report
-    this labels with some noise, according to their accuracy, theta.
+    these labels with some noise, according to their accuracy, theta.
 
     This model is closely related to :class:`~ModelB`, but, crucially,
     the noise distribution is described by a small number of parameters (one
     per annotator), which makes their estimation efficient and less sensitive
     to local optima.
 
-    The model parameters are:
+    These are the model parameters:
 
     - `gamma[k]` is the probability of label k
 
     - `theta[j]` parametrizes the probability that annotator `j` reports label
-    `k'` given ground truth, `k`. More specifically,
-    `P( annotator j chooses k' | real label = k)` is
-    `theta[j]` for k' = k, or `(1 - theta[j]) / sum(theta)` if `k' != k `.
+      `k'` given ground truth, `k`. More specifically,
+      `P( annotator j chooses k' | real label = k)` is
+      `theta[j]` for k' = k, or `(1 - theta[j]) / sum(theta)` if `k' != k `.
 
     See the documentation for a more detailed description of the model.
 

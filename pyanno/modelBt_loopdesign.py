@@ -60,22 +60,23 @@ class ModelBtLoopDesign(AbstractModel):
 
     The model assumes the existence of "true" underlying labels for each item,
     which are drawn from a categorical distribution, gamma. Annotators report
-    this labels with some noise.
+    these labels with some noise.
 
     This model is closely related to :class:`~ModelB`, but, crucially,
     the noise distribution is described by a small number of parameters (one
     per annotator), which makes their estimation efficient and less sensitive
     to local optima.
 
-    The model parameters are:
+    These are the model parameters:
 
     - gamma[k] is the probability of label k
 
-    - theta[j] parametrized the probability that annotator j reports label k'.
-      More specifically, P( annotator j chooses k' | real label = k) is
-      theta[j] for k' = k, or (1 - theta[j]) / sum(theta) if k' != k .
+    - theta[j] parametrizes the probability that annotator `j` reports label
+      `k'` given ground truth, `k`. More specifically,
+      `P( annotator j chooses k' | real label = k)` is
+      `theta[j]` for k' = k, or `(1 - theta[j]) / sum(theta)` if `k' != k `.
 
-    This implementation is optimized for he loop design introduced in
+    This implementation is optimized for the loop design introduced in
     (Rzhetsky et al., 2009), which assumes that each item is annotated by 3
     out of 8 annotators. For a more general implementation, see
     :class:`~ModelBt`
