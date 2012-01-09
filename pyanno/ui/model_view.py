@@ -54,10 +54,13 @@ class PyannoModelView(ModelView):
         raise NotImplementedError()
 
     @classmethod
-    def create_model_dialog(cls, parent):
-        """Open a dialog to create a new model."""
+    def create_model_dialog(cls, parent, **kwargs):
+        """Open a dialog to create a new model.
 
-        dialog = cls.new_model_dialog_class()
+        All keyword arguments are passed to the model dialog class constructor.
+        """
+
+        dialog = cls.new_model_dialog_class(**kwargs)
         dialog_ui = dialog.edit_traits(kind="livemodal",
                                        parent=parent)
         if dialog_ui.result:

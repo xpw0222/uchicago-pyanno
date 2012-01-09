@@ -205,7 +205,8 @@ class ModelB_PriorView(HasTraits):
                       editor=TabularEditor(
                           adapter=Array2DAdapter(ncolumns=nclasses,
                                                  format='%.4f',
-                                                 show_index=True),
+                                                 show_index=True,
+                                                 count_from_one=False),
                           ),
                       width = w_table,
                       height = HEIGHT_CELL,
@@ -216,7 +217,8 @@ class ModelB_PriorView(HasTraits):
                       editor=TabularEditor(
                           adapter=Array2DAdapter(ncolumns=nclasses,
                                                  format='%.4f',
-                                                 show_index=True),
+                                                 show_index=True,
+                                                 count_from_one=False),
                           ),
                       width = w_table,
                       height = h_table,
