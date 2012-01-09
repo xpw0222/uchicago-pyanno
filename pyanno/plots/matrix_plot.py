@@ -76,7 +76,9 @@ class MatrixPlot(PyannoPlotContainer):
         axis = self._create_increment_one_axis(plot, 0.5, width, 'bottom')
         self._add_value_axis(plot, axis)
 
-        axis = self._create_increment_one_axis(plot, 0.5, width, 'left')
+        axis = self._create_increment_one_axis(
+            plot, 0.5, width, 'left',
+            ticks=[str(i) for i in range(width-1, -1, -1)])
         self._add_index_axis(plot, axis)
 
         #### tweak plot attributes

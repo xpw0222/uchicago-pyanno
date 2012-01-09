@@ -245,8 +245,17 @@ class ModelDataView(ModelView):
         model_class = self._model_name_to_class[model_name]
         responsible_view = self._model_class_to_view[model_class]
 
+        # if annotations are loaded, set default values for number of
+        # annotations and annotators to the ones in the data set
+        kwargs = {}
+        if self.annotations_are_defined:
+            anno = self.annotations_view.annotations_container
+            kwargs['nclasses'] = anno.nclasses
+            kwargs['nannotators'] = anno.nannotators
+
         # model == None if the user cancelled the action
-        model = responsible_view.create_model_dialog(self.info.ui.control)
+        model = responsible_view.create_model_dialog(self.info.ui.control,
+                                                     **kwargs)
         if model is not None:
             self.set_model(model)
 

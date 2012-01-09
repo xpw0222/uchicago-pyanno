@@ -52,7 +52,7 @@ class NewModelBDialog(NewModelDialog):
 
     parameters_group = VGroup(
         Item(name='nclasses',
-             editor=RangeEditor(mode='spinner', low=3, high=1000),
+             editor=RangeEditor(mode='spinner', low=2, high=1000),
              label='Number of annotation classes:',
              width=100),
         Item(name='nannotators',
@@ -205,7 +205,8 @@ class ModelB_PriorView(HasTraits):
                       editor=TabularEditor(
                           adapter=Array2DAdapter(ncolumns=nclasses,
                                                  format='%.4f',
-                                                 show_index=True),
+                                                 show_index=True,
+                                                 count_from_one=False),
                           ),
                       width = w_table,
                       height = HEIGHT_CELL,
@@ -216,7 +217,8 @@ class ModelB_PriorView(HasTraits):
                       editor=TabularEditor(
                           adapter=Array2DAdapter(ncolumns=nclasses,
                                                  format='%.4f',
-                                                 show_index=True),
+                                                 show_index=True,
+                                                 count_from_one=False),
                           ),
                       width = w_table,
                       height = h_table,

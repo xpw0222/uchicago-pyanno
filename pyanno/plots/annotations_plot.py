@@ -19,9 +19,11 @@ from traitsui.include import Include
 from traitsui.item import Item, Spring
 from traitsui.view import View
 
-from pyanno.plots.plots_superclass import PyannoPlotContainer
-import numpy as np
 from pyanno.ui.appbase.wx_utils import is_display_small
+from pyanno.plots.plots_superclass import PyannoPlotContainer
+from pyanno.util import is_valid
+
+import numpy as np
 
 
 class PosteriorPlot(PyannoPlotContainer):
@@ -135,8 +137,9 @@ class PosteriorPlot(PyannoPlotContainer):
         y_name = mark_name + '_y'
         x_name = mark_name + '_x'
 
-        y_values = np.arange(nannotations) + delta_y + 0.5
-        x_values = mark_classes.astype(float) + delta_x + 0.5
+        valid = is_valid(mark_classes)
+        y_values = np.arange(nannotations)[valid] + delta_y + 0.5
+        x_values = mark_classes[valid].astype(float) + delta_x + 0.5
 
         plot.data.set_data(y_name, y_values)
         plot.data.set_data(x_name, x_values)

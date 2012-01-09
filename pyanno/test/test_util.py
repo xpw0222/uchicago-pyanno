@@ -62,5 +62,18 @@ class TestUtil(unittest.TestCase):
         result = pu.majority_vote(annotations)
         np.testing.assert_equal(expected, result)
 
+
+    def test_majority_vote_empty_item(self):
+        # Bug: majority vote with row of invalid annotations fails
+        annotations = np.array(
+            [[1, 2, 3],
+             [MV, MV, MV],
+             [1, 2, 2]]
+        )
+        expected = [1, MV, 2]
+        result = pu.majority_vote(annotations)
+        np.testing.assert_equal(expected, result)
+
+
 if __name__ == '__main__':
     unittest.main()

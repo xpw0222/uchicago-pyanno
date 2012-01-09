@@ -31,10 +31,10 @@ class ModelB(AbstractModel):
     Model B is a hierarchical generative model over annotations. The model
     assumes the existence of "true" underlying labels for each item,
     which are drawn from a categorical distribution,
-    :math:`\pi`. Annotators report this labels with some noise, depending
+    :math:`\pi`. Annotators report these labels with some noise, depending
     on their accuracy, :math:`\\theta`.
 
-    The model parameters are:
+    These are the model parameters:
 
         - `pi[k]` is the probability of label k
 
@@ -42,11 +42,11 @@ class ModelB(AbstractModel):
           for an item whose real label is k, i.e.
           P( annotator j chooses k' | real label = k)
 
-    The parameters themselves are random variables with hyperparameters
+    The parameters are themselves random variables with these hyper-parameters:
 
-        - `beta` are the parameters of a Dirichlet distribution over `pi`
+        - `beta` are the parameters of the Dirichlet distribution over `pi`
 
-        - `alpha[k,:]` are the parameters of Dirichlet distributions over
+        - `alpha[k,:]` are the parameters of the Dirichlet distributions over
           `theta[j,k,:]`
 
     See the documentation for a more detailed description of the model.

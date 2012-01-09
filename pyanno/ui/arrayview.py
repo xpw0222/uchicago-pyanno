@@ -13,6 +13,7 @@ from traitsui.menu import NoButtons
 class Array2DAdapter(TabularAdapter):
     columns = List
     show_index = Bool(True)
+    count_from_one = Bool(True)
     ncolumns = Int
 
     data_format = Str('%s')
@@ -34,7 +35,11 @@ class Array2DAdapter(TabularAdapter):
 
 
     def _columns_default(self):
-        columns = [('%d' % (i+1), i) for i in range(self.ncolumns)]
+        if self.count_from_one:
+            columns = [('%d' % (i+1), i) for i in range(self.ncolumns)]
+        else:
+            columns = [('%d' % i, i) for i in range(self.ncolumns)]
+
         if self.show_index:
             columns.insert(0, ('items', 'index'))
         return columns

@@ -40,7 +40,8 @@ class ParametersTabularView(HasTraits):
                        editor=TabularEditor(
                            adapter=Array2DAdapter(ncolumns=ncolumns,
                                                   format=self.format,
-                                                  show_index=False),
+                                                  show_index=False,
+                                                  count_from_one=False),
                            editable=False
                        ),
                        width = w_table,
