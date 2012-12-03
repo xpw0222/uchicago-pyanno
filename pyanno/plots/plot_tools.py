@@ -45,11 +45,10 @@ def get_class_color(idx):
 def _key_event_repackaging(key_event):
     """Workaround for Issue #37 in enable.
 
-    Remap keys in wx and qt to have a consistent behavior across platforms
+    Remap keys in wx to have a consistent behavior across platforms
     """
 
     import wx
-    from pyface.qt import QtCore, QtGui
     import enable.wx.constants as wx_constants
     from enable.events import KeyEvent
 
@@ -71,40 +70,10 @@ def _key_event_repackaging(key_event):
                         event=gui_event,
                         window=key_event.window)
 
-    def qt_new_behavior_key_event(key_event, gui_event):
-        modifiers = gui_event.modifiers()
-
-        character = key_event.character
-        import sys
-        if sys.platform == 'darwin':
-            # manually switch Meta and Control for Mac OS X
-            key_code = gui_event.key()
-            if key_code == QtCore.Qt.Key_Control: character = 'Menu'
-            elif key_code == QtCore.Qt.Key_Meta: character = 'Control'
-            control_down = bool(modifiers & QtCore.Qt.MetaModifier)
-            meta_down =  bool(modifiers & QtCore.Qt.ControlModifier)
-        else:
-            control_down = bool(modifiers & QtCore.Qt.ControlModifier)
-            meta_down =  bool(modifiers & QtCore.Qt.MetaModifier)
-
-        # re-package old event according to new criteria
-        return KeyEvent(event_type=key_event.event_type,
-                        character=character,
-                        x=key_event.x, y=key_event.y,
-                        alt_down=bool(modifiers & QtCore.Qt.AltModifier),
-                        shift_down=bool(modifiers & QtCore.Qt.ShiftModifier),
-                        control_down=control_down,
-                        meta_down=meta_down,
-                        event=gui_event,
-                        window=key_event.window)
-
-
     gui_event = key_event.event
 
     if isinstance(gui_event, wx._core.KeyEvent):
         key_event = wx_key_event_repackaging(key_event, gui_event)
-    elif isinstance(gui_event, QtGui.QKeyEvent):
-        key_event = qt_new_behavior_key_event(key_event, gui_event)
 
     return key_event
 
